@@ -1,6 +1,6 @@
 # Transaction checks per day
 
-Query: [`dune/queries/transaction_checks_daily`](../../dune/queries/transaction_checks_daily) · Chart: *Requests, completed checks and attestations per day* on [dune.com/safe/safenet](https://dune.com/safe/safenet)
+Query: [`dune/queries/transaction_checks_daily`](../../dune/queries/transaction_checks_daily), reading [`safenet_events`](../../dune/queries/safenet_events) ([decoding](../decoding.md)) · Chart: *Requests, completed checks and attestations per day* · Counter: *Requests (all time)* · Table: *Latest requests* ([`latest_requests`](../../dune/queries/latest_requests)) on [dune.com/safe/safenet](https://dune.com/safe/safenet)
 
 The query counts Safenet **production** activity per UTC day. It has three headline numbers: transactions submitted for checking, checks that reached a verdict, and transactions the validators attested. These are three different stages and their counts differ.
 
@@ -15,6 +15,8 @@ The query counts Safenet **production** activity per UTC day. It has three headl
 | `attestations` | Transactions the validators signed with the group's threshold (FROST) signature, which lets the Safe execute them | `Consensus.TransactionAttested` with `oracle` = production SentinelOracle |
 | `uncovered_chain_*` | The same counts for Safes on chains outside the Charter: likely test traffic, excluded from the columns above | as above |
 | `unmatched_events` | Data-quality check, always expected to be 0: outcomes without a production request, or proposals without an oracle request | |
+
+`requests_cumulative` is the running total of `requests`, and `through_block` is the highest Gnosis block among the events read. Rows are ordered newest first.
 
 Each event is counted on the UTC day of its own block. The proposal, the verdict and the attestation of one transaction can fall on different days, so a day can have more completed checks than requests.
 
@@ -34,6 +36,23 @@ So `attestations` ≤ `checks_approved` ≤ `completed_checks` ≤ `requests` ov
 - **FROSTCoordinator `Sign` / `SignCompleted`** are not used. Production and the Aegis testnet share the same coordinator (`0xC6B34dA4…5B78`, deployed with CREATE2), so these events mix both networks. They also include epoch rollovers and restarted signing ceremonies. `Sign` fires at proposal time, even for checks that are later denied.
 - **Beta metrics do not apply.** Beta used a different Consensus contract (`0x223624cB…cEE9`) from before the Sentinel Oracle existed. Its events and lifecycle differ, and none of its contracts are read here.
 
+## Request counter
+
+*Requests (all time)* shows `requests_cumulative` of the newest row:
+
+- **Time range.** All time: from the first production request (2026-10-14) up to the latest execution of the query, which is daily after the refresh, or on demand in previews. The current UTC day is included and partial.
+- **Same source as the chart.** The counter and the daily chart come from the same execution, so the counter always equals the sum of the daily *Requests* bars.
+- **Deduplication.** One request per oracle `request_id` (the EIP-712 proposal hash), that is, per proposal and epoch. Every log is counted once. A Safe transaction proposed again in a later epoch is a new paid request and counts again. Completed checks and attestations are separate columns, never added to requests.
+- **Test traffic.** Excluded as described [below](#test-traffic). Only covered-chain requests count. Testnet and other-oracle requests are not read at all, and uncovered-chain requests are reported separately.
+
+## Latest requests
+
+The table lists the 25 most recent requests, with chain, Safe, Safe transaction, outcome (`open` while undecided, marked when disputed), and the request, outcome and attestation transactions. Unlike the counts, it includes requests for Safes on uncovered chains, marked *not covered, likely test*. Links are built in `safenet_events` from [`src/links.ts`](../../src/links.ts):
+
+- Safe addresses link to the block explorer of the Safe's chain: Etherscan, Gnosisscan, Arbiscan or Polygonscan. Other chains show the address without a link.
+- Request, outcome and attestation transactions are on Gnosis Chain and link to Gnosisscan.
+- Safe transaction hashes link to the transaction view of the Safenet explorer (`safenet-explorer.eth.limo/#/safeTx?chainId=…&safeTxHash=…`), which shows the Safenet proposals and checks of that Safe transaction.
+
 ## Sources
 
 Production ("Aegis") contracts on Gnosis Chain:
@@ -49,7 +68,7 @@ Production ("Aegis") contracts on Gnosis Chain:
 - Events: `contracts/src/interfaces/IConsensus.sol`, `contracts/src/SentinelOracle.sol`, `contracts/src/libraries/SentinelOracleRequests.sol`, `contracts/src/interfaces/IOracle.sol`, all at commit `4ed5101`.
 - Checked on-chain: `SentinelOracle.PROPOSER()` is the production Consensus, and both production and testnet Consensus return the same `getCoordinator()`.
 
-The query reads raw `gnosis.logs`, because Dune has not decoded these contracts. [`src/safenet.ts`](../../src/safenet.ts) lists every event signature with its topic0. `test/safenet.test.ts` recomputes each topic0 from its signature and checks that the SQL uses exactly those values and none of the Beta, testnet or shared coordinator addresses.
+`safenet_events` reads raw `gnosis.logs`, because Dune has not decoded these contracts ([decoding.md](../decoding.md)). [`src/safenet.ts`](../../src/safenet.ts) lists every event signature with its topic0. `test/safenet.test.ts` recomputes each topic0 from its signature and checks that the SQL uses exactly those values and none of the Beta, testnet or shared coordinator addresses.
 
 ## Test traffic
 
@@ -73,7 +92,7 @@ The query reads raw `gnosis.logs`, because Dune has not decoded these contracts.
 - every production proposal pairs with exactly one oracle request, in the same transaction, after the proposal;
 - each request has at most one terminal outcome;
 - every attestation follows an approved check of the same safeTxHash and epoch;
-- with `DUNE_API_KEY` set and the query deployed, every complete UTC day and column matches Dune's latest result.
+- with `DUNE_API_KEY` set and the query deployed, Dune's latest result matches. The recount stops at the result's `through_block`, so both cover identical block ranges, and every day and column, the counter, and the sum of daily requests must be equal, including the current partial day. Use `--query-id` or `--state` to check a preview query instead.
 
 The Refresh workflow runs it after every refresh. The result up to Gnosis block 48902093 (2026-10-23 13:35 UTC) is in [`verification/transaction_checks_daily.json`](../../verification/transaction_checks_daily.json), with all invariants holding:
 

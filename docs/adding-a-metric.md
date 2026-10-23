@@ -7,7 +7,7 @@
    - known limitations.
 
    Use production contracts only (see [transaction-checks.md](metrics/transaction-checks.md#sources)), and do not reuse Beta definitions. Beta ran different contracts.
-2. **Add the query** as `dune/queries/<key>/query.sql`. `<key>` is lowercase with underscores and must stay stable: renaming the directory creates a new Dune query and archives the old one. Use [Dune's SQL](https://docs.dune.com/query-engine/overview). Put constants such as addresses and topic0 values in [`src/safenet.ts`](../src/safenet.ts), and add a test like `test/safenet.test.ts` that checks the SQL uses them.
+2. **Add the query** as `dune/queries/<key>/query.sql`. `<key>` is lowercase with underscores and must stay stable: renaming the directory creates a new Dune query and archives the old one. Use [Dune's SQL](https://docs.dune.com/query-engine/overview). Read events from [`safenet_events`](../dune/queries/safenet_events/query.sql) with `{{query:safenet_events}}` instead of decoding raw logs again ([decoding.md](decoding.md)); add new event types there. References to other managed queries use the same `{{query:<key>}}` form and are remapped per environment ([deployment.md](deployment.md#query-references)). Put constants such as addresses and topic0 values in [`src/safenet.ts`](../src/safenet.ts), and add a test like `test/safenet.test.ts` that checks the SQL uses them. Use the URL columns of `safenet_events` for links, and `safenet_participant_labels` for participant names.
 3. **Describe it** in `dune/queries/<key>/query.yaml`:
 
    ```yaml
@@ -28,7 +28,7 @@
 
 4. **Place it** in `dune/dashboard.yaml` as `visualization: <key>/<viz_key>` with a `position` on the 6-column grid (`row`, `col`, `size_x`, `size_y`). Text goes in `dune/text/*.md` and is referenced with `text_file`.
 5. **Check locally:** `npm test && npm run validate`. Validation catches overlapping widgets, unknown references, undeclared `{{parameters}}`, and chart columns that do not appear in the SQL.
-6. **Open a pull request.** CI plans the deployment and runs the new SQL on Dune; check the job summary. After merging, *Deploy* creates the query and chart, and *Refresh* runs the query.
+6. **Open a pull request.** CI plans the production deployment, runs the new SQL on Dune and deploys a private preview ([preview.md](preview.md)); check the pull request comment. After merging, *Deploy* creates the query and chart, and *Refresh* runs the query.
 7. **Verify** the numbers against the underlying events, as `scripts/verify-transaction-checks.ts` does for the first metric. Record the result in the metric's doc.
 
 ## Visualization options

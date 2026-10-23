@@ -1,0 +1,251 @@
+name: Preview
+
+# Deploys a pull request to its private preview dashboard on Dune (docs/preview.md), runs the
+# changed preview queries within the cost caps of dune/preview.yaml, reconciles the request metric
+# against on-chain events, renders images of the results and posts them on the pull request.
+# Production is only read: the job also prints the production dry-run plan of the pull request.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number to (re)deploy
+        type: string
+        required: true
+      force_run:
+        description: Execute the preview queries even if their SQL is unchanged
+        type: boolean
+        default: false
+
+# One preview deployment at a time, never cancelled halfway. Pull requests on the same track share
+# a preview; the last deployment wins and the dashboard banner names its commit. GitHub keeps only
+# the newest pending run of a group: rerun a superseded pull request with "Run workflow".
+concurrency:
+  group: dune-preview
+  cancel-in-progress: false
+
+permissions:
+  contents: write # dune-preview-state branch (preview IDs and images)
+  pull-requests: write # preview comment
+
+jobs:
+  preview:
+    # Secrets are never given to code from forks: fork pull requests are skipped, and
+    # pull_request_target is not used. Manual runs check the pull request below.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: dune-preview
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      GNOSIS_RPC_URL: ${{ secrets.GNOSIS_RPC_URL }}
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ inputs.pr || github.event.pull_request.number }}
+      CI: "true"
+    steps:
+      - name: Resolve the pull request head
+        id: pr
+        run: |
+          read -r SHA HEAD_REPO STATE < <(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" --jq '[.head.sha, .head.repo.full_name, .state] | @tsv')
+          if [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Pull request #$PR comes from $HEAD_REPO; previews only deploy branches of $GITHUB_REPOSITORY."
+            exit 1
+          fi
+          if [ "$STATE" != "open" ]; then echo "::error::Pull request #$PR is $STATE."; exit 1; fi
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ] && [ "$SHA" != "${{ github.event.pull_request.head.sha }}" ]; then
+            echo "::notice::#$PR has a newer commit ($SHA); its own run deploys it."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v5
+        if: steps.pr.outputs.skip != 'true'
+        with:
+          ref: ${{ steps.pr.outputs.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        if: steps.pr.outputs.skip != 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Check
+        if: steps.pr.outputs.skip != 'true'
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          npm run validate
+      - name: Require API key
+        if: steps.pr.outputs.skip != 'true' && env.DUNE_API_KEY == ''
+        run: |
+          echo "::error::DUNE_API_KEY is not available to the dune-preview environment. See docs/preview.md#setup."
+          exit 1
+
+      # Production IDs come from main, not from the pull request's copy of dune/state.json.
+      - name: Prepare state
+        id: state
+        if: steps.pr.outputs.skip != 'true'
+        run: |
+          git fetch origin main
+          git show origin/main:dune/state.json > dune/state.json
+          TRACK=$(node --input-type=module -e 'import("./src/preview.ts").then(async (m) => console.log((await m.loadPreviewSettings()).track))')
+          echo "track=$TRACK" >> "$GITHUB_OUTPUT"
+          STATE_DIR="$RUNNER_TEMP/preview-state"
+          if git fetch origin dune-preview-state 2>/dev/null; then
+            git worktree add "$STATE_DIR" origin/dune-preview-state
+            git -C "$STATE_DIR" switch -C dune-preview-state
+          else
+            git worktree add --orphan -b dune-preview-state "$STATE_DIR"
+          fi
+          mkdir -p dune/.preview
+          if [ -f "$STATE_DIR/previews/$TRACK.json" ]; then cp "$STATE_DIR/previews/$TRACK.json" "dune/.preview/$TRACK.json"; fi
+          echo "dir=$STATE_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Check the pull request is still at this commit
+        id: current
+        if: steps.pr.outputs.skip != 'true'
+        run: |
+          HEAD=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" --jq .head.sha)
+          if [ "$HEAD" != "${{ steps.pr.outputs.sha }}" ]; then
+            echo "::notice::#$PR moved to $HEAD while this run waited; not deploying ${{ steps.pr.outputs.sha }}."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Production plan (dry run, after merge)
+        if: steps.pr.outputs.skip != 'true' && steps.current.outputs.skip != 'true'
+        run: npm run plan 2>&1 | tee "$RUNNER_TEMP/production-plan.txt"
+
+      - name: Decoded contracts on Dune
+        if: steps.pr.outputs.skip != 'true' && steps.current.outputs.skip != 'true'
+        continue-on-error: true
+        run: npm run dune -- check-decoded | tee "$RUNNER_TEMP/decoded.txt"
+
+      - name: Deploy preview
+        id: deploy
+        if: steps.pr.outputs.skip != 'true' && steps.current.outputs.skip != 'true'
+        run: >-
+          npm run dune -- deploy --preview
+          --sha "${{ steps.pr.outputs.sha }}" --pr "$PR" --repository "$GITHUB_REPOSITORY"
+          --production-state dune/state.json --out "$RUNNER_TEMP/preview.json"
+
+      - name: Run preview queries
+        id: run
+        if: steps.deploy.outcome == 'success'
+        run: npm run dune -- run-preview --sha "${{ steps.pr.outputs.sha }}" ${{ inputs.force_run && '--force' || '' }}
+
+      # Shows mismatches in the comment; fails the job after the comment is posted.
+      - name: Reconcile against on-chain events
+        if: always() && steps.run.outcome == 'success'
+        run: >-
+          npm run verify:transaction-checks --
+          --state "dune/.preview/${{ steps.state.outputs.track }}.json"
+          --out "$RUNNER_TEMP/verification.json"
+
+      - name: Render result images
+        if: always() && steps.run.outcome == 'success'
+        run: >-
+          node scripts/render-preview.ts --state "dune/.preview/${{ steps.state.outputs.track }}.json"
+          --sha "${{ steps.pr.outputs.sha }}" --track "${{ steps.state.outputs.track }}" --out "$RUNNER_TEMP/render"
+
+      # Also after failures, so IDs of resources created before a failure are kept.
+      - name: Record preview state and images
+        if: always() && steps.state.outcome == 'success' && steps.current.outputs.skip != 'true'
+        env:
+          TRACK: ${{ steps.state.outputs.track }}
+          SHA: ${{ steps.pr.outputs.sha }}
+          DIR: ${{ steps.state.outputs.dir }}
+        run: |
+          mkdir -p "$DIR/previews"
+          if [ -f "dune/.preview/$TRACK.json" ]; then cp "dune/.preview/$TRACK.json" "$DIR/previews/$TRACK.json"; fi
+          if ls "$RUNNER_TEMP"/render/*.png >/dev/null 2>&1; then
+            mkdir -p "$DIR/screenshots/$TRACK/$SHA"
+            cp "$RUNNER_TEMP"/render/*.png "$DIR/screenshots/$TRACK/$SHA/"
+          fi
+          cd "$DIR"
+          git add -A
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Preview $TRACK: #$PR at ${SHA::7}"
+          git push origin dune-preview-state
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.current.outputs.skip != 'true'
+        with:
+          name: preview
+          path: |
+            ${{ runner.temp }}/render/
+            ${{ runner.temp }}/preview.json
+            ${{ runner.temp }}/verification.json
+            ${{ runner.temp }}/production-plan.txt
+          if-no-files-found: ignore
+
+      - name: Comment on the pull request
+        if: always() && steps.state.outcome == 'success' && steps.current.outputs.skip != 'true'
+        env:
+          TRACK: ${{ steps.state.outputs.track }}
+          SHA: ${{ steps.pr.outputs.sha }}
+          DEPLOY: ${{ steps.deploy.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          T="$RUNNER_TEMP"
+          MARKER="<!-- dune-preview:$TRACK -->"
+          IMG="https://github.com/$GITHUB_REPOSITORY/blob/dune-preview-state/screenshots/$TRACK/$SHA"
+          {
+            echo "$MARKER"
+            if [ "$DEPLOY" = "success" ]; then
+              echo "### Dune preview: track \`$TRACK\`, commit $SHA"
+              echo
+              echo "Private dashboard (safe team): $(jq -r .url "$T/preview.json")"
+              echo
+              echo "Images rendered from the preview's query results through the API (the dashboard is private, so CI cannot screenshot Dune):"
+              echo
+              for f in counter daily latest; do
+                if [ -f "$T/render/$f.png" ]; then echo "<img src=\"$IMG/$f.png?raw=true\" alt=\"$f\" width=\"$([ $f = counter ] && echo 320 || echo 900)\">"; echo; fi
+              done
+              echo "<details><summary>Reconciliation with on-chain events</summary>"
+              echo
+              echo '```json'
+              if [ -f "$T/verification.json" ]; then jq '{to_block, totals, issues, dune_comparison}' "$T/verification.json"; else echo '"not run"'; fi
+              echo '```'
+              echo "</details>"
+              echo
+              echo "<details><summary>Preview resources</summary>"
+              echo
+              echo '```json'
+              jq '{dashboard_id, queries, visualizations, creates}' "$T/preview.json"
+              echo '```'
+              echo '```'
+              jq -r .plan "$T/preview.json"
+              echo '```'
+              echo "</details>"
+            else
+              echo "### Dune preview failed: track \`$TRACK\`, commit $SHA"
+              echo
+              echo "See the [workflow run]($RUN_URL). Previews are never created public; a privacy error means the Dune plan does not allow more private resources."
+            fi
+            echo
+            echo "<details><summary>Production plan after merge (dry run)</summary>"
+            echo
+            echo '```'
+            if [ -f "$T/production-plan.txt" ]; then grep -vE '^(> |$)' "$T/production-plan.txt"; else echo "not run"; fi
+            echo '```'
+            echo "</details>"
+            if [ -f "$T/decoded.txt" ]; then
+              echo
+              echo "<details><summary>Decoded contracts on Dune</summary>"
+              echo
+              grep -vE '^(> |$)' "$T/decoded.txt"
+              echo "</details>"
+            fi
+            echo
+            echo "[Workflow run]($RUN_URL)"
+          } > "$T/comment.md"
+          ID=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -1)
+          if [ -n "$ID" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$ID" -F body=@"$T/comment.md" > /dev/null
+          else
+            gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@"$T/comment.md" > /dev/null
+          fi
+          cat "$T/comment.md" >> "$GITHUB_STEP_SUMMARY"

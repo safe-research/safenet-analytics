@@ -3,7 +3,8 @@
 //   dune/project.yaml                  team, managed tag, protected dashboards
 //   dune/dashboard.yaml                dashboard name, slug, text and layout
 //   dune/queries/<key>/query.yaml      query metadata, refresh schedule, visualizations
-//   dune/queries/<key>/query.sql       query SQL
+//   dune/queries/<key>/query.sql       query SQL; {{query:<key>}} refers to another managed query
+//   dune/preview.yaml                  preview dashboard settings (src/preview.ts)
 
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
@@ -56,6 +57,8 @@ export type QuerySpec = {
   refresh: Refresh;
   performance: Performance;
   visualizations: VisualizationSpec[];
+  // Keys of managed queries this query reads through {{query:<key>}}.
+  dependencies: string[];
 };
 
 export type Widget =
@@ -131,6 +134,7 @@ export async function loadConfig(root = DEFAULT_ROOT): Promise<Config> {
       refresh: str(raw.refresh, "daily") as Refresh,
       performance: str(raw.performance, "medium") as Performance,
       visualizations,
+      dependencies: queryReferences(sql),
     };
     problems.push(...validateQuery(spec, where));
     queries.push(spec);
@@ -163,8 +167,57 @@ export async function loadConfig(root = DEFAULT_ROOT): Promise<Config> {
   const names = queries.map((q) => q.name);
   for (const n of new Set(names.filter((n, i) => names.indexOf(n) !== i))) problems.push(`duplicate query name "${n}"`);
 
+  const ordered = orderByDependencies(queries, problems);
   if (problems.length) throw new ConfigError(problems);
-  return { project, queries, dashboard };
+  return { project, queries: ordered, dashboard };
+}
+
+// {{query:<key>}} in a query's SQL refers to another managed query. The deployer renders it as
+// query_<id> with the ID of that query in the target environment (production or a preview), so a
+// preview query never reads a production query and vice versa.
+export const QUERY_REFERENCE = /\{\{\s*query:([a-z0-9_]+)\s*\}\}/g;
+
+export function queryReferences(sql: string): string[] {
+  return [...new Set([...sql.matchAll(QUERY_REFERENCE)].map((m) => m[1]))].sort();
+}
+
+// Renders {{query:<key>}} references. `resolve` returns the replacement for a key: query_<id> for a
+// saved query, or the referenced SQL as a subquery for unsaved executions.
+export function renderSql(sql: string, resolve: (key: string) => string): string {
+  return sql.replace(QUERY_REFERENCE, (_, key: string) => resolve(key));
+}
+
+// The query's SQL with every reference replaced by the referenced SQL, recursively. Used to run
+// SQL on Dune without saving it and to fingerprint everything a query's result depends on.
+export function inlineSql(q: QuerySpec, queries: QuerySpec[]): string {
+  const byKey = new Map(queries.map((x) => [x.key, x]));
+  const inline = (spec: QuerySpec): string =>
+    renderSql(spec.sql, (key) => `(\n${inline(byKey.get(key)!).trim()}\n)`);
+  return inline(q);
+}
+
+// Dependencies first, so a referenced query exists before the query that reads it is written.
+function orderByDependencies(queries: QuerySpec[], problems: string[]): QuerySpec[] {
+  const byKey = new Map(queries.map((q) => [q.key, q]));
+  const ordered: QuerySpec[] = [];
+  const state = new Map<string, "visiting" | "done">();
+  const visit = (q: QuerySpec, path: string[]) => {
+    if (state.get(q.key) === "done") return;
+    if (state.get(q.key) === "visiting") {
+      problems.push(`queries/${q.key}: circular {{query:...}} references (${[...path, q.key].join(" -> ")})`);
+      return;
+    }
+    state.set(q.key, "visiting");
+    for (const dep of q.dependencies) {
+      const d = byKey.get(dep);
+      if (!d) problems.push(`queries/${q.key}: {{query:${dep}}} refers to an unknown query`);
+      else visit(d, [...path, q.key]);
+    }
+    state.set(q.key, "done");
+    ordered.push(q);
+  };
+  for (const q of queries) visit(q, []);
+  return ordered;
 }
 
 export function normalizeSql(sql: string): string {
@@ -179,7 +232,9 @@ function validateQuery(q: QuerySpec, where: string): string[] {
   if (!["medium", "large"].includes(q.performance)) problems.push(`${where}: performance must be medium or large`);
 
   const declared = new Set(q.parameters.map((p) => p.key));
-  const used = new Set([...q.sql.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)].map((m) => m[1]));
+  const used = new Set(
+    [...q.sql.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g)].map((m) => m[1]).filter((p) => !p.startsWith("query:")),
+  );
   for (const p of used) if (!declared.has(p)) problems.push(`${where}: SQL uses undeclared parameter {{${p}}}`);
   for (const p of declared) if (!used.has(p)) problems.push(`${where}: parameter ${p} is not used in the SQL`);
   if (q.refresh !== "none" && declared.size) problems.push(`${where}: scheduled refresh needs a query without parameters`);

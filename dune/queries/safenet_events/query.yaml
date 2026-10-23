@@ -1,0 +1,11 @@
+name: "Safenet: production events (decoded)"
+description: >
+  Safenet production (Aegis, Gnosis Chain) Consensus and Sentinel Oracle events decoded from raw
+  logs, one row per event, with explorer links. Read by the other Safenet queries; not shown on
+  the dashboard. Temporary until Dune decodes the contracts (docs/decoding.md). Managed in
+  github.com/safe-research/safenet-analytics.
+private: false
+tags: [safenet]
+# Executed as part of the queries that read it, so it needs no schedule of its own.
+refresh: none
+performance: medium

@@ -31,9 +31,16 @@ export class FakeDune {
   queries = new Map<number, Query>();
   visualizations = new Map<number, Viz>();
   dashboards = new Map<number, Dashboard>();
-  executions = new Map<string, { query_id?: number; polls: number; sql?: string }>();
+  executions = new Map<string, { query_id?: number; polls: number; sql?: string; cancelled?: boolean }>();
   requests: string[] = [];
   whoami = { customer_id: "team_1", handle: "safe", api_key_id: 1, created_by: 1 };
+  // How Dune treats requests for private resources: honour them, reject them (plan limit), or
+  // silently create public ones.
+  privacy: "ok" | "reject" | "ignore" = "ok";
+  // Whether POST /api/v1/dashboards/{id}/archive exists.
+  dashboardArchive = false;
+  executionCredits = 1.5;
+  executionsNeverFinish = false;
   #next = 1000;
   #widget = 1;
 
@@ -113,7 +120,8 @@ export class FakeDune {
           .map((q) => ({ id: q.query_id, name: q.name, tags: q.tags })),
       });
     if (method === "POST" && path === "/api/v1/query") {
-      const q = this.seedQuery({ ...body, is_private: body.is_private ?? false });
+      if (body.is_private && this.privacy === "reject") return json(402, { error: "private queries limit reached" });
+      const q = this.seedQuery({ ...body, is_private: this.privacy === "ignore" ? false : (body.is_private ?? false) });
       return json(200, { query_id: q.query_id });
     }
     if ((m = path.match(/^\/api\/v1\/query\/(\d+)$/))) {
@@ -128,7 +136,8 @@ export class FakeDune {
     if ((m = path.match(/^\/api\/v1\/query\/(\d+)\/(private|unprivate|archive|unarchive)$/)) && method === "POST") {
       const q = this.queries.get(Number(m[1]));
       if (!q) return notFound();
-      if (m[2] === "private") q.is_private = true;
+      if (m[2] === "private" && this.privacy === "reject") return json(402, { error: "private queries limit reached" });
+      if (m[2] === "private" && this.privacy === "ok") q.is_private = true;
       if (m[2] === "unprivate") q.is_private = false;
       if (m[2] === "archive") q.is_archived = true;
       if (m[2] === "unarchive") q.is_archived = false;
@@ -160,9 +169,15 @@ export class FakeDune {
     }
 
     if (method === "POST" && path === "/api/v1/dashboards") {
+      if (body.is_private && this.privacy === "reject") return json(402, { error: "private dashboards limit reached" });
       const d = this.seedDashboard({ name: body.name, slug: body.name.toLowerCase().replace(/\W+/g, "-"), vizIds: [] });
-      d.is_private = body.is_private ?? false;
+      d.is_private = this.privacy === "ignore" ? false : (body.is_private ?? false);
       return json(200, this.#dash(d));
+    }
+    if ((m = path.match(/^\/api\/v1\/dashboards\/(\d+)\/archive$/)) && method === "POST") {
+      if (!this.dashboardArchive) return notFound();
+      this.dashboards.delete(Number(m[1]));
+      return json(200, { ok: true });
     }
     if ((m = path.match(/^\/api\/v1\/dashboards\/by-slug\/([^/]+)\/([^/]+)$/))) {
       const d = [...this.dashboards.values()].find((x) => x.owner === m![1] && x.slug === m![2]);
@@ -174,6 +189,7 @@ export class FakeDune {
       if (method === "GET") return json(200, this.#dash(d));
       if (method === "PATCH") {
         for (const k of ["name", "slug", "is_private", "tags"] as const) if (body[k] !== undefined) Object.assign(d, { [k]: body[k] });
+        if (body.is_private && this.privacy !== "ok") d.is_private = false;
         if (body.visualization_widgets)
           d.visualization_widgets = body.visualization_widgets.map((w: { visualization_id: number; position: Position }) => ({
             widget_id: this.#widget++,
@@ -199,13 +215,19 @@ export class FakeDune {
       const e = this.executions.get(m[1]);
       if (!e) return notFound();
       e.polls++;
-      const done = e.polls > 1;
+      const done = !this.executionsNeverFinish && e.polls > 1;
       return json(200, {
         execution_id: m[1],
-        state: done ? "QUERY_STATE_COMPLETED" : "QUERY_STATE_EXECUTING",
-        is_execution_finished: done,
-        execution_cost_credits: done ? 1.5 : undefined,
+        state: e.cancelled ? "QUERY_STATE_CANCELED" : done ? "QUERY_STATE_COMPLETED" : "QUERY_STATE_EXECUTING",
+        is_execution_finished: done || e.cancelled,
+        execution_cost_credits: done ? this.executionCredits : undefined,
       });
+    }
+    if ((m = path.match(/^\/api\/v1\/execution\/([^/]+)\/cancel$/)) && method === "POST") {
+      const e = this.executions.get(m[1]);
+      if (!e) return notFound();
+      e.cancelled = true;
+      return json(200, { success: true });
     }
     return json(400, { error: `fake Dune does not implement ${method} ${path}` });
   };

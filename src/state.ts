@@ -18,12 +18,23 @@ export type ProtectedRecord = {
   checked_at: string;
 };
 
+// Preview executions (src/preview.ts): what each preview query's latest result was computed from,
+// so unchanged queries are not executed again.
+export type ExecutionRecord = {
+  query_id: number;
+  sql: string; // fingerprint of the query's SQL with all references inlined
+  execution_id: string;
+  ended_at?: string;
+  credits?: number;
+};
+
 export type State = {
   version: 1;
   queries: Record<string, Tracked>;
   visualizations: Record<string, Tracked & { query_id: number }>;
   dashboard: (Tracked & { url: string }) | null;
   protected: Record<string, ProtectedRecord>;
+  executions?: Record<string, ExecutionRecord>;
 };
 
 export const emptyState = (): State => ({ version: 1, queries: {}, visualizations: {}, dashboard: null, protected: {} });

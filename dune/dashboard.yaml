@@ -1,5 +1,6 @@
 # The Safenet dashboard: https://dune.com/safe/safenet
 # Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
+# Previews (docs/preview.md) use this layout below a banner.
 name: Safenet
 slug: safenet
 private: false
@@ -9,8 +10,17 @@ widgets:
   - text_file: text/intro.md
     position: { row: 0, col: 0, size_x: 6, size_y: 3 }
 
+  - visualization: transaction_checks_daily/total_requests
+    position: { row: 3, col: 0, size_x: 2, size_y: 4 }
+
+  - text_file: text/request_counter.md
+    position: { row: 7, col: 0, size_x: 2, size_y: 4 }
+
   - visualization: transaction_checks_daily/daily_chart
-    position: { row: 3, col: 0, size_x: 4, size_y: 8 }
+    position: { row: 3, col: 2, size_x: 4, size_y: 8 }
 
   - text_file: text/transaction_checks.md
-    position: { row: 3, col: 4, size_x: 2, size_y: 8 }
+    position: { row: 11, col: 0, size_x: 6, size_y: 5 }
+
+  - visualization: latest_requests/table
+    position: { row: 16, col: 0, size_x: 6, size_y: 10 }

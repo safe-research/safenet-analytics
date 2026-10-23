@@ -13,7 +13,8 @@ The deployer (`src/dune.ts`) calls these endpoints directly, because the CLI can
 | Queries | `GET /api/v1/query/{id}`, `POST /api/v1/query`, `PATCH /api/v1/query/{id}`, `POST …/private`, `…/unprivate`, `…/archive`, `GET /api/v1/queries` | yes |
 | Visualizations | `GET/PUT/DELETE /api/v1/visualizations/{id}`, `GET/POST /api/v1/queries/{id}/visualizations` | no; used by the official CLI (`dune viz`) |
 | Dashboards | `POST /api/v1/dashboards`, `GET/PATCH /api/v1/dashboards/{id}`, `GET /api/v1/dashboards/by-slug/{owner}/{slug}` | no; used by the official CLI (`dune dashboard`) |
-| Execution | `POST /api/v1/query/{id}/execute`, `POST /api/v1/sql/execute`, `GET /api/v1/execution/{id}/status`, `GET …/results`, `GET /api/v1/query/{id}/results` | yes |
+| Execution | `POST /api/v1/query/{id}/execute`, `POST /api/v1/sql/execute`, `GET /api/v1/execution/{id}/status`, `GET …/results`, `POST …/cancel`, `GET /api/v1/query/{id}/results` | yes |
+| Dashboard archive | `POST /api/v1/dashboards/{id}/archive`, tried by preview cleanup only, with a fallback | no, and not in the official CLI; unverified |
 | Identity | `GET /api/whoami` | no; used by the official CLI (`dune whoami`) |
 
 ## Constraints that shaped the design
@@ -23,6 +24,9 @@ The deployer (`src/dune.ts`) calls these endpoints directly, because the CLI can
 - **Dashboard slug.** It cannot be set when the dashboard is created, so the deployer creates the dashboard and then sets the slug, text and widgets with one `PATCH`. There is no owner field. Ownership follows the API key, so the deploy requires a `safe` team key.
 - **Query schedules cannot be set via the API.** See [refreshes.md](refreshes.md).
 - **Rate limits.** On Plus: 70 write and 200 read requests per minute. A deploy makes a few dozen requests, most of them reads of the Beta dashboard for the protection check. The client retries `429` and `5xx` responses with backoff.
+
+- **No folders.** None of the endpoints above assigns a library folder, so placing resources in the *Safenet* folder is a one-time UI step ([preview.md](preview.md#setup)).
+- **Private resources.** Queries and dashboards are created with `is_private`. Whether the plan allows them shows on the first preview run: [preview.md](preview.md#what-keeps-production-safe) describes how the deployer stops otherwise.
 
 ## Not verified yet (needs the team key)
 

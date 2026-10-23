@@ -1,3 +1,5 @@
 node_modules/
 dune/.remote/
 verification/*.local.json
+dune/.preview/
+preview-out/
