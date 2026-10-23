@@ -1,0 +1,31 @@
+name: "Safenet: transaction checks per day"
+description: >
+  Safenet production (Aegis, Gnosis Chain): transaction-check requests, completed checks
+  (approved or denied verdicts) and attestations per UTC day, with requests for Safes on chains outside the Charter (likely tests) and timeouts
+  in separate columns. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/transaction-checks.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  daily_chart:
+    name: Requests, completed checks and attestations per day
+    type: chart
+    options:
+      globalSeriesType: column
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Day (UTC) } }
+      yAxis:
+        - title: { text: Transactions }
+      columnMapping:
+        day: x
+        requests: y
+        completed_checks: y
+        attestations: y
+      seriesOptions:
+        requests: { type: column, yAxis: 0, zIndex: 0, name: Requests }
+        completed_checks: { type: column, yAxis: 0, zIndex: 1, name: Completed checks }
+        attestations: { type: column, yAxis: 0, zIndex: 2, name: Attestations }

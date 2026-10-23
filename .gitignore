@@ -1,0 +1,3 @@
+node_modules/
+dune/.remote/
+verification/*.local.json

@@ -1,0 +1,27 @@
+{
+  "name": "safenet-analytics",
+  "private": true,
+  "type": "module",
+  "description": "Safenet analytics on Dune, managed from GitHub",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "dune": "node src/cli.ts",
+    "validate": "node src/cli.ts validate",
+    "plan": "node src/cli.ts deploy --dry-run",
+    "deploy": "node src/cli.ts deploy",
+    "refresh": "node src/cli.ts refresh",
+    "verify:transaction-checks": "node scripts/verify-transaction-checks.ts",
+    "test": "node --test 'test/**/*.test.ts'",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@noble/hashes": "^2.4.0",
+    "@types/node": "^22.19.0",
+    "typescript": "^7.0.2"
+  }
+}

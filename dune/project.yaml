@@ -1,0 +1,11 @@
+# Dune account that owns everything in this repository. Deploys refuse any API key that is not
+# a key of this team (checked with the Dune whoami endpoint).
+team: safe
+
+# Tag added to every managed query. Used to find queries when dune/state.json has no ID for them.
+managed_tag: safenet-analytics
+
+# Dashboards this repository must never modify. Deploys refuse to manage any of their queries or
+# visualizations, and check that they are unchanged afterwards.
+protected_dashboards:
+  - safe/safenet-beta

@@ -1,0 +1,74 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dune/**"
+      - "!dune/state.json"
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only print the plan
+        type: boolean
+        default: false
+      force:
+        description: Overwrite resources that were edited directly in Dune
+        type: boolean
+        default: false
+
+# One deployment at a time; never cancel one halfway.
+concurrency:
+  group: dune-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: write # commits dune/state.json
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      CI: "true"
+    steps:
+      # Deploy the current main, not the pushed commit: a queued run must see the state.json
+      # committed by the run before it.
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Check the triggering commit is on main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" HEAD
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Pushes to main skip the pull-request checks, so run them here too.
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run validate
+      - name: Require API key
+        if: env.DUNE_API_KEY == ''
+        run: |
+          echo "::error::Add the DUNE_API_KEY repository secret (a Dune API key of the safe team). See docs/setup.md."
+          exit 1
+      - name: Deploy
+        run: npm run deploy -- ${{ inputs.dry_run && '--dry-run' || '' }} ${{ inputs.force && '--force' || '' }}
+      # Also after a failed deploy, so IDs of anything created before the failure are kept.
+      - name: Record resource IDs
+        if: always() && !inputs.dry_run
+        run: |
+          git add dune/state.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Record Dune deployment state for ${GITHUB_SHA::7}"
+          git pull --rebase
+          git push

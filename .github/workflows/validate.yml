@@ -1,0 +1,46 @@
+name: Validate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run validate
+
+  # Needs the DUNE_API_KEY secret, which GitHub does not pass to pull requests from forks.
+  plan:
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Skip without API key
+        if: env.DUNE_API_KEY == ''
+        run: echo "::warning::DUNE_API_KEY is not available; skipping the Dune plan and SQL check."
+      - name: Plan deployment (dry run, fails on conflicting edits in Dune)
+        if: env.DUNE_API_KEY != ''
+        run: npm run plan
+      - name: Run changed SQL on Dune
+        if: env.DUNE_API_KEY != ''
+        run: npm run dune -- check-sql

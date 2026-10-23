@@ -1,0 +1,61 @@
+name: Refresh
+
+# Executes the deployed queries so the dashboard shows current data. Separate from Deploy, which
+# only changes configuration. Schedules are set per query in dune/queries/<key>/query.yaml.
+
+on:
+  schedule:
+    - cron: "17 5 * * *" # daily, 05:17 UTC
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      query:
+        description: Query key to refresh (empty for all daily queries)
+        type: string
+        default: ""
+
+concurrency:
+  group: dune-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    # After Deploy: only for real deploys of merged changes (not manual runs, which may be dry runs).
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      GNOSIS_RPC_URL: ${{ secrets.GNOSIS_RPC_URL }}
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Refresh queries
+        env:
+          QUERY: ${{ inputs.query }}
+        run: |
+          if [ -n "$QUERY" ]; then npm run refresh -- --query "$QUERY"; else npm run refresh -- --schedule daily; fi
+      # Recomputes the first metric from Gnosis Chain logs and compares it with the fresh Dune result.
+      - name: Check transaction checks against on-chain events
+        if: ${{ !inputs.query || inputs.query == 'transaction_checks_daily' }}
+        run: npm run verify:transaction-checks -- --out verification/transaction_checks_daily.local.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verification
+          path: verification/*.local.json
+          if-no-files-found: ignore
