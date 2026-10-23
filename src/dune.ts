@@ -237,6 +237,18 @@ export class DuneClient {
     return this.#request<RemoteDashboard>("PATCH", `/api/v1/dashboards/${id}`, d);
   }
 
+  // Not on docs.dune.com and not used by the official CLI v0.1.18; tried by preview cleanup, which
+  // falls back to emptying the dashboard if Dune rejects it. Returns false if not supported.
+  async archiveDashboard(id: number): Promise<boolean> {
+    try {
+      await this.#request("POST", `/api/v1/dashboards/${id}/archive`);
+      return true;
+    } catch (e) {
+      if (e instanceof DuneApiError && [400, 404, 405, 501].includes(e.status)) return false;
+      throw e;
+    }
+  }
+
   // Execution
 
   async execute(queryId: number, performance: Performance): Promise<string> {
@@ -251,6 +263,10 @@ export class DuneClient {
   async executeSql(sql: string, performance: Performance): Promise<string> {
     const res = await this.#request<{ execution_id: string }>("POST", "/api/v1/sql/execute", { sql, performance });
     return res.execution_id;
+  }
+
+  async cancelExecution(executionId: string): Promise<void> {
+    await this.#request("POST", `/api/v1/execution/${executionId}/cancel`);
   }
 
   executionStatus(executionId: string) {

@@ -4,9 +4,12 @@ import { test } from "node:test";
 import { keccak_256 } from "@noble/hashes/sha3.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { DEFAULT_ROOT } from "../src/config.ts";
+import { LINK_SQL } from "../src/links.ts";
 import { EVENTS, PRODUCTION } from "../src/safenet.ts";
 
-const sql = await readFile(`${DEFAULT_ROOT}/queries/transaction_checks_daily/query.sql`, "utf8");
+const read = (key: string) => readFile(`${DEFAULT_ROOT}/queries/${key}/query.sql`, "utf8");
+// All raw-log decoding is in safenet_events.
+const sql = await read("safenet_events");
 
 test("every topic0 is the keccak hash of its event signature", () => {
   for (const [name, e] of Object.entries(EVENTS)) {
@@ -24,6 +27,7 @@ test("the metric SQL uses the production contracts and the right events", () => 
     "RequestTimedOut",
     "DisputeOutOfScope",
     "ArbitrationTimedOut",
+    "DisputeTriggered",
   ] as const)
     assert.ok(sql.includes(EVENTS[name].topic0), `${name} topic0 missing from SQL`);
   assert.ok(sql.includes(PRODUCTION.consensus.address));
@@ -39,4 +43,16 @@ test("the metric SQL does not read Beta, testnet or shared coordinator contracts
     "0xc6b34da4c99c043a093214d58423a8be39585b78", // FROSTCoordinator shared by production and testnet
   ])
     assert.ok(!sql.toLowerCase().includes(other.slice(2)), other);
+});
+
+test("only safenet_events reads raw logs; metric queries read it by reference", async () => {
+  for (const key of ["transaction_checks_daily", "latest_requests"]) {
+    const q = await read(key);
+    assert.ok(!/\bgnosis\.logs\b/.test(q), `${key} reads gnosis.logs`);
+    assert.ok(q.includes("{{query:safenet_events}}"), `${key} does not read safenet_events`);
+  }
+});
+
+test("safenet_events builds links with the expressions from src/links.ts", () => {
+  for (const [column, expression] of Object.entries(LINK_SQL)) assert.ok(sql.includes(`${expression} as ${column}`), column);
 });

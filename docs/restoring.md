@@ -22,6 +22,8 @@ git commit -m "Restore Dune configuration from <good-commit>"
 
 Open a pull request; merging it deploys. **Do not restore `dune/state.json`.** It must keep the current IDs, and the Deploy workflow maintains it.
 
+Previews never need restoring. Rollback concerns production only, and a revert shows its production plan in the revert pull request's preview comment before it is merged.
+
 ## Undo removals
 
 - **Queries** removed from `dune/` are archived, not deleted. Restoring their directory does not unarchive them: the state entry was dropped and archived queries are skipped when looking up existing ones, so the deployer creates a new query. To keep the old ID instead, unarchive it in Dune first. The deployer then finds it by name and managed tag and adopts it if it matches GitHub, or reports a conflict if it does not.

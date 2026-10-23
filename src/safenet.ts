@@ -62,3 +62,14 @@ export const EVENTS = {
 
 // SentinelOracleRequest.State values used in DisputeResolved.outcome.
 export const ORACLE_STATE = { RESOLVED_APPROVED: 3, RESOLVED_DENIED: 4 } as const;
+
+// Production contracts that may be decoded on Dune (docs/decoding.md). `check-decoded` looks them
+// up in Dune's contract tables. Addresses: safe-research/safenet docs/configuration.md.
+export const DECODING_CANDIDATES = [
+  { name: "Consensus", chain: "gnosis", address: PRODUCTION.consensus.address },
+  { name: "SentinelOracle", chain: "gnosis", address: PRODUCTION.sentinelOracle.address },
+  // Shared by production and the Aegis testnet; its events cannot be attributed to production alone.
+  { name: "FROSTCoordinator", chain: "gnosis", address: "0xc6b34da4c99c043a093214d58423a8be39585b78" },
+  { name: "Safenet7702Executor", chain: "gnosis", address: "0x4dfe88adf2d7c3fbd2e334ce820b9adfa541215c" },
+  { name: "Staking", chain: "ethereum", address: "0x115e78f160e1e3ef163b05c84562fa16fa338509" },
+] as const;

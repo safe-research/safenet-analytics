@@ -16,6 +16,17 @@ async function deploy(fake: FakeDune, cfg: Config, state: State, options: { dryR
 const actions = (r: Awaited<ReturnType<typeof deploy>>) =>
   Object.fromEntries(r.plan.steps.map((s) => [`${s.resource}:${s.key}`, s.action]));
 
+// Every resource of the repository configuration, with the same action.
+const all = (cfg: Config, action: string) =>
+  Object.fromEntries([
+    ...cfg.queries.map((q) => [`query:${q.key}`, action]),
+    ...cfg.queries.flatMap((q) => q.visualizations.map((v) => [`visualization:${v.key}`, action])),
+    [`dashboard:${cfg.dashboard.slug}`, action],
+  ]);
+
+const daily = (cfg: Config) => cfg.queries.find((q) => q.key === "transaction_checks_daily")!;
+const DAILY_CHART = "transaction_checks_daily/daily_chart";
+
 describe("deploy", () => {
   let fake: FakeDune;
   let beta: { queryId: number; vizId: number; dashboardId: number };
@@ -30,19 +41,15 @@ describe("deploy", () => {
 
   test("first deploy creates the query, visualization and dashboard", async () => {
     const r = await deploy(fake, config, emptyState());
-    assert.deepEqual(actions(r), {
-      "query:transaction_checks_daily": "create",
-      "visualization:transaction_checks_daily/daily_chart": "create",
-      "dashboard:safenet": "create",
-    });
+    assert.deepEqual(actions(r), all(config, "create"));
     const dash = fake.dashboards.get(r.state.dashboard!.id)!;
     assert.equal(dash.slug, "safenet");
     assert.equal(r.state.dashboard!.url, "https://dune.com/safe/safenet");
     assert.deepEqual(
-      dash.visualization_widgets.map((w) => w.visualization_id),
-      [r.state.visualizations["transaction_checks_daily/daily_chart"].id],
+      dash.visualization_widgets.map((w) => w.visualization_id).sort(),
+      Object.values(r.state.visualizations).map((v) => v.id).sort(),
     );
-    assert.equal(dash.text_widgets.length, 2);
+    assert.equal(dash.text_widgets.length, 3);
     const q = fake.queries.get(r.state.queries.transaction_checks_daily.id)!;
     assert.ok(q.tags.includes("safenet-analytics"));
     assert.equal(r.state.protected["safe/safenet-beta"].dashboard_id, beta.dashboardId);
@@ -65,7 +72,7 @@ describe("deploy", () => {
     await deploy(fake, config, emptyState());
     const counts = [fake.queries.size, fake.visualizations.size, fake.dashboards.size];
     const r = await deploy(fake, config, emptyState());
-    assert.deepEqual(Object.values(actions(r)), ["adopt", "adopt", "adopt"]);
+    assert.deepEqual(actions(r), all(config, "adopt"));
     assert.deepEqual([fake.queries.size, fake.visualizations.size, fake.dashboards.size], counts);
     assert.ok(fake.writes().every((w) => !w.startsWith("POST /api/v1/query ")));
   });
@@ -73,13 +80,9 @@ describe("deploy", () => {
   test("changed SQL updates only the query, in place", async () => {
     const first = await deploy(fake, config, emptyState());
     const changed = structuredClone(config);
-    changed.queries[0].sql = `${changed.queries[0].sql}-- changed\n`;
+    daily(changed).sql = `${daily(changed).sql}-- changed\n`;
     const r = await deploy(fake, changed, first.state);
-    assert.deepEqual(actions(r), {
-      "query:transaction_checks_daily": "update",
-      "visualization:transaction_checks_daily/daily_chart": "noop",
-      "dashboard:safenet": "noop",
-    });
+    assert.deepEqual(actions(r), { ...all(config, "noop"), "query:transaction_checks_daily": "update" });
     const id = first.state.queries.transaction_checks_daily.id;
     assert.equal(r.state.queries.transaction_checks_daily.id, id);
     assert.match(fake.queries.get(id)!.query_sql, /-- changed/);
@@ -88,17 +91,19 @@ describe("deploy", () => {
   test("changed chart, text and layout update in place", async () => {
     const first = await deploy(fake, config, emptyState());
     const changed = structuredClone(config);
-    changed.queries[0].visualizations[0].options.globalSeriesType = "line";
+    daily(changed).visualizations.find((v) => v.key === DAILY_CHART)!.options.globalSeriesType = "line";
     changed.dashboard.widgets[0] = { ...changed.dashboard.widgets[0], text: "# New intro" } as Config["dashboard"]["widgets"][0];
-    changed.dashboard.widgets[1].position = { row: 3, col: 0, size_x: 3, size_y: 8 };
+    const chartWidget = changed.dashboard.widgets.find((w) => w.kind === "visualization" && w.ref === DAILY_CHART)!;
+    chartWidget.position = { ...chartWidget.position, size_x: 3 };
     const r = await deploy(fake, changed, first.state);
-    assert.equal(actions(r)["visualization:transaction_checks_daily/daily_chart"], "update");
+    assert.equal(actions(r)[`visualization:${DAILY_CHART}`], "update");
     assert.equal(actions(r)["dashboard:safenet"], "update");
-    const viz = fake.visualizations.get(first.state.visualizations["transaction_checks_daily/daily_chart"].id)!;
+    const vizId = first.state.visualizations[DAILY_CHART].id;
+    const viz = fake.visualizations.get(vizId)!;
     assert.equal(viz.options.globalSeriesType, "line");
     const dash = fake.dashboards.get(first.state.dashboard!.id)!;
     assert.ok(dash.text_widgets.some((w) => w.text === "# New intro"));
-    assert.equal(dash.visualization_widgets[0].position.size_x, 3);
+    assert.equal(dash.visualization_widgets.find((w) => w.visualization_id === vizId)!.position.size_x, 3);
     assert.equal(fake.dashboards.size, 2); // Beta + Safenet
   });
 
@@ -107,12 +112,12 @@ describe("deploy", () => {
     const id = first.state.queries.transaction_checks_daily.id;
     fake.queries.get(id)!.query_sql = "select 42 -- edited in Dune";
     const changed = structuredClone(config);
-    changed.queries[0].description = "new description";
+    daily(changed).description = "new description";
     const writesBefore = fake.writes().length;
     const r = await deploy(fake, changed, first.state);
     assert.deepEqual(
       r.plan.conflicts.map((c) => c.key),
-      ["transaction_checks_daily", "transaction_checks_daily/daily_chart"],
+      ["transaction_checks_daily", DAILY_CHART, "transaction_checks_daily/total_requests"],
     );
     assert.equal(fake.writes().length, writesBefore);
     assert.equal(fake.queries.get(id)!.query_sql, "select 42 -- edited in Dune");
@@ -124,7 +129,7 @@ describe("deploy", () => {
     fake.dashboards.get(dashId)!.text_widgets = [];
     const r = await deploy(fake, config, first.state, { force: true });
     assert.equal(actions(r)["dashboard:safenet"], "update");
-    assert.equal(fake.dashboards.get(dashId)!.text_widgets.length, 2);
+    assert.equal(fake.dashboards.get(dashId)!.text_widgets.length, 3);
     const again = await deploy(fake, config, r.state);
     assert.ok(again.plan.steps.every((s) => s.action === "noop"));
   });
@@ -132,7 +137,7 @@ describe("deploy", () => {
   test("dry run reads Dune but writes nothing", async () => {
     const first = await deploy(fake, config, emptyState());
     const changed = structuredClone(config);
-    changed.queries[0].sql = "select 1\n";
+    daily(changed).sql = "select 1\n";
     const writesBefore = fake.writes().length;
     const r = await deploy(fake, changed, first.state, { dryRun: true });
     assert.equal(actions(r)["query:transaction_checks_daily"], "update");
@@ -142,7 +147,7 @@ describe("deploy", () => {
 
   test("dry run of the first deploy plans creates without writing", async () => {
     const r = await deploy(fake, config, emptyState(), { dryRun: true });
-    assert.deepEqual(Object.values(actions(r)), ["create", "create", "create"]);
+    assert.deepEqual(actions(r), all(config, "create"));
     assert.deepEqual(fake.writes(), []);
   });
 
@@ -155,7 +160,7 @@ describe("deploy", () => {
   test("never manages resources of the protected Beta dashboard", async () => {
     const state = emptyState();
     state.queries.transaction_checks_daily = { id: beta.queryId, desired: "x", remote: "y" };
-    await assert.rejects(deploy(fake, config, state, { force: true }), /belongs to a protected dashboard/);
+    await assert.rejects(deploy(fake, config, state, { force: true }), /belongs to the protected dashboard safe\/safenet-beta/);
     assert.deepEqual(fake.writes(), []);
     assert.equal(fake.queries.get(beta.queryId)!.query_sql, "select 1");
   });
@@ -171,24 +176,24 @@ describe("deploy", () => {
   test("removed visualizations are deleted and removed queries archived", async () => {
     const extra = structuredClone(config);
     extra.queries.push({
-      ...structuredClone(config.queries[0]),
+      ...structuredClone(daily(config)),
       key: "extra",
       name: "Extra",
       visualizations: [],
     });
     const first = await deploy(fake, extra, emptyState());
     const extraId = first.state.queries.extra.id;
-    const vizId = first.state.visualizations["transaction_checks_daily/daily_chart"].id;
+    const vizId = first.state.visualizations[DAILY_CHART].id;
 
     const without = structuredClone(config);
-    without.queries[0].visualizations = [];
-    without.dashboard.widgets = without.dashboard.widgets.filter((w) => w.kind === "text");
+    daily(without).visualizations = daily(without).visualizations.filter((v) => v.key !== DAILY_CHART);
+    without.dashboard.widgets = without.dashboard.widgets.filter((w) => !(w.kind === "visualization" && w.ref === DAILY_CHART));
     const r = await deploy(fake, without, first.state);
     assert.equal(actions(r)["query:extra"], "archive");
-    assert.equal(actions(r)["visualization:transaction_checks_daily/daily_chart"], "delete");
+    assert.equal(actions(r)[`visualization:${DAILY_CHART}`], "delete");
     assert.equal(fake.queries.get(extraId)!.is_archived, true);
     assert.equal(fake.visualizations.has(vizId), false);
-    assert.equal(fake.dashboards.get(r.state.dashboard!.id)!.visualization_widgets.length, 0);
+    assert.ok(!fake.dashboards.get(r.state.dashboard!.id)!.visualization_widgets.some((w) => w.visualization_id === vizId));
     assert.equal(r.state.queries.extra, undefined);
     const del = fake.requests.findIndex((x) => x === `DELETE /api/v1/visualizations/${vizId}`);
     const patch = fake.requests.findLastIndex((x) => x.startsWith("PATCH /api/v1/dashboards/"));
@@ -211,7 +216,7 @@ describe("deploy", () => {
     const r = await deploy(fake, config, saved!);
     assert.equal(actions(r)["query:transaction_checks_daily"], "noop");
     assert.equal(actions(r)["dashboard:safenet"], "create");
-    assert.equal([...fake.queries.values()].filter((q) => q.name === config.queries[0].name).length, 1);
+    assert.equal([...fake.queries.values()].filter((q) => q.name === daily(config).name).length, 1);
   });
 });
 
@@ -241,7 +246,7 @@ describe("deploy failure paths", () => {
     const fake = new FakeDune();
     fake.seedDashboard({ name: "Safenet Beta", slug: "safenet-beta", vizIds: [] });
     const extra = structuredClone(config);
-    extra.queries.push({ ...structuredClone(config.queries[0]), key: "extra", name: "Extra", visualizations: [] });
+    extra.queries.push({ ...structuredClone(daily(config)), key: "extra", name: "Extra", visualizations: [] });
     const first = await deploy(fake, extra, emptyState());
     fake.queries.delete(first.state.queries.extra.id);
     const r = await deploy(fake, config, first.state);
@@ -272,7 +277,10 @@ describe("refresh", () => {
     });
     assert.deepEqual(
       results.map((r) => [r.key, r.status.state]),
-      [["transaction_checks_daily", "QUERY_STATE_COMPLETED"]],
+      [
+        ["latest_requests", "QUERY_STATE_COMPLETED"],
+        ["transaction_checks_daily", "QUERY_STATE_COMPLETED"],
+      ],
     );
     assert.ok(fake.requests.includes(`POST /api/v1/query/${state.queries.transaction_checks_daily.id}/execute`));
   });

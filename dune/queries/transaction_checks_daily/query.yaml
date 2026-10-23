@@ -29,3 +29,15 @@ visualizations:
         requests: { type: column, yAxis: 0, zIndex: 0, name: Requests }
         completed_checks: { type: column, yAxis: 0, zIndex: 1, name: Completed checks }
         attestations: { type: column, yAxis: 0, zIndex: 2, name: Attestations }
+
+  total_requests:
+    name: Requests (all time)
+    type: counter
+    description: >
+      Transaction-check requests for Safes on Charter chains since the first production request
+      (2026-10-14), up to the latest execution. Same execution as the daily chart.
+    options:
+      counterColName: requests_cumulative
+      rowNumber: 1
+      stringDecimal: 0
+      counterLabel: Requests (all time)

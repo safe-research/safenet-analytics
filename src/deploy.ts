@@ -6,7 +6,14 @@
 // resources. A resource whose Dune version no longer matches what the last deploy left behind
 // has been edited in Dune: the plan reports a conflict and nothing is written unless --force.
 
-import { normalizeSql, type Config, type DashboardSpec, type QuerySpec, type VisualizationSpec } from "./config.ts";
+import {
+  normalizeSql,
+  renderSql,
+  type Config,
+  type DashboardSpec,
+  type QuerySpec,
+  type VisualizationSpec,
+} from "./config.ts";
 import type {
   DashboardWrite,
   DuneClient,
@@ -31,16 +38,38 @@ export type Step = {
 
 export type Plan = { steps: Step[]; conflicts: Step[]; protectedIds: ProtectedIds };
 
-type ProtectedIds = { dashboards: Set<number>; queries: Set<number>; visualizations: Set<number> };
+export type ProtectedIds = { dashboards: Set<number>; queries: Set<number>; visualizations: Set<number> };
+
+// IDs a deploy must never write to or reference, with the reason shown in errors: the resources of
+// protected dashboards, and for previews also every production resource.
+export type Guard = { label: string; ids: ProtectedIds };
+
+export const emptyIds = (): ProtectedIds => ({ dashboards: new Set(), queries: new Set(), visualizations: new Set() });
+
+const union = (guards: Guard[]): ProtectedIds => {
+  const all = emptyIds();
+  for (const g of guards)
+    for (const kind of ["dashboards", "queries", "visualizations"] as const) for (const id of g.ids[kind]) all[kind].add(id);
+  return all;
+};
+
+// Dune IDs of saved queries that an SQL text reads (query_<id>).
+export const sqlQueryIds = (sql: string) => [...sql.matchAll(/\bquery_(\d+)\b/g)].map((m) => Number(m[1]));
 
 // ---------------------------------------------------------------------------------------------
 // Normalized representations. Fingerprints of these decide whether something changed.
 
-export function desiredQuery(q: QuerySpec, managedTag: string): QueryWrite & { is_private: boolean } {
+// `ids` maps query keys to their Dune IDs in the target environment, for rendering {{query:<key>}}.
+// A reference to a query that does not exist yet renders as a placeholder that never matches Dune.
+export function desiredQuery(
+  q: QuerySpec,
+  managedTag: string,
+  ids: ReadonlyMap<string, number> = new Map(),
+): QueryWrite & { is_private: boolean } {
   return {
     name: q.name,
     description: q.description,
-    query_sql: q.sql,
+    query_sql: renderSql(q.sql, (key) => (ids.has(key) ? `query_${ids.get(key)}` : `query_<new:${key}>`)),
     is_private: q.isPrivate,
     tags: [...new Set([...q.tags, managedTag])].sort(),
     parameters: q.parameters,
@@ -107,8 +136,8 @@ function sortedDashboard<T extends { visualization_widgets: unknown[]; text_widg
 const dashboardFingerprint = (d: { visualization_widgets: unknown[]; text_widgets: unknown[] }) =>
   fingerprint(sortedDashboard(d));
 
-const sameQuery = (r: RemoteQuery, q: QuerySpec, tag: string) =>
-  canonicalJson(remoteQuery(r)) === canonicalJson(desiredQuery(q, tag));
+const sameQuery = (r: RemoteQuery, q: QuerySpec, tag: string, ids: ReadonlyMap<string, number>) =>
+  canonicalJson(remoteQuery(r)) === canonicalJson(desiredQuery(q, tag, ids));
 
 // Dune may add default chart options, so the GitHub options only need to be contained in Dune's.
 const sameVisualization = (r: RemoteVisualization, v: VisualizationSpec) => {
@@ -193,13 +222,14 @@ export async function plan(
   config: Config,
   state: State,
   client: DuneClient,
-  options: { force?: boolean; protectedIds?: ProtectedIds } = {},
+  options: { force?: boolean; guards?: Guard[] } = {},
 ): Promise<Plan & { resolved: Resolved }> {
   const force = options.force ?? false;
   const tag = config.project.managedTag;
   const steps: Step[] = [];
   const resolved: Resolved = { queries: new Map(), visualizations: new Map(), remoteQueries: new Map() };
-  const protectedIds = options.protectedIds ?? { dashboards: new Set(), queries: new Set(), visualizations: new Set() };
+  const guards = options.guards ?? [];
+  const protectedIds = union(guards);
 
   // Decides the action for a tracked or looked-up resource from its Dune version.
   const decide = (
@@ -223,11 +253,11 @@ export async function plan(
     return desiredHash !== tracked.desired ? { action: "update" } : { action: "noop" };
   };
 
-  // Queries
+  // Queries, in dependency order (config.queries is sorted so), so referenced IDs are known.
   let owned: { id: number; name: string; tags?: string[] | null }[] | undefined;
   for (const q of config.queries) {
     const tracked = state.queries[q.key];
-    const desiredHash = fingerprint(desiredQuery(q, tag));
+    const desiredHash = fingerprint(desiredQuery(q, tag, resolved.queries));
     let remote: RemoteQuery | null = null;
     if (tracked) {
       remote = await client.getQuery(tracked.id);
@@ -253,9 +283,13 @@ export async function plan(
       steps.push({ resource: "query", key: q.key, action: "create" });
       continue;
     }
+    const decision = decide(tracked, desiredHash, fingerprint(remoteQuery(remote)), sameQuery(remote, q, tag, resolved.queries));
+    // A referenced query that is created gets a new ID, so this query's SQL changes with it.
+    const newDependency = q.dependencies.find((d) => !resolved.queries.has(d));
+    if (newDependency && (decision.action === "noop" || decision.action === "adopt"))
+      Object.assign(decision, { action: "update", reason: `references the new query ${newDependency}` });
     resolved.queries.set(q.key, remote.query_id);
     resolved.remoteQueries.set(remote.query_id, remote);
-    const decision = decide(tracked, desiredHash, fingerprint(remoteQuery(remote)), sameQuery(remote, q, tag));
     steps.push({ resource: "query", key: q.key, id: remote.query_id, ...decision });
   }
 
@@ -365,32 +399,46 @@ export async function plan(
     );
   }
 
-  // Never manage anything that belongs to a protected dashboard.
+  // Never manage anything that belongs to a protected dashboard (or, for previews, to production).
   for (const s of steps) {
     if (s.id === undefined) continue;
-    const ids =
-      s.resource === "query"
-        ? protectedIds.queries
-        : s.resource === "visualization"
-          ? protectedIds.visualizations
-          : protectedIds.dashboards;
-    if (ids.has(s.id))
-      throw new Error(`${s.resource} ${s.key} resolves to Dune ID ${s.id}, which belongs to a protected dashboard`);
+    const kind = s.resource === "query" ? "queries" : s.resource === "visualization" ? "visualizations" : "dashboards";
+    const guard = guards.find((g) => g.ids[kind].has(s.id!));
+    if (guard) throw new Error(`${s.resource} ${s.key} resolves to Dune ID ${s.id}, which belongs to ${guard.label}`);
   }
+  // Nor read a guarded query through a hard-coded query_<id>.
+  for (const q of config.queries) checkReferences(q.key, desiredQuery(q, tag, resolved.queries).query_sql, guards);
 
   return { steps, conflicts: steps.filter((s) => s.action === "conflict"), protectedIds, resolved };
 }
 
+function checkReferences(key: string, sql: string, guards: Guard[]) {
+  for (const id of sqlQueryIds(sql)) {
+    const guard = guards.find((g) => g.ids.queries.has(id));
+    if (guard) throw new Error(`query ${key} reads query_${id}, which belongs to ${guard.label}`);
+  }
+}
+
 // ---------------------------------------------------------------------------------------------
 // Apply. Updates `next` in place after every write, so a failed run still records what it did.
+
+export type ApplyOptions = {
+  log?: (line: string) => void;
+  // Previews: every query and the dashboard must be private and owned by the team. A resource
+  // Dune leaves public is archived (queries) or emptied (dashboard) and the deploy stops; it never
+  // continues with public resources.
+  requirePrivate?: boolean;
+  guards?: Guard[];
+};
 
 export async function apply(
   config: Config,
   next: State,
   client: DuneClient,
   planned: Plan & { resolved: Resolved },
-  log: (line: string) => void = console.log,
+  options: ApplyOptions = {},
 ): Promise<State> {
+  const log = options.log ?? console.log;
   if (planned.conflicts.length) throw new Error("refusing to apply a plan with conflicts");
   const tag = config.project.managedTag;
   const { protectedIds } = planned;
@@ -405,7 +453,8 @@ export async function apply(
   const queryIds = new Map(planned.resolved.queries);
   for (const q of config.queries) {
     const step = stepFor("query", q.key)!;
-    const desired = desiredQuery(q, tag);
+    const desired = desiredQuery(q, tag, queryIds);
+    checkReferences(q.key, desired.query_sql, options.guards ?? []);
     let id = step.id;
     if (step.action === "create") {
       id = await client.createQuery(desired);
@@ -422,7 +471,18 @@ export async function apply(
       await client.setQueryPrivate(guard(protectedIds.queries, id!), q.isPrivate);
       remote = (await client.getQuery(id!))!;
     }
-    if (!sameQuery(remote, q, tag) && step.action !== "noop")
+    if (options.requirePrivate && !remote.is_private) {
+      if (step.action === "create") await client.archiveQuery(id!);
+      throw new Error(
+        `query ${q.key} (${id}) is public although previews must be private` +
+          (step.action === "create" ? "; the new query was archived" : "") +
+          ". Check the Dune plan's private query limit.",
+      );
+    }
+    // Ownership follows the API key, which checkIdentity confirmed is the team's; this only reports.
+    if (options.requirePrivate && remote.owner && remote.owner !== config.project.team)
+      log(`warning: query ${q.key} (${id}) reports owner "${remote.owner}", expected "${config.project.team}"`);
+    if (!sameQuery(remote, q, tag, queryIds) && step.action !== "noop")
       log(`note: Dune normalized query ${q.key}; stored as returned by Dune`);
     queryIds.set(q.key, id!);
     next.queries[q.key] = { id: id!, desired: fingerprint(desired), remote: fingerprint(remoteQuery(remote)) };
@@ -465,6 +525,15 @@ export async function apply(
     // Record it before configuring it, so a failure below does not lose the ID.
     next.dashboard = { id: dashId, url: created.dashboard_url, desired: "", remote: dashboardFingerprint(remoteDashboard(created)) };
     log(`created dashboard ${d.slug} -> ${dashId}`);
+    // A new dashboard has no widgets yet; check privacy before adding any.
+    if (options.requirePrivate) {
+      const readBack = (await client.getDashboard(dashId)) ?? created;
+      if (!readBack.is_private)
+        throw new Error(
+          `dashboard ${d.slug} (${dashId}) was created public although it was requested private; ` +
+            "previews must be private. It has no widgets. Check the Dune plan's private dashboard limit.",
+        );
+    }
   }
   if (dStep.action === "create" || dStep.action === "update") {
     const body: DashboardWrite = { ...desired, visualization_widgets: desired.visualization_widgets as DashboardWrite["visualization_widgets"] };
@@ -473,6 +542,10 @@ export async function apply(
     log(`updated dashboard ${d.slug} (${dashId})`);
   } else dashboard = await client.getDashboard(dashId!);
   if (!dashboard) throw new Error(`dashboard ${dashId} not readable`);
+  if (options.requirePrivate && !dashboard.is_private) {
+    await client.updateDashboard(dashId!, { visualization_widgets: [], text_widgets: [] });
+    throw new Error(`dashboard ${d.slug} (${dashId}) is public; previews must be private. Its widgets were removed.`);
+  }
   if (dashboard.slug !== d.slug)
     log(`warning: Dune set the dashboard slug to "${dashboard.slug}" instead of "${d.slug}"`);
   next.dashboard = {
@@ -516,6 +589,9 @@ export type DeployOptions = {
   log?: (line: string) => void;
   // Persists state after apply, also when apply fails partway.
   save?: (state: State) => Promise<void>;
+  // Previews: production resources (and anything else) that must never be written or referenced.
+  guards?: Guard[];
+  requirePrivate?: boolean;
 };
 
 export async function runDeploy(config: Config, state: State, client: DuneClient, options: DeployOptions = {}) {
@@ -525,7 +601,7 @@ export async function runDeploy(config: Config, state: State, client: DuneClient
   // Protected dashboards: collect their IDs so they are never managed, and fingerprint them to
   // check the deploy left them unchanged.
   const before = new Map<string, ProtectedRecord>();
-  const protectedIds: ProtectedIds = { dashboards: new Set(), queries: new Set(), visualizations: new Set() };
+  const guards: Guard[] = [...(options.guards ?? [])];
   for (const ref of config.project.protectedDashboards) {
     const snap = await snapshotProtected(client, ref);
     if (!snap)
@@ -534,13 +610,14 @@ export async function runDeploy(config: Config, state: State, client: DuneClient
           "fix or remove it in dune/project.yaml",
       );
     before.set(ref, snap);
-    protectedIds.dashboards.add(snap.dashboard_id);
-    for (const id of snap.query_ids) protectedIds.queries.add(id);
-    for (const id of snap.visualization_ids) protectedIds.visualizations.add(id);
+    guards.push({
+      label: `the protected dashboard ${ref}`,
+      ids: { dashboards: new Set([snap.dashboard_id]), queries: new Set(snap.query_ids), visualizations: new Set(snap.visualization_ids) },
+    });
     log(`protected ${ref}: dashboard ${snap.dashboard_id}, ${snap.query_ids.length} queries, ${snap.visualization_ids.length} visualizations`);
   }
 
-  const planned = await plan(config, state, client, { force: options.force, protectedIds });
+  const planned = await plan(config, state, client, { force: options.force, guards });
   log(`\n${formatPlan(planned)}\n`);
   if (planned.conflicts.length || options.dryRun) {
     if (client.writes.length) throw new Error(`planning made writes: ${client.writes.join(", ")}`);
@@ -549,7 +626,8 @@ export async function runDeploy(config: Config, state: State, client: DuneClient
 
   const next: State = structuredClone(state);
   try {
-    if (planned.steps.some((s) => s.action !== "noop")) await apply(config, next, client, planned, log);
+    if (planned.steps.some((s) => s.action !== "noop"))
+      await apply(config, next, client, planned, { log, requirePrivate: options.requirePrivate, guards });
     else log("Nothing to deploy.");
   } finally {
     // Record protected dashboard IDs; keep the old record (and timestamp) when nothing changed.

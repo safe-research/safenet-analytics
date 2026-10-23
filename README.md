@@ -2,12 +2,14 @@
 
 Safenet production analytics on Dune, managed from GitHub. The dashboard is [dune.com/safe/safenet](https://dune.com/safe/safenet), owned by the `safe` team.
 
-This repository holds the SQL, chart settings, dashboard text and layout, and the IDs of the Dune resources they map to. Merging to `main` deploys them. A separate daily job refreshes the data. The Beta dashboard, [dune.com/safe/safenet-beta](https://dune.com/safe/safenet-beta), is not managed here, and deploys check that it stays unchanged.
+This repository holds the SQL, chart settings, dashboard text and layout, and the IDs of the Dune resources they map to. Every pull request is first deployed to a private preview dashboard ([docs/preview.md](docs/preview.md)). Merging to `main` deploys to production. A separate daily job refreshes the data. The Beta dashboard, [dune.com/safe/safenet-beta](https://dune.com/safe/safenet-beta), is not managed here, and deploys check that it stays unchanged.
 
 ```
 dune/
   project.yaml                Dune team, managed tag, protected dashboards
   dashboard.yaml              dashboard name, slug, text and layout
+  preview.yaml                preview track and cost caps
+  data/participants.json      participant labels (npm run sync:participants)
   text/*.md                   dashboard text
   queries/<key>/query.sql     query SQL
   queries/<key>/query.yaml    query metadata, refresh schedule, charts
@@ -22,13 +24,18 @@ docs/                         documentation
 
 | Metric | Query | Definition |
 | --- | --- | --- |
-| Transaction checks per day: requests, completed checks, attestations | `transaction_checks_daily` | [docs/metrics/transaction-checks.md](docs/metrics/transaction-checks.md) |
+| Transaction checks per day: requests, completed checks, attestations; all-time request counter | `transaction_checks_daily` | [docs/metrics/transaction-checks.md](docs/metrics/transaction-checks.md) |
+| Latest requests with explorer links | `latest_requests` | [docs/metrics/transaction-checks.md](docs/metrics/transaction-checks.md#latest-requests) |
+| Decoded production events (shared, not displayed) | `safenet_events` | [docs/decoding.md](docs/decoding.md) |
+| Participant labels (shared, not displayed) | `safenet_participant_labels` | [src/participants.ts](src/participants.ts) |
 
 ## Documentation
 
 - [Setup](docs/setup.md): Dune API key, GitHub secret, first deployment
 - [Adding a metric](docs/adding-a-metric.md)
-- [Deployment](docs/deployment.md): workflows, dry run, conflict detection, `--force`
+- [Previews](docs/preview.md): private preview per pull request, tracks, review, cleanup
+- [Deployment](docs/deployment.md): workflows, dry run, conflict detection, `--force`, query references
+- [Event decoding](docs/decoding.md): raw-log decoding and replacing it with decoded tables
 - [Refreshes](docs/refreshes.md): daily execution and on-chain verification
 - [Restoring a previous configuration](docs/restoring.md)
 - [Dune API notes](docs/dune-api.md): supported operations and their limits
@@ -43,4 +50,6 @@ npm run plan                       # dry run against Dune (needs DUNE_API_KEY)
 npm run deploy                     # deploy (normally done by CI)
 npm run refresh                    # execute daily queries
 npm run verify:transaction-checks  # recompute the first metric from Gnosis Chain logs
+npm run sync:participants          # refresh participant labels from safe-fndn/safenet-data
+npm run dune -- deploy --preview --sha <sha>   # preview deploy (normally done by CI)
 ```

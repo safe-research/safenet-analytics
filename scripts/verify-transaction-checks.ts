@@ -2,7 +2,13 @@
 // checks the lifecycle invariants the SQL relies on, and (with DUNE_API_KEY) compares the result
 // with the latest Dune result of the deployed query.
 //
-//   node scripts/verify-transaction-checks.ts [--rpc URL] [--out verification/transaction_checks_daily.json]
+// The Dune result reports through_block, the highest block among the events it read. The recount
+// then covers exactly the same block range, so every day and column, the all-time counter and the
+// sum of the daily requests must match exactly. Results without through_block (deployed before
+// the counter was added) are compared on complete UTC days only.
+//
+//   node scripts/verify-transaction-checks.ts [--rpc URL] [--out FILE]
+//     [--query-id ID | --state dune/.preview/default.json]   compare a preview query instead
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
@@ -15,6 +21,8 @@ const { values: args } = parseArgs({
   options: {
     rpc: { type: "string", default: process.env.GNOSIS_RPC_URL || "https://rpc.gnosischain.com" },
     out: { type: "string", default: "verification/transaction_checks_daily.json" },
+    "query-id": { type: "string" },
+    state: { type: "string" },
   },
 });
 
@@ -78,7 +86,24 @@ const covered = (safeId: string) => (COVERED_SAFE_CHAINS as readonly number[]).i
 const order = (a: Log, b: Log) =>
   Number(a.blockNumber) - Number(b.blockNumber) || Number(a.logIndex) - Number(b.logIndex);
 
-const head = Number(await rpc<{ number: string }>("eth_getBlockByNumber", ["finalized", false]).then((b) => b.number));
+// The Dune result to compare with, read first so the recount can stop at its through_block.
+type DuneResult = Awaited<ReturnType<DuneClient["latestResults"]>>;
+const dune: { id: number; result: DuneResult } | { skipped: string } = await (async () => {
+  const key = process.env.DUNE_API_KEY;
+  const id = args["query-id"]
+    ? Number(args["query-id"])
+    : (await loadState(args.state)).queries.transaction_checks_daily?.id;
+  if (!key) return { skipped: "DUNE_API_KEY not set" };
+  if (!id) return { skipped: "query not deployed yet (no id in the state file)" };
+  return { id, result: await new DuneClient(key).latestResults(id) };
+})();
+const throughBlock =
+  "result" in dune && dune.result.rows.length && dune.result.rows[0].through_block != null
+    ? Math.max(...dune.result.rows.map((r) => Number(r.through_block)))
+    : undefined;
+
+const finalized = Number(await rpc<{ number: string }>("eth_getBlockByNumber", ["finalized", false]).then((b) => b.number));
+const head = throughBlock ?? finalized;
 const consensus = PRODUCTION.consensus.address;
 const oracle = PRODUCTION.sentinelOracle.address;
 const outcomeTopics = [
@@ -222,30 +247,44 @@ const summary = {
   issues,
 };
 
-// The Dune comparison only covers complete UTC days before the RPC snapshot.
-const comparison: { compared_days: number; mismatches: unknown[] } | { skipped: string } = await (async () => {
-  const key = process.env.DUNE_API_KEY;
-  const id = (await loadState()).queries.transaction_checks_daily?.id;
-  if (!key) return { skipped: "DUNE_API_KEY not set" };
-  if (!id) return { skipped: "query not deployed yet (no id in dune/state.json)" };
-  const result = await new DuneClient(key).latestResults(id);
+// With through_block, Dune and the recount cover the same blocks: everything must match. Without
+// it, only complete UTC days before both snapshots are compared.
+const comparison = (() => {
+  if (!("result" in dune)) return dune;
+  const { id, result } = dune;
+  const rows = new Map(result.rows.map((r) => [String(r.day).slice(0, 10), r]));
   const lastFullDay = day(Date.parse(summary.to_block_time) / 1000 - 86400);
-  const dune = new Map(result.rows.map((r) => [String(r.day).slice(0, 10), r]));
   const mismatches = [];
   let compared = 0;
-  for (const d of new Set([...dune.keys(), ...table.map((r) => r.day)])) {
-    // Skip days that were not complete when Dune ran the query.
-    if (d > lastFullDay || d >= String(result.execution_ended_at ?? "").slice(0, 10)) continue;
+  for (const d of [...new Set([...rows.keys(), ...table.map((r) => r.day)])].sort()) {
+    if (throughBlock === undefined && (d > lastFullDay || d >= String(result.execution_ended_at ?? "").slice(0, 10))) continue;
     compared++;
     const ours = table.find((r) => r.day === d);
-    const theirs = dune.get(d);
+    const theirs = rows.get(d);
     for (const c of COLUMNS) {
       const a = ours?.[c] ?? 0;
       const b = Number(theirs?.[c] ?? 0);
       if (a !== b) mismatches.push({ day: d, column: c, rpc: a, dune: b });
     }
   }
-  return { compared_days: compared, dune_query_id: id, dune_execution_ended_at: result.execution_ended_at, mismatches };
+  // The counter: requests_cumulative of the newest row, from the same execution as the chart.
+  let counter: Record<string, unknown> | undefined;
+  if (throughBlock !== undefined) {
+    const newest = [...rows.keys()].sort().at(-1);
+    const value = newest === undefined ? 0 : Number(rows.get(newest)!.requests_cumulative);
+    const daySum = result.rows.reduce((n, r) => n + Number(r.requests), 0);
+    counter = { value, sum_of_daily_requests: daySum, rpc_requests: totals.requests };
+    if (value !== daySum) mismatches.push({ column: "requests_cumulative", dune_counter: value, dune_sum_of_days: daySum });
+    if (value !== totals.requests) mismatches.push({ column: "requests_cumulative", dune_counter: value, rpc: totals.requests });
+  }
+  return {
+    dune_query_id: id,
+    dune_execution_ended_at: result.execution_ended_at,
+    block_range: throughBlock === undefined ? "complete UTC days" : `${PRODUCTION.consensus.deployBlock}..${throughBlock}`,
+    compared_days: compared,
+    counter,
+    mismatches,
+  };
 })();
 
 await mkdir(dirname(args.out!), { recursive: true });

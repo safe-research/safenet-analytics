@@ -1,0 +1,56 @@
+{
+  "source": "safe-fndn/safenet-data",
+  "ref": "88bf9d92301b43b350e96edc28c21f059dbad667",
+  "participants": [
+    {
+      "role": "sentinel",
+      "address": "0x101d59dbb8c5e70f45d52634f23800fca4fbe031",
+      "label": "OpenCover"
+    },
+    {
+      "role": "sentinel",
+      "address": "0x6d081448c04d9ef7cf8ecf54207b1931ecc25312",
+      "label": "Candide"
+    },
+    {
+      "role": "sentinel",
+      "address": "0xb28eb357bfa420c17bae3e6bfdb50094fb5babf2",
+      "label": "IntentGuard"
+    },
+    {
+      "role": "sentinel",
+      "address": "0xc84a0928632382e75c543acced101b9525027362",
+      "label": "BlockSec"
+    },
+    {
+      "role": "validator",
+      "address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "label": "Gnosis"
+    },
+    {
+      "role": "validator",
+      "address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "label": "Greenfield"
+    },
+    {
+      "role": "validator",
+      "address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "label": "RockawayX"
+    },
+    {
+      "role": "validator",
+      "address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "label": "Core Contributors"
+    },
+    {
+      "role": "validator",
+      "address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "label": "Blockchain Capital"
+    },
+    {
+      "role": "validator",
+      "address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "label": "Safe Labs"
+    }
+  ]
+}

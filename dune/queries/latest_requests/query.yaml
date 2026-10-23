@@ -1,0 +1,25 @@
+name: "Safenet: latest transaction-check requests"
+description: >
+  Safenet production (Aegis, Gnosis Chain): the 25 most recent transaction-check requests with
+  outcome and links to the block explorers and the Safenet explorer. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/transaction-checks.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Latest requests
+    type: table
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: proposed_at, title: Proposed (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: safe_chain, title: Safe chain, type: normal, alignContent: left, isHidden: false }
+        - { name: safe, title: Safe, type: normal, alignContent: left, isHidden: false }
+        - { name: safe_tx, title: Safe transaction, type: normal, alignContent: left, isHidden: false }
+        - { name: proposal_tx, title: Request tx, type: normal, alignContent: left, isHidden: false }
+        - { name: outcome, title: Outcome, type: normal, alignContent: left, isHidden: false }
+        - { name: outcome_tx, title: Outcome tx, type: normal, alignContent: left, isHidden: false }
+        - { name: attestation_tx, title: Attestation tx, type: normal, alignContent: left, isHidden: false }

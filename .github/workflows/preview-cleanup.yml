@@ -1,0 +1,69 @@
+name: Preview cleanup
+
+# Removes a preview track's Dune resources once its work is merged to main and verified in
+# production (docs/preview.md#cleanup). Manual only; a dry run is the default. Production and
+# protected (Beta) resources are never candidates, and the cleanup stops without changing
+# anything if any other query still reads a preview query.
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: Preview track (dune/preview.yaml), e.g. default or beta-replacement
+        type: string
+        default: default
+      dry_run:
+        description: Only list what would be removed
+        type: boolean
+        default: true
+
+concurrency:
+  group: dune-preview
+  cancel-in-progress: false
+
+permissions:
+  contents: write # removes the track from the dune-preview-state branch
+
+jobs:
+  cleanup:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: dune-preview
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      TRACK: ${{ inputs.track }}
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Load the track's preview state
+        run: |
+          if ! [[ "$TRACK" =~ ^[a-z0-9][a-z0-9-]{0,30}$ ]]; then echo "::error::invalid track $TRACK"; exit 1; fi
+          git fetch origin dune-preview-state
+          git worktree add "$RUNNER_TEMP/preview-state" origin/dune-preview-state
+          git -C "$RUNNER_TEMP/preview-state" switch -C dune-preview-state
+          if [ ! -f "$RUNNER_TEMP/preview-state/previews/$TRACK.json" ]; then
+            echo "::error::No preview state for track $TRACK on dune-preview-state."
+            exit 1
+          fi
+          mkdir -p dune/.preview
+          cp "$RUNNER_TEMP/preview-state/previews/$TRACK.json" "dune/.preview/$TRACK.json"
+      - name: Clean up
+        run: npm run dune -- cleanup-preview --track "$TRACK" ${{ inputs.dry_run && '--dry-run' || '' }}
+      - name: Clear the track's mappings and images
+        if: ${{ !inputs.dry_run }}
+        run: |
+          cd "$RUNNER_TEMP/preview-state"
+          git rm -rq --ignore-unmatch "previews/$TRACK.json" "screenshots/$TRACK"
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Clean up preview track $TRACK"
+          git push origin dune-preview-state

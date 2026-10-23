@@ -6,6 +6,8 @@ GitHub is the source of truth for the queries, charts, dashboard text and layout
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
+| **Preview** | pull requests from branches of this repository; manual | Deploys the pull request to its private preview dashboard and comments with the URL, images, reconciliation and the production dry run; see [preview.md](preview.md) |
+| **Preview cleanup** | manual | Removes a preview track's resources after its work is merged; see [preview.md](preview.md#cleanup) |
 | **Validate** | pull requests | Typecheck, tests, offline validation. With `DUNE_API_KEY`, also a dry-run plan against Dune, which fails on conflicting Dune edits. It also runs each changed query's SQL on Dune as an unsaved execution, which costs credits, and checks that the columns the charts use exist in the result. |
 | **Deploy** | push to `main` touching `dune/`, `src/` or dependencies; manual (optional *dry run*, *force*) | Deploys the current `main` (so queued runs see the previous run's `state.json`), then commits `dune/state.json` |
 | **Refresh** | daily 05:17 UTC; after a successful deploy; manual | Executes the queries, then checks the first metric against on-chain events |
@@ -53,6 +55,19 @@ A conflict means someone changed a managed resource in the Dune UI.
    - **Discard the Dune edit:** run *Deploy* manually with *force*, or `npm run deploy -- --force`.
 
 Resources deleted or archived in Dune also show up as conflicts. With *force*, they are created again with new IDs. For the dashboard this means a new dashboard; set its slug back in Dune if necessary.
+
+## Production deployment of a reviewed change
+
+1. The pull request's preview comment shows the **production plan**: the dry run of exactly what the merge will do. For example, `update` keeps an ID, `create` adds a resource, and `archive`/`delete` remove one. Check that no unexpected production resource is touched.
+2. Merge. *Deploy* applies the plan to the stable production IDs, and the dashboard URL stays the same. A conflicting Dune edit made since the last deploy stops it; see below.
+3. *Refresh* executes the production queries and runs the on-chain verification. Its summary is the production evidence.
+4. Clean up the preview track when its work is done ([preview.md](preview.md#cleanup)).
+
+To roll back, revert the merge ([restoring.md](restoring.md)).
+
+## Query references
+
+Queries refer to other managed queries as `{{query:<key>}}`. The deployer orders queries so referenced ones are written first, and renders each reference as `query_<id>` with the target's ID: production IDs in production, preview IDs in a preview. Fingerprints use the rendered SQL. A deploy also refuses SQL that names a guarded query directly as `query_<id>`, that is, a Beta query, or a production query in a preview.
 
 ## What is managed
 
