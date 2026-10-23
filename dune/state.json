@@ -1,7 +1,62 @@
 {
-  "dashboard": null,
-  "protected": {},
-  "queries": {},
+  "dashboard": {
+    "desired": "06477a51bc025618",
+    "id": 222526,
+    "remote": "52987976d8f176d0",
+    "url": "https://dune.com/safe/safenet"
+  },
+  "protected": {
+    "safe/safenet-beta": {
+      "checked_at": "2026-10-23T13:43:49.727Z",
+      "dashboard_id": 206254,
+      "fingerprint": "42cd9ab92977fa7b",
+      "query_ids": [
+        6766099,
+        6766101,
+        6766102,
+        6766104,
+        6766105,
+        6766182,
+        6939635,
+        6939866,
+        6939942,
+        8122056,
+        8204106
+      ],
+      "visualization_ids": [
+        10634367,
+        10634368,
+        10634369,
+        10634372,
+        10634373,
+        10634376,
+        10634377,
+        10634538,
+        10847140,
+        10847372,
+        10847380,
+        10847383,
+        10847486,
+        10847490,
+        12111148,
+        12196771
+      ]
+    }
+  },
+  "queries": {
+    "transaction_checks_daily": {
+      "desired": "4cd2ab88a7dd760c",
+      "id": 8996965,
+      "remote": "4cd2ab88a7dd760c"
+    }
+  },
   "version": 1,
-  "visualizations": {}
+  "visualizations": {
+    "transaction_checks_daily/daily_chart": {
+      "desired": "2a429492fed144f1",
+      "id": 13040455,
+      "query_id": 8996965,
+      "remote": "2a429492fed144f1"
+    }
+  }
 }
