@@ -1,0 +1,105 @@
+{
+  "dashboard": {
+    "desired": "be2b39a687dc3e9c",
+    "id": 222530,
+    "remote": "b2e360274138d71b",
+    "url": "https://dune.com/safe/safenet-preview"
+  },
+  "executions": {
+    "latest_requests": {
+      "credits": 0.416852942,
+      "ended_at": "2026-10-23T14:44:54.888034003Z",
+      "execution_id": "01M5MKHG25T2F9QF05F5Y7FHEQ",
+      "query_id": 8997288,
+      "sql": "a1bed17d5947d5b7"
+    },
+    "transaction_checks_daily": {
+      "credits": 0.4465,
+      "ended_at": "2026-10-23T14:45:06.363364091Z",
+      "execution_id": "01M5MKHTRT8Q7E4QHMG1HJ2PE5",
+      "query_id": 8997290,
+      "sql": "67e83a71f9ee62a1"
+    }
+  },
+  "protected": {
+    "safe/safenet-beta": {
+      "checked_at": "2026-10-23T14:44:30.789Z",
+      "dashboard_id": 206254,
+      "fingerprint": "42cd9ab92977fa7b",
+      "query_ids": [
+        6766099,
+        6766101,
+        6766102,
+        6766104,
+        6766105,
+        6766182,
+        6939635,
+        6939866,
+        6939942,
+        8122056,
+        8204106
+      ],
+      "visualization_ids": [
+        10634367,
+        10634368,
+        10634369,
+        10634372,
+        10634373,
+        10634376,
+        10634377,
+        10634538,
+        10847140,
+        10847372,
+        10847380,
+        10847383,
+        10847486,
+        10847490,
+        12111148,
+        12196771
+      ]
+    }
+  },
+  "queries": {
+    "latest_requests": {
+      "desired": "b7f477132ee2c6dd",
+      "id": 8997288,
+      "remote": "b7f477132ee2c6dd"
+    },
+    "safenet_events": {
+      "desired": "237b8dd7b1972199",
+      "id": 8997287,
+      "remote": "237b8dd7b1972199"
+    },
+    "safenet_participant_labels": {
+      "desired": "5e81f1081225e09e",
+      "id": 8997289,
+      "remote": "5e81f1081225e09e"
+    },
+    "transaction_checks_daily": {
+      "desired": "0803dfbb68c4d67c",
+      "id": 8997290,
+      "remote": "0803dfbb68c4d67c"
+    }
+  },
+  "version": 1,
+  "visualizations": {
+    "latest_requests/table": {
+      "desired": "4f0be11047d1bf59",
+      "id": 13040796,
+      "query_id": 8997288,
+      "remote": "4f0be11047d1bf59"
+    },
+    "transaction_checks_daily/daily_chart": {
+      "desired": "2a429492fed144f1",
+      "id": 13040797,
+      "query_id": 8997290,
+      "remote": "2a429492fed144f1"
+    },
+    "transaction_checks_daily/total_requests": {
+      "desired": "9c9049028f8638b6",
+      "id": 13040798,
+      "query_id": 8997290,
+      "remote": "9c9049028f8638b6"
+    }
+  }
+}
