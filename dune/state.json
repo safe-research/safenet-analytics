@@ -1,8 +1,8 @@
 {
   "dashboard": {
-    "desired": "06477a51bc025618",
+    "desired": "8e73e0deec6914b4",
     "id": 222526,
-    "remote": "52987976d8f176d0",
+    "remote": "2930a28c9baa540e",
     "url": "https://dune.com/safe/safenet"
   },
   "protected": {
@@ -44,19 +44,46 @@
     }
   },
   "queries": {
+    "latest_requests": {
+      "desired": "9b8d0913092f7486",
+      "id": 8997312,
+      "remote": "9b8d0913092f7486"
+    },
+    "safenet_events": {
+      "desired": "85340eaacffd962e",
+      "id": 8997311,
+      "remote": "85340eaacffd962e"
+    },
+    "safenet_participant_labels": {
+      "desired": "cf68bd8bfa9b0284",
+      "id": 8997313,
+      "remote": "cf68bd8bfa9b0284"
+    },
     "transaction_checks_daily": {
-      "desired": "4cd2ab88a7dd760c",
+      "desired": "be947e81c3e9bcc3",
       "id": 8996965,
-      "remote": "4cd2ab88a7dd760c"
+      "remote": "be947e81c3e9bcc3"
     }
   },
   "version": 1,
   "visualizations": {
+    "latest_requests/table": {
+      "desired": "4f0be11047d1bf59",
+      "id": 13040824,
+      "query_id": 8997312,
+      "remote": "4f0be11047d1bf59"
+    },
     "transaction_checks_daily/daily_chart": {
       "desired": "2a429492fed144f1",
       "id": 13040455,
       "query_id": 8996965,
       "remote": "2a429492fed144f1"
+    },
+    "transaction_checks_daily/total_requests": {
+      "desired": "9c9049028f8638b6",
+      "id": 13040825,
+      "query_id": 8996965,
+      "remote": "9c9049028f8638b6"
     }
   }
 }
