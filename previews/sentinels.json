@@ -1,11 +1,138 @@
 {
   "dashboard": {
-    "desired": "b387bfd1159e39fa",
+    "desired": "3d48614f37db9c1f",
     "id": 222586,
-    "remote": "e83c5d4024ce0c55",
+    "remote": "ecf82b10591bed3d",
     "url": "https://dune.com/safe/safenet-preview-sentinels"
   },
-  "executions": {},
+  "executions": {
+    "fee_allocation": {
+      "credits": 1.294264706,
+      "ended_at": "2026-10-26T12:01:07.116155012Z",
+      "execution_id": "01M5W1BQ02MZN7Q9YGMRKWQNEJ",
+      "query_id": 9013289,
+      "sql": "d90f161f6fc91ba0"
+    },
+    "fee_config": {
+      "credits": 0.165205883,
+      "ended_at": "2026-10-26T12:01:14.024608103Z",
+      "execution_id": "01M5W1C1JZTXS20KTKGMGZ9VK1",
+      "query_id": 9013290,
+      "sql": "76cfe393b52d9eaa"
+    },
+    "fee_revenue_daily": {
+      "credits": 1.378970589,
+      "ended_at": "2026-10-26T12:01:21.060145506Z",
+      "execution_id": "01M5W1C6Z4CHSFK13GJ1QEZNKC",
+      "query_id": 9013291,
+      "sql": "8d4401efa217e213"
+    },
+    "guard_adoption": {
+      "credits": 2.014264706,
+      "ended_at": "2026-10-26T12:01:33.121396566Z",
+      "execution_id": "01M5W1CCBPXZK85DPZMY24XN1E",
+      "query_id": 9013294,
+      "sql": "f812cf862aba4b42"
+    },
+    "latest_requests": {
+      "credits": 0.6805,
+      "ended_at": "2026-10-26T12:01:45.290435331Z",
+      "execution_id": "01M5W1CQ0994MRF0AQJMVY40F4",
+      "query_id": 9013295,
+      "sql": "4a8977c4bbe11060"
+    },
+    "network_breakdown": {
+      "credits": 1.105131579,
+      "ended_at": "2026-10-26T12:01:55.355886962Z",
+      "execution_id": "01M5W1D6QWNPDS66N1B9MWKZPW",
+      "query_id": 9013296,
+      "sql": "d7a51534ce48b525"
+    },
+    "network_summary": {
+      "credits": 0.653676471,
+      "ended_at": "2026-10-26T12:02:20.613899107Z",
+      "execution_id": "01M5W1DHB305AHFDDH29NFCG8G",
+      "query_id": 9013297,
+      "sql": "bc779a9a77490cc1"
+    },
+    "results_daily": {
+      "credits": 0.540970589,
+      "ended_at": "2026-10-26T12:02:30.003092169Z",
+      "execution_id": "01M5W1E67C1AWJZWJTWCW35PB7",
+      "query_id": 9013298,
+      "sql": "60e0d70f1684148c"
+    },
+    "sentinel_bonds": {
+      "credits": 1.386029412,
+      "ended_at": "2026-10-26T12:03:02.112981716Z",
+      "execution_id": "01M5W1EGT9BVYF68GG2GS13NMG",
+      "query_id": 9013305,
+      "sql": "a06417d0566e5c15"
+    },
+    "sentinel_coverage": {
+      "credits": 0.891911765,
+      "ended_at": "2026-10-26T12:03:22.165226502Z",
+      "execution_id": "01M5W1FG1WK8RAGMYM60PT8GRC",
+      "query_id": 9013306,
+      "sql": "588a83e2aa6c60c6"
+    },
+    "sentinel_disputes": {
+      "credits": 0.501794118,
+      "ended_at": "2026-10-26T12:03:31.786389106Z",
+      "execution_id": "01M5W1G4YRXECSS30GGJBZR381",
+      "query_id": 9013307,
+      "sql": "cf59e59e68391b11"
+    },
+    "sentinel_earnings": {
+      "credits": 0.927205883,
+      "ended_at": "2026-10-26T12:03:45.265143058Z",
+      "execution_id": "01M5W1GFH9CZE0MB0TWVSM5G3X",
+      "query_id": 9013308,
+      "sql": "6c1c7205cc1341a6"
+    },
+    "sentinel_earnings_daily": {
+      "credits": 0.46132353,
+      "ended_at": "2026-10-26T12:03:51.147342416Z",
+      "execution_id": "01M5W1GT3CT4JTH7JA5MKVHQ8W",
+      "query_id": 9013309,
+      "sql": "d3885708611f9d40"
+    },
+    "sentinel_overview": {
+      "credits": 0.65932353,
+      "ended_at": "2026-10-26T12:03:59.760297948Z",
+      "execution_id": "01M5W1GZGJN3HDBZ04QZ8DCY43",
+      "query_id": 9013310,
+      "sql": "b07b6d4f1d573445"
+    },
+    "sentinel_participation_daily": {
+      "credits": 0.521205883,
+      "ended_at": "2026-10-26T12:04:08.102512743Z",
+      "execution_id": "01M5W1HA3P44NMC4QFAA2WX7X2",
+      "query_id": 9013311,
+      "sql": "8deb672ff5d3cee1"
+    },
+    "sentinel_verdicts": {
+      "credits": 0.4765,
+      "ended_at": "2026-10-26T12:04:14.482130103Z",
+      "execution_id": "01M5W1HFH0FJ6EHJFANT3TQRCG",
+      "query_id": 9013312,
+      "sql": "5ce3fa9141513c21"
+    },
+    "sentinel_windows": {
+      "credits": 0.449911765,
+      "ended_at": "2026-10-26T12:04:18.845584971Z",
+      "execution_id": "01M5W1HMYAJZRC1D1AZXCQQ2FW",
+      "query_id": 9013313,
+      "sql": "00741d202ed564fe"
+    },
+    "transaction_checks_daily": {
+      "credits": 0.612264706,
+      "ended_at": "2026-10-26T12:04:23.639319041Z",
+      "execution_id": "01M5W1HTCC0317Q51NKJBETVQV",
+      "query_id": 9013314,
+      "sql": "708eb4ae14292fec"
+    }
+  },
   "protected": {
     "safe/safenet-beta": {
       "checked_at": "2026-10-26T11:43:24.963Z",
@@ -46,9 +173,9 @@
   },
   "queries": {
     "fee_allocation": {
-      "desired": "96e6f442ac280dea",
+      "desired": "d77f85c4626199c6",
       "id": 9013289,
-      "remote": "96e6f442ac280dea"
+      "remote": "d77f85c4626199c6"
     },
     "fee_config": {
       "desired": "5923cee3476c841d",
@@ -91,9 +218,9 @@
       "remote": "df97b350cde493ea"
     },
     "safenet_fee_flows": {
-      "desired": "650303ffdfb7a569",
+      "desired": "a0b49ea3270b94fa",
       "id": 9013285,
-      "remote": "650303ffdfb7a569"
+      "remote": "a0b49ea3270b94fa"
     },
     "safenet_guard_status": {
       "desired": "c76a36542bf44f3a",
