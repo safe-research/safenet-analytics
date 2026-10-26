@@ -1,6 +1,6 @@
 # Event decoding
 
-The Safenet production contracts were not decoded on Dune when the first metric was built (2026-10-23). The metrics therefore read raw logs, and only four model queries do so. Every other query reads them through `{{query:...}}` references (`test/safenet.test.ts` enforces this). Replacing the decoding later changes only these models:
+The Safenet production contracts were not decoded on Dune when the first metric was built (2026-10-23). The metrics therefore read raw logs and traces, and only seven model queries do so. Every other query reads them through `{{query:...}}` references (`test/safenet.test.ts` enforces this). Replacing the decoding later changes only these models:
 
 | Model | Reads | Replace with |
 | --- | --- | --- |
@@ -8,6 +8,9 @@ The Safenet production contracts were not decoded on Dune when the first metric 
 | [`safenet_fee_flows`](../dune/queries/safenet_fee_flows/query.sql) | `gnosis.logs` USDC.e `Transfer` logs to and from the oracle | a decoded ERC-20 transfer table, with the same parity rule |
 | [`safenet_guards`](../dune/queries/safenet_guards/query.sql) | guard constructor events and creation traces on Ethereum, Gnosis Chain and Arbitrum One | decoded SafenetGuard tables, once a guard is deployed and decoded |
 | [`safenet_guard_status`](../dune/queries/safenet_guard_status/query.sql) | Safe `ChangedGuard` logs on the three networks | Dune's decoded Safe tables, which split this event by Safe version |
+| [`safenet_sentinel_failed_calls`](../dune/queries/safenet_sentinel_failed_calls/query.sql) | `gnosis.traces`: reverted SentinelOracle `commit` / `reveal` calls (selectors in `ORACLE_FUNCTIONS`), with the revert reason when it is an `Error(string)` | Dune's decoded call tables of the SentinelOracle (`*_call_commit`, `*_call_reveal` with `call_success = false`) |
+| [`safenet_sentinel_wallet_transfers`](../dune/queries/safenet_sentinel_wallet_transfers/query.sql) | `gnosis.logs` USDC.e `Transfer` logs of Sentinel accounts since 2026-10-07 | a decoded ERC-20 transfer table, with the same parity rule; `verify-sentinels` checks the result against `balanceOf` |
+| [`safenet_reward_events`](../dune/queries/safenet_reward_events/query.sql) | `ethereum.logs` of the SAFE rewards distributor (`Claimed`, `MerkelRootUpdated`) | Dune's decoded tables of the distributor (`CumulativeMerkleDrop`), once decoded |
 
 ## The decoding query
 
@@ -19,6 +22,7 @@ The Safenet production contracts were not decoded on Dune when the first metric 
 - `sentinel`, `vote_approved`, `bond_amount`, `fee_reward`, `slashed`, for votes, claims and dispute rulings
 - `fee`, `bond_target`, `dao_fee_share`, `slash_amount`, `commit_deadline`, `reveal_deadline`, on request rows
 - `active_at_block`, `config_data`, for governance events
+- `reason`: the recorded text of `Revealed.reason` (empty for approvals, Charter rule IDs for denials) and the arbitrator's context of `DisputeResolved` and `DisputeOutOfScope`, decoded from the ABI string; null when empty
 - `safe_url`, `tx_url`, `safe_tx_url`
 
 Amounts are USDC.e base units. They are decoded as the low 8 bytes of their word, so values must stay below 2^63. Real values are far below that, and the verification would catch a difference.
@@ -61,6 +65,7 @@ Three production contracts were submitted to Dune for decoding. The submissions 
 - FROSTCoordinator
 - Safenet 7702 Executor
 - Staking on Ethereum
+- SAFE rewards distributor (CumulativeMerkleDrop) on Ethereum
 
 Current status: **not yet checked against Dune in this repository.** The first `check-decoded` result in a pull request comment replaces this sentence. Until both Consensus and SentinelOracle are decoded with full history, raw logs stay.
 

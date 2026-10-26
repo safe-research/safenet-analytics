@@ -57,7 +57,8 @@ h1 { font-size: 16px; font-weight: 600; margin: 0 0 12px; }
 .note { color: var(--text-muted); font-size: 12px; margin-top: 12px; }
 .hero { font-size: 56px; font-weight: 600; line-height: 1.1; }
 .label { color: var(--text-secondary); }
-.legend { display: flex; gap: 16px; color: var(--text-secondary); margin-bottom: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--text-secondary); margin-bottom: 8px; }
+.legend > span { white-space: nowrap; }
 .key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 th { text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--grid); padding: 4px 8px; }
@@ -175,9 +176,11 @@ ${table}`,
 
 // A results table as on the dashboard. Missing values (null) read "not available"; links show
 // their text, marked with ↗.
-export function tableHtml(title: string, rows: Row[], cols: [string, string][], footer: string, width = 1400) {
-  const cell = (v: unknown) => {
+export type Col = [string, string] | [string, string, "pct"];
+export function tableHtml(title: string, rows: Row[], cols: Col[], footer: string, width = 1400) {
+  const cell = (v: unknown, format?: "pct") => {
     if (v === null || v === undefined) return '<span class="label">not available</span>';
+    if (format === "pct") return `${(num(v) * 100).toFixed(1)}%`;
     if (typeof v === "number") return Number.isInteger(v) ? fmt(v) : v.toLocaleString("en-US", { maximumFractionDigits: 6 });
     return linkText(v);
   };
@@ -187,11 +190,123 @@ export function tableHtml(title: string, rows: Row[], cols: [string, string][], 
     width,
     rows.length
       ? `<table><thead><tr>${cols.map(([c, t]) => `<th${numeric(c) ? ' class="n"' : ""}>${esc(t)}</th>`).join("")}</tr></thead><tbody>
-${rows.map((r) => `<tr>${cols.map(([c]) => `<td${numeric(c) ? ' class="n"' : ""}>${cell(r[c])}</td>`).join("")}</tr>`).join("\n")}
+${rows.map((r) => `<tr>${cols.map(([c, , f]) => `<td${numeric(c) ? ' class="n"' : ""}>${cell(r[c], f)}</td>`).join("")}</tr>`).join("\n")}
 </tbody></table>`
       : `<div class="label">No data.</div>`,
     footer,
   );
+}
+
+// Sentinel response kinds (docs/metrics/sentinels.md#verdicts). Stack order keeps green and red apart.
+export const RESPONSE_SERIES: Series[] = [
+  { column: "secure", name: "Secure", color: "#0ca30c" },
+  { column: "missing", name: "Missing response (committed, not revealed)", color: "#6f6e69" },
+  { column: "insecure", name: "Insecure", color: "#d03b3b" },
+  { column: "reverted_commit", name: "Commit reverted (late or invalid)", color: "#eda100" },
+  { column: "no_commit", name: "No commit (abstain or offline)", color: "#b5b3ab" },
+];
+
+// Categorical colours in fixed order (blue, orange, aqua, yellow, magenta, green), assigned to
+// Sentinels by sorted name over every Sentinel (the overview), so each keeps one colour in every image.
+const CATEGORICAL = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"];
+export const sentinelSeries = (names: string[]): Series[] =>
+  [...new Set(names)].sort().map((name, i) => ({ column: name, name, color: CATEGORICAL[i % CATEGORICAL.length] }));
+
+// Long labels (unlabelled Sentinel addresses) are shortened in plots; tables show them in full.
+const short = (v: unknown) => {
+  const t = String(v ?? "");
+  return /^0x[0-9a-f]{40}$/i.test(t) ? `${t.slice(0, 6)}…${t.slice(-4)}` : t;
+};
+
+// Horizontal stacked bars, one per row, with the numbers as a table below.
+export function hbarHtml(title: string, rows: Row[], label: string, series: readonly Series[], footer: string, labelTitle = "") {
+  const W = 900;
+  const rowH = 28;
+  const left = 190;
+  const right = 50;
+  const total = (r: Row) => series.reduce((s, x) => s + num(r[x.column]), 0);
+  const max = Math.max(1e-9, ...rows.map(total));
+  const x = (v: number) => ((W - left - right) * v) / max;
+  const H = rows.length * rowH + 24;
+  const marks = rows.flatMap((r, i) => {
+    let base = 0;
+    const nonzero = series.filter((s) => num(r[s.column]) > 0);
+    const y = 4 + i * rowH;
+    const bars = nonzero.map((s, j) => {
+      const v = num(r[s.column]);
+      // 2px surface gap between segments; the end of the last segment is rounded.
+      const x0 = left + x(base) + (j > 0 ? 1 : 0);
+      const w = Math.max(1, x(v) - (j > 0 ? 1 : 0) - (j < nonzero.length - 1 ? 1 : 0));
+      base += v;
+      const last = j === nonzero.length - 1;
+      return `<rect x="${x0}" y="${y}" width="${w}" height="${rowH - 10}" rx="${last ? 4 : 0}" fill="${s.color}"><title>${esc(r[label])} ${esc(s.name)}: ${fmt(v)}</title></rect>`;
+    });
+    return [
+      `<text x="${left - 8}" y="${y + rowH / 2}" text-anchor="end">${esc(short(r[label]))}</text>`,
+      ...bars,
+      `<text x="${left + x(total(r)) + 6}" y="${y + rowH / 2}">${fmt(total(r))}</text>`,
+    ];
+  });
+  const table = `<table><thead><tr><th>${esc(labelTitle)}</th>${series.map((s) => `<th class="n">${esc(s.name)}</th>`).join("")}</tr></thead><tbody>
+${rows.map((r) => `<tr><td>${esc(r[label])}</td>${series.map((s) => `<td class="n">${fmt(num(r[s.column]))}</td>`).join("")}</tr>`).join("\n")}
+</tbody></table>`;
+  return page(
+    title,
+    W + 48,
+    rows.every((r) => total(r) === 0)
+      ? `<div class="label">No data in range.</div>`
+      : `${series.length > 1 ? `<div class="legend">${series.map((s) => `<span><span class="key" style="background:${s.color}"></span>${esc(s.name)}</span>`).join("")}</div>` : ""}
+<svg width="${W}" height="${H}" role="img" aria-label="${esc(title)}">${marks.join("")}</svg>
+${table}`,
+    footer,
+  );
+}
+
+// Sequential blue ramp (light = low participation), for the heatmap.
+const RAMP = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"];
+const rampColor = (pct: number) => RAMP[Math.min(RAMP.length - 1, Math.floor((pct / 100) * RAMP.length))];
+
+// Sentinel x day heatmap of participation_pct. Days without eligible requests stay blank.
+export function heatmapHtml(rows: Row[], footer: string) {
+  // Every calendar day in range, so days without requests show as blank columns.
+  const seen = [...new Set(rows.map((r) => String(r.day).slice(0, 10)))].sort();
+  const days: string[] = [];
+  for (let t = Date.parse(`${seen[0]}T00:00:00Z`); seen.length && t <= Date.parse(`${seen.at(-1)}T00:00:00Z`); t += 86_400_000)
+    days.push(new Date(t).toISOString().slice(0, 10));
+  const sentinels = [...new Set(rows.map((r) => String(r.sentinel)))].sort();
+  const at = new Map(rows.map((r) => [`${r.sentinel}|${String(r.day).slice(0, 10)}`, r]));
+  const cell = (s: string, d: string) => {
+    const r = at.get(`${s}|${d}`);
+    if (!r) return `<td class="hm blank" title="${esc(s)} ${d}: not eligible"></td>`;
+    const pct = num(r.participation_pct);
+    const dark = pct >= 50;
+    return `<td class="hm" style="background:${rampColor(pct)};color:${dark ? "#fcfcfb" : "#0b0b0b"}" title="${esc(s)} ${d}: ${pct}% of ${fmt(num(r.eligible_requests))} eligible">${Math.round(pct)}</td>`;
+  };
+  const legend = `<div class="legend">${RAMP.map((c, i) => `<span><span class="key" style="background:${c}"></span>${Math.round((i * 100) / RAMP.length)}–${Math.round(((i + 1) * 100) / RAMP.length)}%</span>`).join("")}<span><span class="key" style="background:var(--surface-1);outline:1px solid var(--grid)"></span>not eligible</span></div>`;
+  return page(
+    "Participation per day, % of eligible requests (last 30 days)",
+    Math.max(760, 300 + 48 * days.length),
+    rows.length
+      ? `<style>td.hm { width: 34px; text-align: center; padding: 6px 0; border: 2px solid var(--surface-1); font-size: 12px; } td.blank { background: var(--surface-1); } th { white-space: nowrap; }</style>
+${legend}
+<table><thead><tr><th>Sentinel</th>${days.map((d) => `<th class="n">${esc(d.slice(5))}</th>`).join("")}</tr></thead><tbody>
+${sentinels.map((s) => `<tr><td>${esc(short(s))}</td>${days.map((d) => cell(s, d)).join("")}</tr>`).join("\n")}
+</tbody></table>`
+      : `<div class="label">No eligible requests in range.</div>`,
+    footer,
+  );
+}
+
+// Rows of (day, sentinel, value) as one row per day with a column per Sentinel.
+export function pivotByDay(rows: Row[], key: string, value: string): Row[] {
+  const out = new Map<string, Row>();
+  for (const r of rows) {
+    const d = String(r.day).slice(0, 10);
+    const row = out.get(d) ?? { day: d };
+    row[String(r[key])] = num(row[String(r[key])]) + num(r[value]);
+    out.set(d, row);
+  }
+  return [...out.values()];
 }
 
 export const dailyHtml = (rows: Row[], footer: string) =>
@@ -234,7 +349,7 @@ function screenshot(bin: string, html: string, png: string, width: number, heigh
   );
 }
 
-const TABLES: Record<string, { title: string; cols: [string, string][] }> = {
+const TABLES: Record<string, { title: string; cols: Col[] }> = {
   network_summary: {
     title: "Activity and fees by time window",
     cols: [
@@ -286,6 +401,85 @@ const TABLES: Record<string, { title: string; cols: [string, string][] }> = {
       ["note", "Note"],
     ],
   },
+  sentinel_overview: {
+    title: "Sentinel overview (status now; counts all time)",
+    cols: [
+      ["name", "Sentinel"],
+      ["current_status", "Status (now)"],
+      ["eligible_requests", "Eligible"],
+      ["commits", "Commits"],
+      ["valid_reveals", "Valid reveals"],
+      ["participation_rate", "Participation", "pct"],
+      ["secure", "Secure"],
+      ["insecure", "Insecure"],
+      ["no_commit", "No commit"],
+      ["reverted_commit", "Commit reverted"],
+      ["missing_responses", "Missing"],
+      ["pending", "Pending"],
+      ["reverted_calls", "Reverted calls"],
+      ["last_revert_reason", "Last revert reason"],
+      ["last_activity", "Last activity (UTC)"],
+    ],
+  },
+  sentinel_windows: {
+    title: "Participation by time window",
+    cols: [
+      ["name", "Sentinel"],
+      ["rate_24h", "Rate 24h", "pct"],
+      ["eligible_24h", "Eligible 24h"],
+      ["rate_7d", "Rate 7d", "pct"],
+      ["eligible_7d", "Eligible 7d"],
+      ["rate_30d", "Rate 30d", "pct"],
+      ["eligible_30d", "Eligible 30d"],
+      ["rate_all", "Rate all time", "pct"],
+      ["eligible_all", "Eligible all time"],
+    ],
+  },
+  sentinel_disputes: {
+    title: "Disputes and arbitration",
+    cols: [
+      ["dispute_tx", "Disputed (UTC)"],
+      ["safe_chain", "Safe chain"],
+      ["safe_tx", "Safe transaction"],
+      ["sentinel_votes", "Sentinel votes (recorded reason)"],
+      ["oracle_result", "Oracle result"],
+      ["arbitration_status", "Arbitration"],
+      ["ruling", "Ruling"],
+      ["arbitrator_context", "Arbitrator's recorded context"],
+      ["slashed_usdc", "Slashed (USDC.e)"],
+      ["attested", "Attested"],
+    ],
+  },
+  sentinel_earnings: {
+    title: "Sentinel earnings (USDC.e fees and SAFE subsidies, never added together)",
+    cols: [
+      ["name", "Sentinel"],
+      ["fee_accrued_usdc", "Fees accrued (USDC.e)"],
+      ["fee_claimed_usdc", "Fees claimed (USDC.e)"],
+      ["fee_outstanding_usdc", "Fees outstanding (USDC.e)"],
+      ["fee_accrued_30d_usdc", "Fees accrued 30d (USDC.e)"],
+      ["safe_published", "SAFE published"],
+      ["safe_claimed", "SAFE claimed"],
+      ["safe_claimable", "SAFE claimable"],
+    ],
+  },
+  sentinel_bonds: {
+    title: "Sentinel bonds (USDC.e; available and locked now, movements all time)",
+    cols: [
+      ["name", "Sentinel"],
+      ["current_status", "Status (now)"],
+      ["available_usdc", "Available now"],
+      ["locked_usdc", "Locked now"],
+      ["unclaimed_commitments", "Unclaimed commitments"],
+      ["posted_usdc", "Posted"],
+      ["returned_usdc", "Returned"],
+      ["slashed_confirmed_usdc", "Slashed (claimed)"],
+      ["slashed_unclaimed_usdc", "Slashed (not yet claimed)"],
+      ["slashed_missing_response_usdc", "of which missing response"],
+      ["slashed_dispute_lost_usdc", "of which lost dispute"],
+      ["slash_rule_mismatches", "Check (expected 0)"],
+    ],
+  },
   fee_config: {
     title: "Fee terms and changes",
     cols: [
@@ -319,7 +513,17 @@ async function main() {
     const state = await loadState(args.state);
     const dune = new DuneClient(key);
     const ended: string[] = [];
-    for (const q of ["transaction_checks_daily", "latest_requests", "results_daily", "fee_revenue_daily", ...Object.keys(TABLES)]) {
+    for (const q of [
+      "transaction_checks_daily",
+      "latest_requests",
+      "results_daily",
+      "fee_revenue_daily",
+      "sentinel_participation_daily",
+      "sentinel_verdicts",
+      "sentinel_coverage",
+      "sentinel_earnings_daily",
+      ...Object.keys(TABLES),
+    ]) {
       const id = state.queries[q]?.id;
       if (!id) continue;
       const r = await dune.latestResults(id, 200);
@@ -357,6 +561,54 @@ async function main() {
     ]);
   for (const [q, t] of Object.entries(TABLES))
     if (results[q]) pages.push([q, tableHtml(t.title, results[q], t.cols, footer), 1448, rowsHeight(results[q].length)]);
+  if (results.sentinel_participation_daily) {
+    const n = new Set(results.sentinel_participation_daily.map((r) => r.sentinel)).size;
+    pages.push(["sentinel_heatmap", heatmapHtml(results.sentinel_participation_daily, footer), 1448, 220 + 34 * n]);
+  }
+  if (results.sentinel_verdicts) {
+    const rows = results.sentinel_verdicts.map((r) => ({
+      sentinel: r.sentinel,
+      secure: r.secure_30d,
+      missing: r.missing_30d,
+      insecure: r.insecure_30d,
+      reverted_commit: r.reverted_commit_30d,
+      no_commit: r.no_commit_30d,
+    }));
+    pages.push([
+      "sentinel_verdicts",
+      hbarHtml("Sentinel responses by kind (requests proposed in the last 30 days)", rows, "sentinel", RESPONSE_SERIES, footer, "Sentinel"),
+      996,
+      260 + 64 * rows.length,
+    ]);
+  }
+  if (results.sentinel_coverage) {
+    const rows = results.sentinel_coverage;
+    pages.push([
+      "sentinel_coverage",
+      hbarHtml(
+        `Requests by number of valid Sentinel responses (last 30 days; ${fmt(num(rows[0]?.pending_requests))} still in their response window)`,
+        rows,
+        "bucket",
+        [{ column: "requests_30d", name: "Requests", color: "#2a78d6" }],
+        footer,
+        "Valid responses",
+      ),
+      996,
+      220 + 64 * rows.length,
+    ]);
+  }
+  if (results.sentinel_earnings_daily) {
+    const shown = new Set(results.sentinel_earnings_daily.map((r) => String(r.sentinel)));
+    const all = [...(results.sentinel_overview ?? []).map((r) => String(r.name)), ...shown];
+    const series = sentinelSeries(all).filter((x) => shown.has(x.name));
+    const rows = pivotByDay(results.sentinel_earnings_daily, "sentinel", "fee_reward_usdc");
+    pages.push([
+      "sentinel_earnings_daily",
+      columnChartHtml("Fee rewards accrued per day by Sentinel (USDC.e, last 30 days)", rows, series, footer, { stacked: true, unit: "USDC.e", decimals: 2 }),
+      996,
+      440 + 30 * rows.length,
+    ]);
+  }
   if (results.latest_requests) pages.push(["latest", latestHtml(results.latest_requests, footer), 1448, rowsHeight(results.latest_requests.length)]);
   const bin = chrome();
   for (const [name, html, width, height] of pages) {

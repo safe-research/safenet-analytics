@@ -1,0 +1,32 @@
+name: "Safenet: disputes and arbitration"
+description: >
+  Safenet production (Aegis): every disputed request with each Sentinel's vote and recorded reason,
+  the Oracle result, the arbitration status, the ruling and the arbitrator's recorded context.
+  Managed in github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Disputes and arbitration
+    type: table
+    description: >
+      Sentinel votes, the Oracle result and the arbitrator's ruling are separate. A ruling is not the
+      Sentinels' consensus, and disputed requests are never attested. Reasons and context are shown
+      as recorded on chain. No rows: no dispute so far.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: dispute_tx, title: Disputed (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: safe_chain, title: Safe chain, type: normal, alignContent: left, isHidden: false }
+        - { name: safe_tx, title: Safe transaction, type: normal, alignContent: left, isHidden: false }
+        - { name: sentinel_votes, title: "Sentinel votes (recorded reason)", type: normal, alignContent: left, isHidden: false }
+        - { name: oracle_result, title: Oracle result, type: normal, alignContent: left, isHidden: false }
+        - { name: arbitration_status, title: Arbitration, type: normal, alignContent: left, isHidden: false }
+        - { name: ruling, title: Ruling, type: normal, alignContent: left, isHidden: false }
+        - { name: arbitrator_context, title: Arbitrator's recorded context, type: normal, alignContent: left, isHidden: false }
+        - { name: ruling_tx, title: Ruling tx (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: slashed_usdc, title: Slashed (USDC.e), type: normal, alignContent: right, isHidden: false }
+        - { name: attested, title: Attested, type: normal, alignContent: left, isHidden: false }

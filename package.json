@@ -17,7 +17,9 @@
     "typecheck": "tsc --noEmit",
     "sync:participants": "node scripts/sync-participants.ts",
     "sync:known-traffic": "node src/known-traffic.ts",
-    "verify:network-revenue": "node scripts/verify-network-revenue.ts"
+    "verify:network-revenue": "node scripts/verify-network-revenue.ts",
+    "sync:sentinel-rewards": "node scripts/sync-sentinel-rewards.ts",
+    "verify:sentinels": "node scripts/verify-sentinels.ts"
   },
   "dependencies": {
     "yaml": "^2.9.1"

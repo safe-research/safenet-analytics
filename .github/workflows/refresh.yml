@@ -57,6 +57,10 @@ jobs:
       - name: Check network and revenue against on-chain events
         if: ${{ always() && !inputs.query }}
         run: npm run verify:network-revenue -- --out verification/network_revenue.local.json
+      # Recounts the Sentinels section and checks balances, slashes and SAFE rewards.
+      - name: Check Sentinels against on-chain events
+        if: ${{ always() && !inputs.query }}
+        run: npm run verify:sentinels -- --out verification/sentinels.local.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

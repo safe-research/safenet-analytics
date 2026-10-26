@@ -101,6 +101,16 @@ export const EVENTS = {
     signature: "Transfer(address,address,uint256)",
     topic0: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
   },
+  // SAFE rewards distributor on Ethereum (CumulativeMerkleDrop, REWARDS_DISTRIBUTOR below). The
+  // misspelling "Merkel" is the contract's own.
+  RewardsClaimed: {
+    signature: "Claimed(address,uint256)",
+    topic0: "0xd8138f8a3f377c5259ca548e70e4c2de94f129f5a11036a15b69513cba2b426a",
+  },
+  MerkelRootUpdated: {
+    signature: "MerkelRootUpdated(bytes32,bytes32)",
+    topic0: "0x936fd71fceff3b4f98f4935ac269e4f94b4b25e3e38c519d3ff3db222a27117a",
+  },
   // Safe GuardManager. 1.3.0 logs the guard in data, 1.4.1 and later as topic1; topic0 is the same.
   ChangedGuard: {
     signature: "ChangedGuard(address)",
@@ -120,6 +130,28 @@ export const PROTOCOL_FUNDS_RECEIVER = "0x9d02bed59170cde96782ea9a9b17f9bcf49161
 export const ARBITRATOR = "0xc89ae48382edc81287acef0881e88deacad58348";
 export const DAO_FEE_SHARE_DENOMINATOR = 100_000;
 
+// Sentinel Oracle calls (SentinelOracle.sol at 4ed5101). A late or invalid commit or reveal reverts
+// without an event; safenet_sentinel_failed_calls finds these reverted calls in the traces.
+export const ORACLE_FUNCTIONS = {
+  commit: { signature: "commit(bytes32,bytes32)", selector: "0xe3ce094d" },
+  reveal: { signature: "reveal(bytes32,bool,bytes32,string)", selector: "0x386a15bc" },
+} as const;
+
+// Sentinel membership (SentinelMap.sol): a scheduled Sentinel may commit from activeAtBlock, which
+// is the scheduling block plus this delay; SentinelRemoved takes effect at once.
+export const SENTINEL_GOVERNANCE_DELAY_BLOCKS = 51_840;
+
+// Safe Foundation's SAFE rewards distributor on Ethereum ("Safenet Aegis Rewards",
+// CumulativeMerkleDrop, verified on Etherscan and Sourcify). Rewards, Sentinel subsidies included,
+// are published as Merkle proofs in safe-fndn/safenet-data assets/rewards (src/sentinel-rewards.ts).
+export const REWARDS_DISTRIBUTOR = {
+  chain: "ethereum",
+  address: "0xe5139fc0fb8eae81e30d8a85c22e88c6757120f2",
+  deployBlock: 24749707,
+  deployDate: "2026-03-27",
+} as const;
+export const SAFE_TOKEN = { symbol: "SAFE", address: "0x5afe3855358e112b5647b952709e6165e1c1eeee", decimals: 18 } as const;
+
 // EIP-712 domain separator of the production Consensus: keccak256(abi.encode(
 // keccak256("EIP712Domain(uint256 chainId,address verifyingContract)"), 100, Consensus)).
 // Equals Consensus.domainSeparator() on chain. A SafenetGuard bound to production stores it.
@@ -137,4 +169,5 @@ export const DECODING_CANDIDATES = [
   { name: "FROSTCoordinator", chain: "gnosis", address: "0xc6b34da4c99c043a093214d58423a8be39585b78" },
   { name: "Safenet7702Executor", chain: "gnosis", address: "0x4dfe88adf2d7c3fbd2e334ce820b9adfa541215c" },
   { name: "Staking", chain: "ethereum", address: "0x115e78f160e1e3ef163b05c84562fa16fa338509" },
+  { name: "CumulativeMerkleDrop (SAFE rewards)", chain: "ethereum", address: REWARDS_DISTRIBUTOR.address },
 ] as const;

@@ -12,8 +12,18 @@ test("normalizes addresses, drops invalid entries and falls back to the address"
     { label: "No address" },
   ]);
   assert.deepEqual(out, [
-    { role: "validator", address: "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde", label: "Gnosis" },
-    { role: "validator", address: "0xf6ea21d702983c443f58a267265912fe03d2ff0b", label: "0xf6ea21d702983c443f58a267265912fe03d2ff0b" },
+    {
+      role: "validator",
+      address: "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      source_address: "0x3D58a5475c1336b0A755c3aBd298CeB9b7BB9CDe",
+      label: "Gnosis",
+    },
+    {
+      role: "validator",
+      address: "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      source_address: "0xF6EA21D702983c443f58A267265912FE03D2FF0b",
+      label: "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+    },
   ]);
 });
 
@@ -34,7 +44,14 @@ test("labels are escaped in SQL", () => {
   const sql = participantLabelsSql({
     source: "x/y",
     ref: "0".repeat(40),
-    participants: [{ role: "sentinel", address: "0x0000000000000000000000000000000000000001", label: "O'Brien" }],
+    participants: [
+      {
+        role: "sentinel",
+        address: "0x0000000000000000000000000000000000000001",
+        source_address: "0x0000000000000000000000000000000000000001",
+        label: "O'Brien",
+      },
+    ],
   });
   assert.ok(sql.includes("'O''Brien'"));
 });

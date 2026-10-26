@@ -1,0 +1,48 @@
+name: "Safenet: Sentinel overview"
+description: >
+  Safenet production (Aegis): every Sentinel ever scheduled, its current membership status and its
+  all-time participation: eligible requests, commits, valid reveals, participation rate, secure,
+  insecure, no-commit and missing responses, reverted calls and last activity. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Sentinel overview (current status; counts all time)
+    type: table
+    description: >
+      Status is current. Counts are all time, for requests on the Charter's chains whose response
+      window has closed. Participation rate = valid reveals / eligible requests. No commit =
+      abstained or offline (indistinguishable on chain); commit reverted = tried to commit, but every
+      attempt reverted (late or invalid, reason as recorded); missing response = committed, never
+      revealed. Reverted calls counts every reverted commit or reveal call.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: sentinel_link, title: Sentinel, type: normal, alignContent: left, isHidden: false }
+        - { name: current_status, title: Status (now), type: normal, alignContent: left, isHidden: false }
+        - { name: eligible_requests, title: Eligible requests, type: normal, alignContent: right, isHidden: false }
+        - { name: commits, title: Commits, type: normal, alignContent: right, isHidden: false }
+        - { name: valid_reveals, title: Valid reveals, type: normal, alignContent: right, isHidden: false }
+        - { name: participation_rate, title: Participation, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: secure, title: Secure, type: normal, alignContent: right, isHidden: false }
+        - { name: insecure, title: Insecure, type: normal, alignContent: right, isHidden: false }
+        - { name: no_commit, title: "No commit (abstain or offline)", type: normal, alignContent: right, isHidden: false }
+        - { name: reverted_commit, title: "Commit reverted (late or invalid)", type: normal, alignContent: right, isHidden: false }
+        - { name: missing_responses, title: "Missing response (committed, not revealed)", type: normal, alignContent: right, isHidden: false }
+        - { name: pending, title: Pending, type: normal, alignContent: right, isHidden: false }
+        - { name: reverted_calls, title: "Reverted calls (late or invalid)", type: normal, alignContent: right, isHidden: false }
+        - { name: last_revert_reason, title: Last revert reason, type: normal, alignContent: left, isHidden: false }
+        - { name: last_activity, title: Last activity (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: address, title: Address, type: normal, alignContent: left, isHidden: true }
+  freshness:
+    name: Sentinels data as of
+    type: table
+    options:
+      itemsPerPage: 1
+      columns:
+        - { name: as_of_time, title: Gnosis Chain data as of (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: computed_at, title: Computed (UTC), type: normal, alignContent: left, isHidden: false }

@@ -5,7 +5,7 @@ import { keccak_256 } from "@noble/hashes/sha3.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { DEFAULT_ROOT } from "../src/config.ts";
 import { LINK_SQL } from "../src/links.ts";
-import { EVENTS, PRODUCTION } from "../src/safenet.ts";
+import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, PRODUCTION, REWARDS_DISTRIBUTOR } from "../src/safenet.ts";
 
 const read = (key: string) => readFile(`${DEFAULT_ROOT}/queries/${key}/query.sql`, "utf8");
 // All raw-log decoding is in safenet_events.
@@ -46,7 +46,15 @@ test("the metric SQL does not read Beta, testnet or shared coordinator contracts
 });
 
 // Raw logs are read only by the decoding models; everything else reads the models by reference.
-const RAW_LOG_MODELS = ["safenet_events", "safenet_fee_flows", "safenet_guards", "safenet_guard_status"];
+const RAW_LOG_MODELS = [
+  "safenet_events",
+  "safenet_fee_flows",
+  "safenet_guards",
+  "safenet_guard_status",
+  "safenet_sentinel_failed_calls",
+  "safenet_sentinel_wallet_transfers",
+  "safenet_reward_events",
+];
 
 test("only the decoding models read raw logs; other queries read them by reference", async () => {
   const { readdir } = await import("node:fs/promises");
@@ -56,10 +64,59 @@ test("only the decoding models read raw logs; other queries read them by referen
     const raw = /\b(gnosis|ethereum|arbitrum)\.(logs|traces)\b/.test(q);
     assert.equal(raw, RAW_LOG_MODELS.includes(key), `${key} ${raw ? "reads" : "does not read"} raw logs`);
   }
-  for (const key of ["transaction_checks_daily", "safenet_requests", "safenet_fee_flows"])
+  for (const key of [
+    "transaction_checks_daily",
+    "safenet_requests",
+    "safenet_fee_flows",
+    "safenet_sentinel_terms",
+    "safenet_sentinel_responses",
+    "safenet_sentinel_wallet_transfers",
+  ])
     assert.ok((await read(key)).includes("{{query:safenet_events}}"), `${key} does not read safenet_events`);
 });
 
 test("safenet_events builds links with the expressions from src/links.ts", () => {
   for (const [column, expression] of Object.entries(LINK_SQL)) assert.ok(sql.includes(`${expression} as ${column}`), column);
+});
+
+const hash = (s: string) => `0x${bytesToHex(keccak_256(new TextEncoder().encode(s)))}`;
+
+test("Sentinel Oracle call selectors match their signatures", () => {
+  for (const [name, f] of Object.entries(ORACLE_FUNCTIONS)) assert.equal(hash(f.signature).slice(0, 10), f.selector, name);
+});
+
+test("the Sentinel decoding queries use the production contracts, events and selectors", async () => {
+  const failed = await read("safenet_sentinel_failed_calls");
+  assert.ok(failed.includes(PRODUCTION.sentinelOracle.address));
+  for (const f of Object.values(ORACLE_FUNCTIONS)) assert.ok(failed.includes(f.selector), f.signature);
+  assert.ok(/\bnot success\b/.test(failed), "only reverted calls");
+
+  const wallet = await read("safenet_sentinel_wallet_transfers");
+  assert.ok(wallet.includes(FEE_TOKEN.address) && wallet.includes(EVENTS.Transfer.topic0));
+
+  const rewards = await read("safenet_reward_events");
+  assert.ok(rewards.includes(REWARDS_DISTRIBUTOR.address));
+  assert.ok(rewards.includes(String(REWARDS_DISTRIBUTOR.deployBlock)) && rewards.includes(REWARDS_DISTRIBUTOR.deployDate));
+  for (const name of ["RewardsClaimed", "MerkelRootUpdated"] as const) assert.ok(rewards.includes(EVENTS[name].topic0), name);
+
+  for (const name of ["Committed", "Revealed", "Claimed", "SentinelScheduled", "SentinelRemoved"] as const)
+    assert.ok(sql.includes(EVENTS[name].topic0), `${name} topic0 missing from safenet_events`);
+});
+
+test("Sentinel panel queries read the shared models, not their own decoding", async () => {
+  for (const key of [
+    "sentinel_overview",
+    "sentinel_windows",
+    "sentinel_participation_daily",
+    "sentinel_verdicts",
+    "sentinel_coverage",
+    "sentinel_disputes",
+    "sentinel_earnings",
+    "sentinel_earnings_daily",
+    "sentinel_bonds",
+  ]) {
+    const q = await read(key);
+    assert.ok(/\{\{query:safenet_sentinel_(responses|terms)\}\}/.test(q), `${key} does not read the Sentinel models`);
+    assert.ok(q.includes("through_block"), `${key} has no through_block for the verification`);
+  }
 });

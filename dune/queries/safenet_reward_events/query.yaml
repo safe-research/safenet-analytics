@@ -1,0 +1,10 @@
+name: "Safenet: SAFE rewards distributor events (Ethereum)"
+description: >
+  Claims and Merkle root updates of the Safe Foundation SAFE rewards distributor on Ethereum (Safenet Aegis Rewards, 0xe5139Fc0…20f2), decoded from raw logs. Temporary until Dune decodes the contract (docs/decoding.md).
+  Read by the Sentinel queries; not shown on the dashboard. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+# Executed as part of the queries that read it, so it needs no schedule of its own.
+refresh: none
+performance: medium

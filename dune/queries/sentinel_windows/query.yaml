@@ -1,0 +1,33 @@
+name: "Safenet: Sentinel participation by time window"
+description: >
+  Safenet production (Aegis): each Sentinel's participation rate (valid reveals / eligible
+  requests with a closed response window) for requests proposed in the last 24 hours, 7 days,
+  30 days and all time. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Participation by time window
+    type: table
+    description: >
+      Requests proposed in each window on the Charter's chains that the Sentinel was eligible for,
+      response window closed. An empty rate means no eligible request in that window, not 0%.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: sentinel_link, title: Sentinel, type: normal, alignContent: left, isHidden: false }
+        - { name: rate_24h, title: Rate 24h, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: eligible_24h, title: Eligible 24h, type: normal, alignContent: right, isHidden: false }
+        - { name: rate_7d, title: Rate 7d, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: eligible_7d, title: Eligible 7d, type: normal, alignContent: right, isHidden: false }
+        - { name: rate_30d, title: Rate 30d, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: eligible_30d, title: Eligible 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: no_commit_30d, title: No commit 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: reverted_commit_30d, title: Commit reverted 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: missing_30d, title: Missing 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: rate_all, title: Rate all time, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: eligible_all, title: Eligible all time, type: normal, alignContent: right, isHidden: false }
