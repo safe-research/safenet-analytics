@@ -1,8 +1,8 @@
 {
   "dashboard": {
-    "desired": "8e73e0deec6914b4",
+    "desired": "f1a4109fc2c3307e",
     "id": 222526,
-    "remote": "2930a28c9baa540e",
+    "remote": "cd5bbbe8759f4784",
     "url": "https://dune.com/safe/safenet"
   },
   "protected": {
@@ -44,40 +44,196 @@
     }
   },
   "queries": {
+    "fee_allocation": {
+      "desired": "131eff2e83e40982",
+      "id": 9012049,
+      "remote": "131eff2e83e40982"
+    },
+    "fee_config": {
+      "desired": "7b07f4c57b762994",
+      "id": 9012050,
+      "remote": "7b07f4c57b762994"
+    },
+    "fee_revenue_daily": {
+      "desired": "b7de0c9b2ae8e987",
+      "id": 9012051,
+      "remote": "b7de0c9b2ae8e987"
+    },
+    "guard_adoption": {
+      "desired": "17e2f46dc03fc0ea",
+      "id": 9012054,
+      "remote": "17e2f46dc03fc0ea"
+    },
     "latest_requests": {
-      "desired": "9b8d0913092f7486",
+      "desired": "d4bca3d223fe833c",
       "id": 8997312,
-      "remote": "9b8d0913092f7486"
+      "remote": "d4bca3d223fe833c"
+    },
+    "network_breakdown": {
+      "desired": "8f2099e65115452e",
+      "id": 9012055,
+      "remote": "8f2099e65115452e"
+    },
+    "network_summary": {
+      "desired": "dc70c62068b53c43",
+      "id": 9012056,
+      "remote": "dc70c62068b53c43"
+    },
+    "results_daily": {
+      "desired": "1f75ac695a7c9b82",
+      "id": 9012057,
+      "remote": "1f75ac695a7c9b82"
     },
     "safenet_events": {
-      "desired": "85340eaacffd962e",
+      "desired": "000859167f1a38e8",
       "id": 8997311,
-      "remote": "85340eaacffd962e"
+      "remote": "000859167f1a38e8"
+    },
+    "safenet_fee_flows": {
+      "desired": "cae23819efb91fd2",
+      "id": 9012046,
+      "remote": "cae23819efb91fd2"
+    },
+    "safenet_guard_status": {
+      "desired": "19edab2f8da0461a",
+      "id": 9012053,
+      "remote": "19edab2f8da0461a"
+    },
+    "safenet_guards": {
+      "desired": "aa08fe9a5b906f8a",
+      "id": 9012052,
+      "remote": "aa08fe9a5b906f8a"
+    },
+    "safenet_known_traffic": {
+      "desired": "b6027a748d4df99d",
+      "id": 9012047,
+      "remote": "b6027a748d4df99d"
     },
     "safenet_participant_labels": {
       "desired": "cf68bd8bfa9b0284",
       "id": 8997313,
       "remote": "cf68bd8bfa9b0284"
     },
+    "safenet_requests": {
+      "desired": "7b4b88b4ca64bac6",
+      "id": 9012048,
+      "remote": "7b4b88b4ca64bac6"
+    },
     "transaction_checks_daily": {
-      "desired": "be947e81c3e9bcc3",
+      "desired": "0be2f79aa6137f37",
       "id": 8996965,
-      "remote": "be947e81c3e9bcc3"
+      "remote": "0be2f79aa6137f37"
     }
   },
   "version": 1,
   "visualizations": {
+    "fee_allocation/table": {
+      "desired": "6f61cc0119a2c5ee",
+      "id": 13056261,
+      "query_id": 9012049,
+      "remote": "6f61cc0119a2c5ee"
+    },
+    "fee_config/table": {
+      "desired": "e4cde42d1cad3254",
+      "id": 13056262,
+      "query_id": 9012050,
+      "remote": "e4cde42d1cad3254"
+    },
+    "fee_revenue_daily/cumulative": {
+      "desired": "2eca8d9080a5e279",
+      "id": 13056264,
+      "query_id": 9012051,
+      "remote": "2eca8d9080a5e279"
+    },
+    "fee_revenue_daily/daily": {
+      "desired": "823008fcde1b6f5b",
+      "id": 13056263,
+      "query_id": 9012051,
+      "remote": "823008fcde1b6f5b"
+    },
+    "guard_adoption/counter": {
+      "desired": "461394a3ff7c98d5",
+      "id": 13056265,
+      "query_id": 9012054,
+      "remote": "461394a3ff7c98d5"
+    },
+    "guard_adoption/table": {
+      "desired": "266236f0d32219d3",
+      "id": 13056266,
+      "query_id": 9012054,
+      "remote": "266236f0d32219d3"
+    },
     "latest_requests/table": {
-      "desired": "4f0be11047d1bf59",
+      "desired": "2880e93d5b9fb932",
       "id": 13040824,
       "query_id": 8997312,
-      "remote": "4f0be11047d1bf59"
+      "remote": "2880e93d5b9fb932"
+    },
+    "network_breakdown/bars": {
+      "desired": "e8957e0c54bdb652",
+      "id": 13056267,
+      "query_id": 9012055,
+      "remote": "e8957e0c54bdb652"
+    },
+    "network_breakdown/table": {
+      "desired": "cf42ef63dc1ec214",
+      "id": 13056268,
+      "query_id": 9012055,
+      "remote": "cf42ef63dc1ec214"
+    },
+    "network_summary/attestations": {
+      "desired": "84150bcffd6a550e",
+      "id": 13056272,
+      "query_id": 9012056,
+      "remote": "84150bcffd6a550e"
+    },
+    "network_summary/completed_results": {
+      "desired": "aa4210981a1d684f",
+      "id": 13056271,
+      "query_id": 9012056,
+      "remote": "aa4210981a1d684f"
+    },
+    "network_summary/freshness": {
+      "desired": "a243dfd7a4b5eb5a",
+      "id": 13056270,
+      "query_id": 9012056,
+      "remote": "a243dfd7a4b5eb5a"
+    },
+    "network_summary/gross_fees": {
+      "desired": "596e6e81c18b31ba",
+      "id": 13056274,
+      "query_id": 9012056,
+      "remote": "596e6e81c18b31ba"
+    },
+    "network_summary/safes_checked": {
+      "desired": "ec1a20b097987e9c",
+      "id": 13056273,
+      "query_id": 9012056,
+      "remote": "ec1a20b097987e9c"
+    },
+    "network_summary/windows": {
+      "desired": "93d60484c56f9a72",
+      "id": 13056269,
+      "query_id": 9012056,
+      "remote": "93d60484c56f9a72"
+    },
+    "results_daily/stacked": {
+      "desired": "fa6303680c0a59f5",
+      "id": 13056275,
+      "query_id": 9012057,
+      "remote": "fa6303680c0a59f5"
+    },
+    "results_daily/table": {
+      "desired": "b254125915b43c62",
+      "id": 13056276,
+      "query_id": 9012057,
+      "remote": "b254125915b43c62"
     },
     "transaction_checks_daily/daily_chart": {
-      "desired": "2a429492fed144f1",
+      "desired": "6a5c3b7ef243d5ee",
       "id": 13040455,
       "query_id": 8996965,
-      "remote": "2a429492fed144f1"
+      "remote": "6a5c3b7ef243d5ee"
     },
     "transaction_checks_daily/total_requests": {
       "desired": "9c9049028f8638b6",
