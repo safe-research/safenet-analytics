@@ -33,21 +33,23 @@ transfers as (
         and block_date >= date '2026-10-07'
 ),
 
-events as (
-    select * from {{query:safenet_events}}
-    where event in ('request', 'committed', 'claimed', 'approved', 'denied', 'no_verdict')
-),
-
--- Counterparties expected in each transaction.
+-- Counterparties expected in each transaction, from one read of safenet_events (Dune inlines a
+-- CTE each time it is used): the sponsor of a request (fee_in), a committing Sentinel (bond_in), a
+-- claiming Sentinel (claim_out), and the sponsor of a request ending without a verdict or after an
+-- arbitrated dispute (refund_out).
 expected as (
-    select distinct tx_hash, 'fee_in' as flow, sponsor as counterparty from events where event = 'request'
-    union all
-    select distinct tx_hash, 'bond_in', sentinel from events where event = 'committed'
-    union all
-    select distinct tx_hash, 'claim_out', sentinel from events where event = 'claimed'
-    union all
-    select distinct tx_hash, 'refund_out', sponsor from events
-    where event = 'no_verdict' or source_event = 'DisputeResolved'
+    select distinct
+        tx_hash,
+        case event
+            when 'request' then 'fee_in'
+            when 'committed' then 'bond_in'
+            when 'claimed' then 'claim_out'
+            else 'refund_out'
+        end as flow,
+        if(event in ('committed', 'claimed'), sentinel, sponsor) as counterparty
+    from {{query:safenet_events}}
+    where event in ('request', 'committed', 'claimed', 'no_verdict')
+        or (event in ('approved', 'denied') and source_event = 'DisputeResolved')
 )
 
 select
