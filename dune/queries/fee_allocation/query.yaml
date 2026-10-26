@@ -1,0 +1,26 @@
+name: "Safenet: fee allocation (USDC.e)"
+description: >
+  Safenet production (Aegis), all time: gross transaction fees collected and where they went
+  (Sentinel rewards accrued, paid and outstanding; refunds; protocol funds receiver; fees held),
+  bonds kept separate, and reconciliation checks against USDC.e transfers. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/network-and-revenue.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Fee allocation (USDC.e, all time)
+    type: table
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: section, title: Section, type: normal, alignContent: left, isHidden: false }
+        - { name: item, title: Item, type: normal, alignContent: left, isHidden: false }
+        - { name: recipient, title: Recipient, type: normal, alignContent: left, isHidden: false }
+        - { name: accrued_usdc, title: Accrued (USDC.e), type: normal, alignContent: right, isHidden: false }
+        - { name: paid_usdc, title: Paid (USDC.e), type: normal, alignContent: right, isHidden: false }
+        - { name: outstanding_usdc, title: Outstanding (USDC.e), type: normal, alignContent: right, isHidden: false }
+        - { name: note, title: Note, type: normal, alignContent: left, isHidden: false }
+        - { name: sort_order, title: Order, type: normal, alignContent: right, isHidden: true }

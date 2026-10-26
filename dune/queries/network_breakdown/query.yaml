@@ -1,0 +1,42 @@
+name: "Safenet: activity by Safe network"
+description: >
+  Safenet production (Aegis), all time: requests, completed results, attestations and unique Safes
+  by the network of the checked Safe (not the Gnosis Chain contracts' network). Networks outside the
+  Charter are marked as test traffic. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/network-and-revenue.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  bars:
+    name: Requests and completed results by Safe network (all time)
+    type: chart
+    options:
+      globalSeriesType: column
+      swappedAxes: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Safe network } }
+      yAxis:
+        - title: { text: Count }
+      columnMapping:
+        network: x
+        requests: y
+        completed_results: y
+      seriesOptions:
+        requests: { type: column, yAxis: 0, zIndex: 0, name: Requests, color: "#2a78d6" }
+        completed_results: { type: column, yAxis: 0, zIndex: 1, name: Completed results, color: "#eb6834" }
+  table:
+    name: Activity by Safe network (all time)
+    type: table
+    options:
+      itemsPerPage: 10
+      columns:
+        - { name: network, title: Safe network, type: normal, alignContent: left, isHidden: false }
+        - { name: requests, title: Requests, type: normal, alignContent: right, isHidden: false }
+        - { name: completed_results, title: Completed results, type: normal, alignContent: right, isHidden: false }
+        - { name: attestations, title: Attestations, type: normal, alignContent: right, isHidden: false }
+        - { name: safes_with_requests, title: Safes with requests, type: normal, alignContent: right, isHidden: false }
+        - { name: safes_with_completed_checks, title: Safes with completed checks, type: normal, alignContent: right, isHidden: false }
+        - { name: unique_safe_transactions, title: Unique Safe transactions, type: normal, alignContent: right, isHidden: false }

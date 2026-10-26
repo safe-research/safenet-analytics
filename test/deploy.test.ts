@@ -275,12 +275,11 @@ describe("refresh", () => {
       pollMs: 0,
       log: quiet,
     });
+    const daily = selectQueries(config, { schedule: "daily" }).map((q) => q.key);
+    assert.ok(daily.includes("transaction_checks_daily") && !daily.includes("safenet_events"));
     assert.deepEqual(
       results.map((r) => [r.key, r.status.state]),
-      [
-        ["latest_requests", "QUERY_STATE_COMPLETED"],
-        ["transaction_checks_daily", "QUERY_STATE_COMPLETED"],
-      ],
+      daily.map((k) => [k, "QUERY_STATE_COMPLETED"]),
     );
     assert.ok(fake.requests.includes(`POST /api/v1/query/${state.queries.transaction_checks_daily.id}/execute`));
   });

@@ -1,0 +1,26 @@
+name: "Safenet: Sentinel Oracle fee terms"
+description: >
+  Safenet production (Aegis): request fee, bond, DAO fee share and slash amount as charged per
+  request, and any scheduled changes, from Sentinel Oracle events. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/network-and-revenue.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Fee terms and changes
+    type: table
+    options:
+      itemsPerPage: 10
+      columns:
+        - { name: kind, title: Kind, type: normal, alignContent: left, isHidden: false }
+        - { name: fee_usdc, title: Fee per request (USDC.e), type: normal, alignContent: right, isHidden: false }
+        - { name: bond_per_vote_usdc, title: Bond per vote (USDC.e), type: normal, alignContent: right, isHidden: false }
+        - { name: dao_fee_share_percent, title: DAO fee share (%), type: normal, alignContent: right, isHidden: false }
+        - { name: slash_usdc, title: Slash (USDC.e), type: normal, alignContent: right, isHidden: false }
+        - { name: requests, title: Requests, type: normal, alignContent: right, isHidden: false }
+        - { name: first_seen, title: First (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: last_seen, title: Last (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: change, title: Change, type: normal, alignContent: left, isHidden: false }

@@ -20,6 +20,7 @@ visualizations:
         - { name: safe, title: Safe, type: normal, alignContent: left, isHidden: false }
         - { name: safe_tx, title: Safe transaction, type: normal, alignContent: left, isHidden: false }
         - { name: proposal_tx, title: Request tx, type: normal, alignContent: left, isHidden: false }
-        - { name: outcome, title: Outcome, type: normal, alignContent: left, isHidden: false }
+        - { name: outcome, title: Status, type: normal, alignContent: left, isHidden: false }
         - { name: outcome_tx, title: Outcome tx, type: normal, alignContent: left, isHidden: false }
         - { name: attestation_tx, title: Attestation tx, type: normal, alignContent: left, isHidden: false }
+        - { name: fee_usdc, title: Fee (USDC.e), type: normal, alignContent: right, isHidden: false }

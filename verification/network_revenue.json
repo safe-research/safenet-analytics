@@ -1,0 +1,169 @@
+{
+  "generated_at": "2026-10-26T06:12:49.269Z",
+  "rpc": "rpc.gnosischain.com",
+  "finalized_block": 48947889,
+  "requests": 263,
+  "statuses": {
+    "no_verdict": 7,
+    "insecure_unanimous": 52,
+    "secure_unanimous": 195,
+    "disputed": 9
+  },
+  "fees_usdc": {
+    "fees": 105.2,
+    "fee_in": 105.2,
+    "bond_in": 369600,
+    "claim_out": 364898.399976,
+    "refund_out": 6,
+    "receiver_out": 0.000025,
+    "unclassified": 0,
+    "refunds_from_fee": 2.8,
+    "refunds_from_slashes": 3.2,
+    "rewards_accrued": 101.999975,
+    "rewards_claimed": 101.599976,
+    "receiver": 0.000025,
+    "fee_held": 0.4,
+    "bonds_locked": 369600,
+    "bonds_returned": 364796.8,
+    "bonds_slashed": 3.2,
+    "balance": 4800.799999
+  },
+  "fee_checks": {
+    "fees_recorded_minus_received": 0,
+    "unclassified_transfers": 0,
+    "claims_events_minus_transfers": 0,
+    "refunds_accrued_minus_paid": 0,
+    "receiver_accrued_minus_paid": 0,
+    "balance_on_chain_minus_transfers": 0,
+    "balance_minus_obligations": 0
+  },
+  "issues": [],
+  "dune": {
+    "skipped": "DUNE_API_KEY not set"
+  },
+  "representative": [
+    {
+      "path": "approved and attested",
+      "status": {
+        "status": "secure_unanimous",
+        "ruling": null,
+        "completed": true
+      },
+      "safe": "1:0x22c5946b288d7caaa054f0561c4bc4807ee323b3",
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0x279312db9af0dd2959822ef97eac5a917f83c555eb0de4c0bf48534cbba58ef7",
+      "proposal_tx": "https://gnosisscan.io/tx/0x354aeeb9077063edd212c202b38308a6c47c85b8c240ec33166b9c07d369fee7",
+      "outcome_tx": "https://gnosisscan.io/tx/0x0c5cbfaf1da0d145bc88a93aeb8ae6f23d2b78b808cbc52806ce6821d80d2108",
+      "attestation_tx": "https://gnosisscan.io/tx/0x2661265885aaab02ac92e468d7293552d3951d0aa0a79e5b98d29b9cdcbfe0d2",
+      "votes": [
+        "0xc84a0928632382e75c543acced101b9525027362: approve"
+      ],
+      "fee_usdc": 0.4
+    },
+    {
+      "path": "approved, not attested",
+      "status": {
+        "status": "secure_unanimous",
+        "ruling": null,
+        "completed": true
+      },
+      "safe": "1:0x2483957284284ec722d497f65d20610ea264dccc",
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0x85a3a29daf900cd795f5bf416f61ada810643d426869d09759e2244d010e54ee",
+      "proposal_tx": "https://gnosisscan.io/tx/0x014bfbf31fb10f340de8f6e2fa9440d4363c7fb8aa95acc0061aa797a07c5f62",
+      "outcome_tx": "https://gnosisscan.io/tx/0x4e0769934d7569f7ba52c86a49c65a88239f630dcc60e7570f6e35e9faa0db8c",
+      "attestation_tx": null,
+      "votes": [
+        "0xc84a0928632382e75c543acced101b9525027362: approve",
+        "0x6d081448c04d9ef7cf8ecf54207b1931ecc25312: approve"
+      ],
+      "fee_usdc": 0.4
+    },
+    {
+      "path": "denied",
+      "status": {
+        "status": "insecure_unanimous",
+        "ruling": null,
+        "completed": true
+      },
+      "safe": "1:0xce6541c872a8b50fb7b285de52ad0d189ba89dcc",
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0xac8ceeb9a1e59de9435beee575a0d74c08de7d2c108abf20c8a56fd904c7a015",
+      "proposal_tx": "https://gnosisscan.io/tx/0xbdba66eebb9764e999a93cf0dc31aa09ddce0d7e7f82d7f671231b931b94acaa",
+      "outcome_tx": "https://gnosisscan.io/tx/0xb865eaa9e740593a28925e5c16748c0f61f81d58fe012dbf7434e10262adf81f",
+      "attestation_tx": null,
+      "votes": [
+        "0xc84a0928632382e75c543acced101b9525027362: deny",
+        "0x6d081448c04d9ef7cf8ecf54207b1931ecc25312: deny"
+      ],
+      "fee_usdc": 0.4
+    },
+    {
+      "path": "disputed, ruled secure",
+      "status": {
+        "status": "disputed",
+        "ruling": "secure",
+        "completed": true
+      },
+      "safe": "100:0x2b33c1ab1fcd2b5f29bb7306ca5f1919ae06fa39",
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=100&safeTxHash=0xe0b3069cdf9b700f202c6cbc01385ef2a943b5ec8f4a627c98adf272a8b02ef2",
+      "proposal_tx": "https://gnosisscan.io/tx/0x138439506d0979ef6d2ff374ab78a00bf110b390cecaa10897040ad80962a18f",
+      "outcome_tx": "https://gnosisscan.io/tx/0x9e35d7512185505e7bf1696690668dd47bc83e78fe846cf3e7f401f701f2cde6",
+      "attestation_tx": null,
+      "votes": [
+        "0xc84a0928632382e75c543acced101b9525027362: approve",
+        "0xb28eb357bfa420c17bae3e6bfdb50094fb5babf2: deny"
+      ],
+      "fee_usdc": 0.4
+    },
+    {
+      "path": "disputed, ruled insecure",
+      "status": {
+        "status": "disputed",
+        "ruling": "insecure",
+        "completed": true
+      },
+      "safe": "1:0xa22f03b4b641d6f75822c5fad4f7ec3db00b834b",
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0x31c8b9d4998c448e1a97031ab6f94dcbd3ad2bbdbb3863038d0e61e106a9d9c7",
+      "proposal_tx": "https://gnosisscan.io/tx/0x220132bc38ea53ff0a5715609a1435861dc36ed3394331a24d011874ee2c71b8",
+      "outcome_tx": "https://gnosisscan.io/tx/0x1bc3146467ac4cb98c0fe54c45eb0f768818254a1a68ae7625abf96f507b5966",
+      "attestation_tx": null,
+      "votes": [
+        "0x6d081448c04d9ef7cf8ecf54207b1931ecc25312: deny",
+        "0xc84a0928632382e75c543acced101b9525027362: approve"
+      ],
+      "fee_usdc": 0.4
+    },
+    {
+      "path": "disputed, awaiting ruling",
+      "status": {
+        "status": "disputed",
+        "ruling": "awaiting",
+        "completed": false
+      },
+      "safe": "1:0x5317b52d3bfea2d9c26f756c431a78929088b32f",
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0x70992c78cd0681c643e0f9db997122f2b42ce1ce0aae2e5de959bfe3f1905117",
+      "proposal_tx": "https://gnosisscan.io/tx/0x24161543714972df72aa2d364ab3549eda90da8714ea7acb4b467f85a7820022",
+      "outcome_tx": null,
+      "attestation_tx": null,
+      "votes": [
+        "0xc84a0928632382e75c543acced101b9525027362: approve",
+        "0x101d59dbb8c5e70f45d52634f23800fca4fbe031: approve",
+        "0xb28eb357bfa420c17bae3e6bfdb50094fb5babf2: deny"
+      ],
+      "fee_usdc": 0.4
+    },
+    {
+      "path": "timed out",
+      "status": {
+        "status": "no_verdict",
+        "ruling": null,
+        "completed": false
+      },
+      "safe": "1:0xa063cb7cfd8e57c30c788a0572cbbf2129ae56b6",
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0x31c61140c871135b012cb8a5ee5a79d3c2a1e96c8cf3fb3983a2929fb22da653",
+      "proposal_tx": "https://gnosisscan.io/tx/0xb8d3181a08331248709cf6acf51d48561c55efcb00ef90835bd7b27b28e48e5e",
+      "outcome_tx": "https://gnosisscan.io/tx/0xf772e090d4caf0dd0007c0a95c0d6531c9e1b03b0bc5c724adbdf99879f94f5a",
+      "attestation_tx": null,
+      "votes": [],
+      "fee_usdc": 0.4
+    }
+  ]
+}

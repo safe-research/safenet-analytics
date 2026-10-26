@@ -53,6 +53,10 @@ jobs:
       - name: Check transaction checks against on-chain events
         if: ${{ !inputs.query || inputs.query == 'transaction_checks_daily' }}
         run: npm run verify:transaction-checks -- --out verification/transaction_checks_daily.local.json
+      # Recounts the Network & revenue section and checks fees against USDC.e flows.
+      - name: Check network and revenue against on-chain events
+        if: ${{ always() && !inputs.query }}
+        run: npm run verify:network-revenue -- --out verification/network_revenue.local.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

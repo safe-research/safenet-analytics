@@ -1,0 +1,9 @@
+name: "Safenet: known operational and test Safes"
+description: >
+  Safes whose Safenet requests are known not to be ordinary user traffic (for example Safenet's own
+  Arbitrator Safe), with sources. Generated from dune/data/known-traffic.json in
+  github.com/safe-research/safenet-analytics.
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

@@ -1,0 +1,12 @@
+{
+  "note": "Safes whose Safenet requests are known not to be ordinary user traffic. Edit, then run `npm run sync:known-traffic`. Requests for Safes on chains outside the Charter are classified as test traffic by rule (src/known-traffic.ts), not listed here.",
+  "safes": [
+    {
+      "chain_id": 100,
+      "address": "0xc89ae48382edc81287acef0881e88deacad58348",
+      "category": "operational",
+      "label": "Safenet Arbitrator Safe",
+      "source": "safe-research/safenet docs/configuration.md (Sentinel Oracle Configuration: Arbitrator)"
+    }
+  ]
+}

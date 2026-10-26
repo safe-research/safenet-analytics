@@ -58,7 +58,72 @@ export const EVENTS = {
     signature: "RequestTimedOut(bytes32)",
     topic0: "0xf1ca1e9147be737b04a2b018a79405f687a97de8dd8a2559bbe62357343af414",
   },
+  // Sentinel votes and payouts (SentinelOracleCommitments.sol, SentinelOracleRequests.sol)
+  Committed: {
+    signature: "Committed(bytes32,address,uint96)",
+    topic0: "0x45acbf2626c7d2bd97eb2142a43d392e8f3364c9e140b3d022446155491819d6",
+  },
+  Revealed: {
+    signature: "Revealed(bytes32,address,bool,uint96,string)",
+    topic0: "0xd2cdead965dbd376703d9a79240f31f1228055ab42384b68353332fcd2af939a",
+  },
+  Claimed: {
+    signature: "Claimed(bytes32,address,uint96,uint96)",
+    topic0: "0x006f1d9d8ec7f5d7941e2363561ba0f1da911361b351d007f9b448d557e39e86",
+  },
+  // Governance (SentinelMap.sol, SentinelOracle.sol, BondConfig.sol); changes apply after a delay
+  SentinelScheduled: {
+    signature: "SentinelScheduled(address,uint256)",
+    topic0: "0xce737c23e8e6ca890064e37caf80069010b1f755c3fae1708dd03974cc20967d",
+  },
+  SentinelRemoved: {
+    signature: "SentinelRemoved(address)",
+    topic0: "0x8e7ac62951d0ff2590efb434e0adfbb6b9c0f784993a523c48b42751bab6c5e8",
+  },
+  FeeScheduled: {
+    signature: "FeeScheduled(uint96,uint64)",
+    topic0: "0xdef70574d1d359737ee26a27f066606f6d82fa51e3698f243d987958ec6fdc1c",
+  },
+  DaoFeeShareScheduled: {
+    signature: "DaoFeeShareScheduled(uint24,uint64)",
+    topic0: "0xb6b8950d378d599036f40812984d24677cfeb9805467d2997651e3fdab8b9b77",
+  },
+  ProtocolFundsReceiverScheduled: {
+    signature: "ProtocolFundsReceiverScheduled(address,uint64)",
+    topic0: "0xd1eff884ebee7603c09e5563e22dfbb73c07549053cfe8ef14c1c95fc18ab70b",
+  },
+  BondConfigScheduled: {
+    signature: "BondConfigScheduled(uint32,uint32,uint64)",
+    topic0: "0xc7a39a5cff0bd7a6c707ae62778c7253bd05c8e0bcfdf9d4b0d74044ecba46a1",
+  },
+  // ERC-20 and Safe events read for fee flows and Guard status
+  Transfer: {
+    signature: "Transfer(address,address,uint256)",
+    topic0: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+  },
+  // Safe GuardManager. 1.3.0 logs the guard in data, 1.4.1 and later as topic1; topic0 is the same.
+  ChangedGuard: {
+    signature: "ChangedGuard(address)",
+    topic0: "0x1151116914515bc0891ff9047a6cb32cf902546f83066499bcf8ba33d2353fa2",
+  },
+  // SafenetGuard constructor (ISafenetGuard.sol); identifies guard deployments on any chain.
+  EpochInitialized: {
+    signature: "EpochInitialized(uint64,(uint256,uint256))",
+    topic0: "0x07350219757b951e219da92d6cfcfbe2db9d097ed40b7aafb4ba3ca85d27143b",
+  },
 } as const;
+
+// Sentinel Oracle money (docs/configuration.md "Sentinel Oracle Configuration"). Amounts on chain
+// are USDC.e base units.
+export const FEE_TOKEN = { symbol: "USDC.e", address: "0x2a22f9c3b484c3629090feed35f17ff8f88f76f0", decimals: 6 } as const;
+export const PROTOCOL_FUNDS_RECEIVER = "0x9d02bed59170cde96782ea9a9b17f9bcf4916127";
+export const ARBITRATOR = "0xc89ae48382edc81287acef0881e88deacad58348";
+export const DAO_FEE_SHARE_DENOMINATOR = 100_000;
+
+// EIP-712 domain separator of the production Consensus: keccak256(abi.encode(
+// keccak256("EIP712Domain(uint256 chainId,address verifyingContract)"), 100, Consensus)).
+// Equals Consensus.domainSeparator() on chain. A SafenetGuard bound to production stores it.
+export const CONSENSUS_DOMAIN_SEPARATOR = "0x0a60fd26a8c4c3ecdbc033b1ebaf0af39dacc9965079bd37b21f4af2251fb097";
 
 // SentinelOracleRequest.State values used in DisputeResolved.outcome.
 export const ORACLE_STATE = { RESOLVED_APPROVED: 3, RESOLVED_DENIED: 4 } as const;

@@ -256,7 +256,10 @@ const comparison = (() => {
   const lastFullDay = day(Date.parse(summary.to_block_time) / 1000 - 86400);
   const mismatches = [];
   let compared = 0;
+  // The query returns the last 30 days (zero-filled); earlier days are only in the counter.
+  const firstDuneDay = [...rows.keys()].sort()[0] ?? "";
   for (const d of [...new Set([...rows.keys(), ...table.map((r) => r.day)])].sort()) {
+    if (d < firstDuneDay) continue;
     if (throughBlock === undefined && (d > lastFullDay || d >= String(result.execution_ended_at ?? "").slice(0, 10))) continue;
     compared++;
     const ours = table.find((r) => r.day === d);
@@ -267,14 +270,17 @@ const comparison = (() => {
       if (a !== b) mismatches.push({ day: d, column: c, rpc: a, dune: b });
     }
   }
-  // The counter: requests_cumulative of the newest row, from the same execution as the chart.
+  // The counter: requests_cumulative of the newest row, from the same execution as the chart. It
+  // must equal the daily bars plus the requests before the 30-day window (from the recount).
   let counter: Record<string, unknown> | undefined;
   if (throughBlock !== undefined) {
     const newest = [...rows.keys()].sort().at(-1);
     const value = newest === undefined ? 0 : Number(rows.get(newest)!.requests_cumulative);
     const daySum = result.rows.reduce((n, r) => n + Number(r.requests), 0);
-    counter = { value, sum_of_daily_requests: daySum, rpc_requests: totals.requests };
-    if (value !== daySum) mismatches.push({ column: "requests_cumulative", dune_counter: value, dune_sum_of_days: daySum });
+    const beforeWindow = table.filter((r) => r.day < firstDuneDay).reduce((n, r) => n + r.requests, 0);
+    counter = { value, sum_of_daily_requests: daySum, rpc_requests_before_window: beforeWindow, rpc_requests: totals.requests };
+    if (value !== daySum + beforeWindow)
+      mismatches.push({ column: "requests_cumulative", dune_counter: value, dune_sum_of_days_plus_rpc_before: daySum + beforeWindow });
     if (value !== totals.requests) mismatches.push({ column: "requests_cumulative", dune_counter: value, rpc: totals.requests });
   }
   return {

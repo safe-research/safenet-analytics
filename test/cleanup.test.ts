@@ -47,7 +47,7 @@ describe("preview cleanup", () => {
 
   test("plans removal of exactly the track's preview resources, without writing", async () => {
     const writes = fake.writes().length;
-    const p = await planCleanup("default", preview, production, fake.client(), options);
+    const p = await planCleanup(settings.track, preview, production, fake.client(), options);
     assert.deepEqual(p.blockers, []);
     assert.equal(fake.writes().length, writes);
     const ids = (r: string) => p.items.filter((i) => i.resource === r).map((i) => i.id).sort();
@@ -58,7 +58,7 @@ describe("preview cleanup", () => {
 
   test("archives queries, deletes visualizations, empties the dashboard and clears the mapping", async () => {
     const before = snapshot();
-    const p = await planCleanup("default", preview, production, fake.client(), options);
+    const p = await planCleanup(settings.track, preview, production, fake.client(), options);
     const { state, manual } = await applyCleanup(p, fake.client(), quiet);
     for (const t of Object.values(preview.queries)) assert.equal(fake.queries.get(t.id)!.is_archived, true);
     for (const t of Object.values(preview.visualizations)) assert.equal(fake.visualizations.has(t.id), false);
@@ -72,7 +72,7 @@ describe("preview cleanup", () => {
 
   test("archives the dashboard where the API supports it", async () => {
     fake.dashboardArchive = true;
-    const p = await planCleanup("default", preview, production, fake.client(), options);
+    const p = await planCleanup(settings.track, preview, production, fake.client(), options);
     const { manual } = await applyCleanup(p, fake.client(), quiet);
     assert.equal(fake.dashboards.has(preview.dashboard!.id), false);
     assert.deepEqual(manual, []);
@@ -81,7 +81,7 @@ describe("preview cleanup", () => {
   test("refuses while another query reads a preview query", async () => {
     const id = preview.queries.safenet_events.id;
     fake.seedQuery({ name: "Someone's analysis", query_sql: `select * from query_${id}` });
-    const p = await planCleanup("default", preview, production, fake.client(), options);
+    const p = await planCleanup(settings.track, preview, production, fake.client(), options);
     assert.ok(p.blockers.some((b) => b.includes(`reads query_${id}`)), p.blockers.join("\n"));
     await assert.rejects(applyCleanup(p, fake.client(), quiet), /blockers/);
     assert.equal(fake.queries.get(id)!.is_archived, false);
@@ -90,22 +90,22 @@ describe("preview cleanup", () => {
   test("refuses resources that are not preview resources of the track", async () => {
     const tampered = structuredClone(preview);
     tampered.queries.extra = { id: beta.queryId, desired: "", remote: "" };
-    const p = await planCleanup("default", tampered, production, fake.client(), options);
+    const p = await planCleanup(settings.track, tampered, production, fake.client(), options);
     assert.ok(p.blockers.some((b) => b.includes("protected dashboard safe/safenet-beta")), p.blockers.join("\n"));
-    const otherTrack = await planCleanup("staking", preview, production, fake.client(), options);
-    assert.ok(otherTrack.blockers.some((b) => b.includes("not a private query tagged safenet-preview-staking")));
+    const otherTrack = await planCleanup("other", preview, production, fake.client(), options);
+    assert.ok(otherTrack.blockers.some((b) => b.includes("not a private query tagged safenet-preview-other")));
   });
 
   test("refuses a preview state that contains production IDs", async () => {
     const tampered = structuredClone(preview);
     tampered.queries.extra = { id: production.queries.transaction_checks_daily.id, desired: "", remote: "" };
-    await assert.rejects(planCleanup("default", tampered, production, fake.client(), options), /contains production resources/);
+    await assert.rejects(planCleanup(settings.track, tampered, production, fake.client(), options), /contains production resources/);
   });
 
   test("forgets resources already gone in Dune", async () => {
-    const first = await applyCleanup(await planCleanup("default", preview, production, fake.client(), options), fake.client(), quiet);
+    const first = await applyCleanup(await planCleanup(settings.track, preview, production, fake.client(), options), fake.client(), quiet);
     assert.deepEqual(first.state, emptyState());
-    const again = await planCleanup("default", preview, production, fake.client(), options);
+    const again = await planCleanup(settings.track, preview, production, fake.client(), options);
     assert.deepEqual(again.blockers.filter((b) => !b.includes("dashboard")), []);
     assert.ok(again.items.filter((i) => i.resource !== "dashboard").every((i) => i.action === "forget"));
   });

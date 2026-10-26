@@ -1,0 +1,26 @@
+name: "Safenet: Guard-enabled Safes"
+description: >
+  Safes whose current transaction guard is a SafenetGuard bound to the Safenet production Consensus,
+  by network, from on-chain guard deployments and Safe ChangedGuard events. Null where no
+  production guard exists. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/network-and-revenue.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  counter:
+    name: Guard-enabled Safes (now)
+    type: counter
+    options: { counterColName: guard_enabled_safes, rowNumber: 1, stringDecimal: 0, counterLabel: Guard-enabled Safes now }
+  table:
+    name: Guard-enabled Safes by network (now)
+    type: table
+    options:
+      itemsPerPage: 4
+      columns:
+        - { name: network, title: Safe network, type: normal, alignContent: left, isHidden: false }
+        - { name: guard_enabled_safes, title: Guard-enabled Safes now, type: normal, alignContent: right, isHidden: false }
+        - { name: verified_production_guards, title: Production guard deployments, type: normal, alignContent: right, isHidden: false }
+        - { name: note, title: Note, type: normal, alignContent: left, isHidden: false }

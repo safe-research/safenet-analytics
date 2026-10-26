@@ -1,6 +1,6 @@
 # Transaction checks per day
 
-Query: [`dune/queries/transaction_checks_daily`](../../dune/queries/transaction_checks_daily), reading [`safenet_events`](../../dune/queries/safenet_events) ([decoding](../decoding.md)) · Chart: *Requests, completed checks and attestations per day* · Counter: *Requests (all time)* · Table: *Latest requests* ([`latest_requests`](../../dune/queries/latest_requests)) on [dune.com/safe/safenet](https://dune.com/safe/safenet)
+Query: [`dune/queries/transaction_checks_daily`](../../dune/queries/transaction_checks_daily), reading [`safenet_events`](../../dune/queries/safenet_events) ([decoding](../decoding.md)) · Chart: *Requests and completed results per day (last 30 days)* · Counter: *Requests (all time)* · Table: *Latest requests* ([`latest_requests`](../../dune/queries/latest_requests)) on [dune.com/safe/safenet](https://dune.com/safe/safenet)
 
 The query counts Safenet **production** activity per UTC day. It has three headline numbers: transactions submitted for checking, checks that reached a verdict, and transactions the validators attested. These are three different stages and their counts differ.
 
@@ -41,13 +41,13 @@ So `attestations` ≤ `checks_approved` ≤ `completed_checks` ≤ `requests` ov
 *Requests (all time)* shows `requests_cumulative` of the newest row:
 
 - **Time range.** All time: from the first production request (2026-10-14) up to the latest execution of the query, which is daily after the refresh, or on demand in previews. The current UTC day is included and partial.
-- **Same source as the chart.** The counter and the daily chart come from the same execution, so the counter always equals the sum of the daily *Requests* bars.
+- **Same source as the chart.** The counter and the daily chart come from the same execution. The query sums every day since launch before it keeps the last 30 days (zero-filled) for the chart, so the counter equals the 30 daily *Requests* bars plus all requests before them. Attestations and the other columns stay in the query results. The chart shows requests and completed results, the *Activity* panel of the [Network & revenue](network-and-revenue.md) section.
 - **Deduplication.** One request per oracle `request_id` (the EIP-712 proposal hash), that is, per proposal and epoch. Every log is counted once. A Safe transaction proposed again in a later epoch is a new paid request and counts again. Completed checks and attestations are separate columns, never added to requests.
 - **Test traffic.** Excluded as described [below](#test-traffic). Only covered-chain requests count. Testnet and other-oracle requests are not read at all, and uncovered-chain requests are reported separately.
 
 ## Latest requests
 
-The table lists the 25 most recent requests, with chain, Safe, Safe transaction, outcome (`open` while undecided, marked when disputed), and the request, outcome and attestation transactions. Unlike the counts, it includes requests for Safes on uncovered chains, marked *not covered, likely test*. Links are built in `safenet_events` from [`src/links.ts`](../../src/links.ts):
+The table lists the 25 most recent requests from [`safenet_requests`](../../dune/queries/safenet_requests). Each row shows chain, Safe, Safe transaction, status, request, outcome and attestation transactions, and fee. The status is as defined in [network-and-revenue.md](network-and-revenue.md#result-breakdown), with the dispute ruling and revealed/committed votes. Unlike the counts, it includes requests for Safes on uncovered chains, marked *not covered, likely test*. Links are built in `safenet_events` from [`src/links.ts`](../../src/links.ts):
 
 - Safe addresses link to the block explorer of the Safe's chain: Etherscan, Gnosisscan, Arbiscan or Polygonscan. Other chains show the address without a link.
 - Request, outcome and attestation transactions are on Gnosis Chain and link to Gnosisscan.

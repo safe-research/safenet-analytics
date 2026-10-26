@@ -1,0 +1,55 @@
+name: "Safenet: network and fee summary"
+description: >
+  Safenet production (Aegis): requests, unique Safe transactions, Sentinel responses, completed
+  results, attestations, Safes, gross fees and refunds for the last 24 hours, 7 days, 30 days and
+  all time, with data freshness. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/network-and-revenue.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  windows:
+    name: Activity and fees by time window
+    type: table
+    options:
+      itemsPerPage: 4
+      columns:
+        - { name: time_window, title: Window, type: normal, alignContent: left, isHidden: false }
+        - { name: requests, title: Requests, type: normal, alignContent: right, isHidden: false }
+        - { name: unique_safe_transactions, title: Unique Safe transactions, type: normal, alignContent: right, isHidden: false }
+        - { name: sentinel_responses, title: Sentinel responses, type: normal, alignContent: right, isHidden: false }
+        - { name: completed_results, title: Completed results, type: normal, alignContent: right, isHidden: false }
+        - { name: attestations, title: Attestations, type: normal, alignContent: right, isHidden: false }
+        - { name: safes_with_requests, title: Safes with requests, type: normal, alignContent: right, isHidden: false }
+        - { name: safes_with_completed_checks, title: Safes with completed checks, type: normal, alignContent: right, isHidden: false }
+        - { name: operational_requests, title: "of which Safenet operational", type: normal, alignContent: right, isHidden: false }
+        - { name: test_requests, title: "Test requests (not counted)", type: normal, alignContent: right, isHidden: false }
+        - { name: gross_fees_usdc, title: Gross fees (USDC.e), type: normal, alignContent: right, isHidden: false }
+        - { name: refunds_usdc, title: Refunds (USDC.e), type: normal, alignContent: right, isHidden: false }
+  freshness:
+    name: Data as of
+    type: table
+    options:
+      itemsPerPage: 1
+      columns:
+        - { name: gnosis_data_as_of, title: Gnosis Chain data as of (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: latest_request_at, title: Latest request (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: computed_at, title: Computed (UTC), type: normal, alignContent: left, isHidden: false }
+  completed_results:
+    name: Completed results (all time)
+    type: counter
+    options: { counterColName: completed_results, rowNumber: 1, stringDecimal: 0, counterLabel: Completed results }
+  attestations:
+    name: Validator attestations (all time)
+    type: counter
+    options: { counterColName: attestations, rowNumber: 1, stringDecimal: 0, counterLabel: Validator attestations }
+  safes_checked:
+    name: Safes with completed checks (all time)
+    type: counter
+    options: { counterColName: safes_with_completed_checks, rowNumber: 1, stringDecimal: 0, counterLabel: Safes with completed checks }
+  gross_fees:
+    name: Gross fees collected (all time, USDC.e)
+    type: counter
+    options: { counterColName: gross_fees_usdc, rowNumber: 1, stringDecimal: 2, counterLabel: Gross fees collected (USDC.e) }

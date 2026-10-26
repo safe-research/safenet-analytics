@@ -38,14 +38,14 @@ test("the repository configuration is valid", async () => {
 
 test("rejects overlapping widgets", async () => {
   const p = await problems((root) =>
-    replaceIn(root, "dashboard.yaml", "{ row: 3, col: 2, size_x: 4, size_y: 8 }", "{ row: 3, col: 1, size_x: 4, size_y: 8 }")(),
+    replaceIn(root, "dashboard.yaml", "{ row: 17, col: 3, size_x: 3, size_y: 8 }", "{ row: 17, col: 2, size_x: 3, size_y: 8 }")(),
   );
   assert.ok(p.some((x) => x.includes("overlaps")), p.join("\n"));
 });
 
 test("rejects widgets outside the grid", async () => {
   const p = await problems((root) =>
-    replaceIn(root, "dashboard.yaml", "{ row: 3, col: 2, size_x: 4, size_y: 8 }", "{ row: 3, col: 2, size_x: 5, size_y: 8 }")(),
+    replaceIn(root, "dashboard.yaml", "{ row: 17, col: 3, size_x: 3, size_y: 8 }", "{ row: 17, col: 3, size_x: 4, size_y: 8 }")(),
   );
   assert.ok(p.some((x) => x.includes("outside the 6-column grid")), p.join("\n"));
 });

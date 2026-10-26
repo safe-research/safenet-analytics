@@ -1,0 +1,43 @@
+name: "Safenet: fees collected per day (USDC.e)"
+description: >
+  Safenet production (Aegis): transaction fees actually collected by the Sentinel Oracle per UTC day
+  for the last 30 days, refunds, and the all-time cumulative total, in USDC.e. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/network-and-revenue.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  daily:
+    name: Gross fees collected per day (USDC.e, last 30 days)
+    type: chart
+    options:
+      globalSeriesType: column
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Day (UTC) } }
+      yAxis:
+        - title: { text: USDC.e }
+      columnMapping:
+        day: x
+        gross_fees_usdc: y
+        refunds_usdc: y
+      seriesOptions:
+        gross_fees_usdc: { type: column, yAxis: 0, zIndex: 0, name: Gross fees collected, color: "#2a78d6" }
+        refunds_usdc: { type: column, yAxis: 0, zIndex: 1, name: Refunded to sponsors, color: "#eb6834" }
+  cumulative:
+    name: Cumulative gross fees collected (USDC.e, all time)
+    type: chart
+    options:
+      globalSeriesType: line
+      sortX: true
+      legend: { enabled: false }
+      xAxis: { title: { text: Day (UTC) } }
+      yAxis:
+        - title: { text: USDC.e since launch }
+      columnMapping:
+        day: x
+        cumulative_gross_fees_usdc: y
+      seriesOptions:
+        cumulative_gross_fees_usdc: { type: line, yAxis: 0, zIndex: 0, name: Cumulative gross fees, color: "#2a78d6" }

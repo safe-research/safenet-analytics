@@ -71,7 +71,6 @@ describe("preview configuration", () => {
   });
 
   test("previews must be private", async () => {
-    assert.equal(settings.track, "default");
     await assert.rejects(
       (async () => {
         const { mkdtemp, cp, writeFile } = await import("node:fs/promises");
@@ -206,20 +205,22 @@ describe("preview executions", () => {
 
   test("runs only dashboard queries, and only when their SQL changed", async () => {
     const first = await run();
+    const shown = new Set(cfg.dashboard.widgets.flatMap((w) => (w.kind === "visualization" ? [w.ref.split("/")[0]] : [])));
     assert.deepEqual(
       first.map((r) => [r.key, r.action]),
-      [
-        ["latest_requests", "executed"],
-        ["transaction_checks_daily", "executed"],
-      ],
+      cfg.queries.filter((q) => shown.has(q.key)).map((q) => [q.key, "executed"]),
     );
+    assert.ok(!first.some((r) => r.key === "safenet_events"), "models run only as part of the queries that read them");
     const second = await run();
     assert.ok(second.every((r) => r.action === "unchanged"));
     // A change in a referenced query reruns the queries that read it.
     const changed = structuredClone(cfg);
     changed.queries.find((q) => q.key === "safenet_events")!.sql += "-- changed\n";
     const third = await runPreviewQueries(changed, preview, fake.client(), settings, { pollMs: 0, log: quiet });
-    assert.ok(third.every((r) => r.action === "executed"));
+    const reads = (key: string): boolean =>
+      key === "safenet_events" || cfg.queries.find((q) => q.key === key)!.dependencies.some(reads);
+    for (const r of third) assert.equal(r.action, reads(r.key) ? "executed" : "unchanged", r.key);
+    assert.ok(third.some((r) => r.action === "unchanged"), "queries not reading safenet_events are not rerun");
   });
 
   test("stops at the per-execution credit cap", async () => {

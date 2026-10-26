@@ -15,7 +15,9 @@
     "verify:transaction-checks": "node scripts/verify-transaction-checks.ts",
     "test": "node --test 'test/**/*.test.ts'",
     "typecheck": "tsc --noEmit",
-    "sync:participants": "node scripts/sync-participants.ts"
+    "sync:participants": "node scripts/sync-participants.ts",
+    "sync:known-traffic": "node src/known-traffic.ts",
+    "verify:network-revenue": "node scripts/verify-network-revenue.ts"
   },
   "dependencies": {
     "yaml": "^2.9.1"

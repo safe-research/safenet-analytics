@@ -10,7 +10,7 @@ Locally: `npm run refresh` (all daily queries) or `npm run refresh -- --query tr
 
 Each execution uses the query's `performance` tier (`medium` by default) and costs Dune credits based on the compute used. The workflow log and job summary show the state and credits of every execution. A failed execution fails the workflow, and GitHub notifies whoever last changed the schedule.
 
-After refreshing, the workflow recomputes the first metric from Gnosis Chain logs and compares it with the fresh Dune result. If they differ, the workflow fails. The full comparison is uploaded as the `verification` artifact.
+After refreshing, the workflow recomputes the request metric (`verify:transaction-checks`) and the Network & revenue section with its fee accounting (`verify:network-revenue`) from Gnosis Chain logs, and compares them with the fresh Dune results. If they differ, the workflow fails. The full comparison is uploaded as the `verification` artifact.
 
 ## Why not Dune's own scheduler
 

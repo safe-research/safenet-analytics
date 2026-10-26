@@ -1,0 +1,11 @@
+name: "Safenet: requests (lifecycle and fees)"
+description: >
+  Safenet production (Aegis, Gnosis Chain): one row per transaction-check request with its current
+  status (unanimous secure or insecure, disputed with ruling, timed out, pending), Sentinel votes,
+  attestation, network and fee accounting in USDC.e base units. Shared model of the Network &
+  revenue section; not shown on the dashboard. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/network-and-revenue.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

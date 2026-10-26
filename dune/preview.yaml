@@ -6,7 +6,7 @@
 #
 # Set `track` on a branch to give a parallel work package its own preview, for example
 # `track: staking` or `track: beta-replacement`. Clean previews up after the final merge.
-track: default
+track: network-revenue
 
 # Previews must be private. The deployer stops instead of creating public resources.
 private: true

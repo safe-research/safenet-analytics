@@ -45,12 +45,19 @@ test("the metric SQL does not read Beta, testnet or shared coordinator contracts
     assert.ok(!sql.toLowerCase().includes(other.slice(2)), other);
 });
 
-test("only safenet_events reads raw logs; metric queries read it by reference", async () => {
-  for (const key of ["transaction_checks_daily", "latest_requests"]) {
+// Raw logs are read only by the decoding models; everything else reads the models by reference.
+const RAW_LOG_MODELS = ["safenet_events", "safenet_fee_flows", "safenet_guards", "safenet_guard_status"];
+
+test("only the decoding models read raw logs; other queries read them by reference", async () => {
+  const { readdir } = await import("node:fs/promises");
+  const keys = await readdir(`${DEFAULT_ROOT}/queries`);
+  for (const key of keys) {
     const q = await read(key);
-    assert.ok(!/\bgnosis\.logs\b/.test(q), `${key} reads gnosis.logs`);
-    assert.ok(q.includes("{{query:safenet_events}}"), `${key} does not read safenet_events`);
+    const raw = /\b(gnosis|ethereum|arbitrum)\.(logs|traces)\b/.test(q);
+    assert.equal(raw, RAW_LOG_MODELS.includes(key), `${key} ${raw ? "reads" : "does not read"} raw logs`);
   }
+  for (const key of ["transaction_checks_daily", "safenet_requests", "safenet_fee_flows"])
+    assert.ok((await read(key)).includes("{{query:safenet_events}}"), `${key} does not read safenet_events`);
 });
 
 test("safenet_events builds links with the expressions from src/links.ts", () => {
