@@ -122,7 +122,9 @@ classified as (
             when o.verdict = 'no_verdict' then 'none'
             else 'awaiting'
         end as dispute_ruling,
-        o.verdict in ('approved', 'denied') as completed,
+        -- false, not null, while there is no outcome: the fee split below must not treat a pending
+        -- request as decided.
+        coalesce(o.verdict in ('approved', 'denied'), false) as completed,
         if(o.verdict in ('approved', 'denied'), o.block_time) as completed_at,
         a.attested_at,
         a.attestation_tx_hash,

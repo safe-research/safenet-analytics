@@ -165,7 +165,7 @@ joined as (
         disputed_at,
         dispute_tx_url,
         disputed_at is not null as disputed,
-        verdict in ('approved', 'denied') as completed,
+        coalesce(verdict in ('approved', 'denied'), false) as completed, -- false, not null, without an outcome
         verdict is not null or disputed_at is not null as finalized,
         fee,
         fee * dao_fee_share / 100000 as dao_share_amount, -- integer division, as in the contract
