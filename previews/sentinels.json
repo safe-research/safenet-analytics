@@ -1,8 +1,8 @@
 {
   "dashboard": {
-    "desired": "389c5d4a2370e6d5",
+    "desired": "b387bfd1159e39fa",
     "id": 222586,
-    "remote": "e9b55e2b22189519",
+    "remote": "e83c5d4024ce0c55",
     "url": "https://dune.com/safe/safenet-preview-sentinels"
   },
   "executions": {},
@@ -86,9 +86,9 @@
       "remote": "19afddc91e6c4dfe"
     },
     "safenet_events": {
-      "desired": "b03e7240c6a43522",
+      "desired": "df97b350cde493ea",
       "id": 9013284,
-      "remote": "b03e7240c6a43522"
+      "remote": "df97b350cde493ea"
     },
     "safenet_fee_flows": {
       "desired": "650303ffdfb7a569",
@@ -131,9 +131,9 @@
       "remote": "45244ff412f12d09"
     },
     "safenet_sentinel_responses": {
-      "desired": "869c1d7eee42ebb6",
+      "desired": "858bfd9d9538cb4f",
       "id": 9013302,
-      "remote": "869c1d7eee42ebb6"
+      "remote": "858bfd9d9538cb4f"
     },
     "safenet_sentinel_rewards": {
       "desired": "473236fae342f16e",
@@ -141,9 +141,14 @@
       "remote": "473236fae342f16e"
     },
     "safenet_sentinel_terms": {
-      "desired": "6aa7346e25048967",
+      "desired": "7078c02ec382b1d2",
       "id": 9013301,
-      "remote": "6aa7346e25048967"
+      "remote": "7078c02ec382b1d2"
+    },
+    "safenet_sentinel_texts": {
+      "desired": "ef20411e00bd37ff",
+      "id": 9013379,
+      "remote": "ef20411e00bd37ff"
     },
     "safenet_sentinel_wallet_transfers": {
       "desired": "de2938a8273a4918",
@@ -151,49 +156,49 @@
       "remote": "de2938a8273a4918"
     },
     "sentinel_bonds": {
-      "desired": "4503ded5e7f402c0",
+      "desired": "b96ddf22853e2eaa",
       "id": 9013305,
-      "remote": "4503ded5e7f402c0"
+      "remote": "b96ddf22853e2eaa"
     },
     "sentinel_coverage": {
-      "desired": "3da7e9f36cd09a7e",
+      "desired": "115c2fbbbff0683d",
       "id": 9013306,
-      "remote": "3da7e9f36cd09a7e"
+      "remote": "115c2fbbbff0683d"
     },
     "sentinel_disputes": {
-      "desired": "120bea468d14ef44",
+      "desired": "e4ab8a686e254651",
       "id": 9013307,
-      "remote": "120bea468d14ef44"
+      "remote": "e4ab8a686e254651"
     },
     "sentinel_earnings": {
-      "desired": "56a2e2e694262a6d",
+      "desired": "8745aebf826e81de",
       "id": 9013308,
-      "remote": "56a2e2e694262a6d"
+      "remote": "8745aebf826e81de"
     },
     "sentinel_earnings_daily": {
-      "desired": "e332f368ea8adc95",
+      "desired": "eb37b34355b8223e",
       "id": 9013309,
-      "remote": "e332f368ea8adc95"
+      "remote": "eb37b34355b8223e"
     },
     "sentinel_overview": {
-      "desired": "37fcf694c1baadf1",
+      "desired": "c310ff39b5986ffc",
       "id": 9013310,
-      "remote": "37fcf694c1baadf1"
+      "remote": "c310ff39b5986ffc"
     },
     "sentinel_participation_daily": {
-      "desired": "71f27340d3d1d77f",
+      "desired": "b8ac54c122f128de",
       "id": 9013311,
-      "remote": "71f27340d3d1d77f"
+      "remote": "b8ac54c122f128de"
     },
     "sentinel_verdicts": {
-      "desired": "f5e0b2077d82dba9",
+      "desired": "bb003ef28597531c",
       "id": 9013312,
-      "remote": "f5e0b2077d82dba9"
+      "remote": "bb003ef28597531c"
     },
     "sentinel_windows": {
-      "desired": "a6d8ae2b80863cea",
+      "desired": "aff7fa4604e0b7a4",
       "id": 9013313,
-      "remote": "a6d8ae2b80863cea"
+      "remote": "aff7fa4604e0b7a4"
     },
     "transaction_checks_daily": {
       "desired": "b90f19e09d4da9a2",
