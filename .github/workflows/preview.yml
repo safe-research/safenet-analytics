@@ -149,6 +149,13 @@ jobs:
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --out "$RUNNER_TEMP/verification-network-revenue.json"
 
+      - name: Reconcile Sentinels against on-chain events, balances and SAFE rewards
+        if: always() && steps.run.outcome == 'success'
+        run: >-
+          npm run verify:sentinels --
+          --state "dune/.preview/${{ steps.state.outputs.track }}.json"
+          --out "$RUNNER_TEMP/verification-sentinels.json"
+
       - name: Render result images
         if: always() && steps.run.outcome == 'success'
         run: >-
@@ -186,6 +193,7 @@ jobs:
             ${{ runner.temp }}/preview.json
             ${{ runner.temp }}/verification.json
             ${{ runner.temp }}/verification-network-revenue.json
+            ${{ runner.temp }}/verification-sentinels.json
             ${{ runner.temp }}/production-plan.txt
           if-no-files-found: ignore
 
@@ -209,7 +217,8 @@ jobs:
               echo
               echo "Images rendered from the preview's query results through the API (the dashboard is private, so CI cannot screenshot Dune):"
               echo
-              for f in counter daily results fees network_summary network_breakdown guard_adoption fee_allocation fee_config latest; do
+              for f in counter daily results fees network_summary network_breakdown guard_adoption fee_allocation fee_config latest \
+                sentinel_overview sentinel_windows sentinel_heatmap sentinel_verdicts sentinel_coverage sentinel_disputes sentinel_earnings sentinel_earnings_daily sentinel_bonds; do
                 if [ -f "$T/render/$f.png" ]; then echo "<img src=\"$IMG/$f.png?raw=true\" alt=\"$f\" width=\"$([ $f = counter ] && echo 320 || echo 900)\">"; echo; fi
               done
               echo "<details><summary>Network and revenue: reconciliation with on-chain events and USDC.e flows</summary>"
@@ -225,6 +234,22 @@ jobs:
                 echo "| Path | Status | Safe transaction | Request tx | Outcome tx | Attestation tx | Votes |"
                 echo "| --- | --- | --- | --- | --- | --- | --- |"
                 jq -r '.representative[] | "| \(.path) | \(.status.status)\(if .status.ruling then " (" + .status.ruling + ")" else "" end) | [explorer](\(.safe_tx)) | [tx](\(.proposal_tx)) | \(if .outcome_tx then "[tx](" + .outcome_tx + ")" else "" end) | \(if .attestation_tx then "[tx](" + .attestation_tx + ")" else "" end) | \(.votes | join(", ")) |"' "$T/verification-network-revenue.json"
+                echo "</details>"
+                echo
+              fi
+              echo "<details><summary>Sentinels: reconciliation with on-chain events, balances and SAFE rewards</summary>"
+              echo
+              echo '```json'
+              if [ -f "$T/verification-sentinels.json" ]; then jq '{finalized_block, requests, open_response_windows, coverage, safe_rewards, issues, dune}' "$T/verification-sentinels.json"; else echo '"not run"'; fi
+              echo '```'
+              echo "</details>"
+              echo
+              if [ -f "$T/verification-sentinels.json" ]; then
+                echo "<details><summary>Representative Sentinel cases (compare with the Safenet explorer)</summary>"
+                echo
+                echo "| Case | Sentinel | State | Request | Safe transaction | Request tx | Outcome tx | Votes |"
+                echo "| --- | --- | --- | --- | --- | --- | --- | --- |"
+                jq -r '.representative[] | "| \(.case) | \(.sentinel) | \(.state) | \(.request_status.status)\(if .request_status.ruling then " (" + .request_status.ruling + ")" else "" end) | [explorer](\(.safe_tx)) | [tx](\(.proposal_tx)) | \(if .outcome_tx then "[tx](" + .outcome_tx + ")" else "" end) | \(.votes | join(", ")) |"' "$T/verification-sentinels.json"
                 echo "</details>"
                 echo
               fi

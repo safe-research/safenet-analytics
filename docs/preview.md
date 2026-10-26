@@ -9,8 +9,8 @@ Every pull request from a branch of this repository is deployed to a **private p
    2. Prints the **production plan**: a dry run of what merging would change in production. It makes no writes.
    3. Deploys the pull request to its preview track. Resources are created private, or updated in place.
    4. Executes the preview queries whose SQL changed, within the cost caps.
-   5. Recounts the request metric from Gnosis Chain logs over exactly the block range of the preview result, and compares every day and column, the counter and the sum of the daily bars.
-   6. Renders images of the counter, the daily chart and the latest-requests table from the preview results.
+   5. Recounts the request metric from Gnosis Chain logs over exactly the block range of the preview result, and compares every day and column, the counter and the sum of the daily bars. The Network & revenue and Sentinels sections are recounted the same way (`verify:network-revenue`, `verify:sentinels`), with representative cases to check on the Safenet explorer.
+   6. Renders images of the panels from the preview results, including the Sentinel overview, heatmap, verdicts, coverage, disputes, earnings and bonds.
    7. Posts or updates one comment on the pull request with the private URL, the deployed commit, the images, the reconciliation, the preview resource IDs and the production plan.
 2. **Review.** Open the preview URL while signed in to Dune with access to the `safe` team. Each push to the pull request redeploys the same preview resources. The banner at the top names the pull request and commit.
 3. **Merge.** *Deploy* updates production in place (same IDs and URL), and *Refresh* executes the production queries and checks the metric against on-chain events. See [deployment.md](deployment.md).

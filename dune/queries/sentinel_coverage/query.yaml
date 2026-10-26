@@ -1,0 +1,38 @@
+name: "Safenet: Sentinel request coverage"
+description: >
+  Safenet production (Aegis): requests by the number of valid Sentinel responses (revealed votes)
+  they received, including requests with none, for the last 30 days and all time. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  bars:
+    name: Requests by number of valid Sentinel responses (last 30 days)
+    type: chart
+    description: >
+      Requests on the Charter's chains proposed in the last 30 days whose response window has
+      closed. Commits without a reveal do not count as responses.
+    options:
+      globalSeriesType: column
+      legend: { enabled: false }
+      xAxis: { title: { text: Valid responses } }
+      yAxis:
+        - title: { text: Requests }
+      columnMapping:
+        bucket: x
+        requests_30d: y
+      seriesOptions:
+        requests_30d: { type: column, yAxis: 0, zIndex: 0, name: Requests, color: "#2a78d6" }
+  table:
+    name: Requests by number of valid Sentinel responses (table)
+    type: table
+    options:
+      itemsPerPage: 10
+      columns:
+        - { name: bucket, title: Valid responses, type: normal, alignContent: left, isHidden: false }
+        - { name: requests_30d, title: Requests 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: requests_all, title: Requests all time, type: normal, alignContent: right, isHidden: false }
+        - { name: pending_requests, title: Still in response window, type: normal, alignContent: right, isHidden: false }

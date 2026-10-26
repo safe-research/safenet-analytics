@@ -1,0 +1,28 @@
+name: "Safenet: Sentinel fee rewards per day"
+description: >
+  Safenet production (Aegis): Sentinel transaction-fee rewards accrued per UTC day and Sentinel in
+  USDC.e, last 30 days. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  bars:
+    name: Fee rewards accrued per day by Sentinel (USDC.e, last 30 days)
+    type: chart
+    description: >
+      On the day the request was decided. USDC.e only; SAFE subsidies are in the earnings table.
+    options:
+      globalSeriesType: column
+      series: { stacking: normal }
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Decision day (UTC) } }
+      yAxis:
+        - title: { text: USDC.e }
+      columnMapping:
+        day: x
+        fee_reward_usdc: y
+        sentinel: series

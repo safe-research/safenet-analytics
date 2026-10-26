@@ -64,3 +64,44 @@ widgets:
 
   - visualization: latest_requests/table
     position: { row: 74, col: 0, size_x: 6, size_y: 10 }
+
+  # ---- Sentinels ----
+  - text_file: text/sentinels.md
+    position: { row: 84, col: 0, size_x: 4, size_y: 4 }
+  - visualization: sentinel_overview/freshness
+    position: { row: 84, col: 4, size_x: 2, size_y: 4 }
+  - visualization: sentinel_overview/table
+    position: { row: 88, col: 0, size_x: 6, size_y: 8 }
+  - visualization: sentinel_windows/table
+    position: { row: 96, col: 0, size_x: 6, size_y: 6 }
+
+  # Participation history (last 30 days)
+  - visualization: sentinel_participation_daily/heatmap
+    position: { row: 102, col: 0, size_x: 6, size_y: 7 }
+
+  # Verdicts and coverage
+  - visualization: sentinel_verdicts/bars
+    position: { row: 109, col: 0, size_x: 3, size_y: 8 }
+  - visualization: sentinel_coverage/bars
+    position: { row: 109, col: 3, size_x: 3, size_y: 8 }
+  - visualization: sentinel_verdicts/table
+    position: { row: 117, col: 0, size_x: 3, size_y: 6 }
+  - visualization: sentinel_coverage/table
+    position: { row: 117, col: 3, size_x: 3, size_y: 6 }
+
+  # Disputes and arbitration
+  - visualization: sentinel_disputes/table
+    position: { row: 123, col: 0, size_x: 6, size_y: 9 }
+
+  # Earnings
+  - visualization: sentinel_earnings/table
+    position: { row: 132, col: 0, size_x: 6, size_y: 6 }
+  - visualization: sentinel_earnings_daily/bars
+    position: { row: 138, col: 0, size_x: 6, size_y: 7 }
+
+  # Bonds
+  - visualization: sentinel_bonds/table
+    position: { row: 145, col: 0, size_x: 6, size_y: 6 }
+
+  - text_file: text/sentinels_definitions.md
+    position: { row: 151, col: 0, size_x: 6, size_y: 9 }

@@ -67,6 +67,12 @@ export const word = (data: string, i: number) => BigInt(`0x${data.slice(2 + 64 *
 export const topicAddress = (topic: string) => `0x${topic.slice(26)}`.toLowerCase();
 export const safeChain = (safeId: string) => Number(BigInt(safeId) >> 160n);
 export const safeAddress = (safeId: string) => `0x${safeId.slice(26)}`.toLowerCase();
+// The ABI-encoded string whose offset is in data word `i`.
+export const abiString = (data: string, i: number) => {
+  const at = Number(word(data, i)) * 2 + 2;
+  const length = Number(BigInt(`0x${data.slice(at, at + 64)}`));
+  return Buffer.from(data.slice(at + 64, at + 64 + length * 2), "hex").toString("utf8");
+};
 export const isCovered = (chainId: number) => (COVERED_SAFE_CHAINS as readonly number[]).includes(chainId);
 export const ORACLE_TOPIC = `0x${"0".repeat(24)}${PRODUCTION.sentinelOracle.address.slice(2)}`;
 
@@ -117,7 +123,10 @@ export type RequestRecord = {
   fee: bigint;
   daoFeeShare: bigint;
   slashAmount: bigint;
-  votes: { sentinel: string; approved: boolean | null; time?: number }[]; // null: committed only
+  commitDeadline: number;
+  revealDeadline: number;
+  // approved null: committed only. bond: Committed.bondAmount; reason: Revealed.reason.
+  votes: { sentinel: string; approved: boolean | null; time?: number; committedAt?: number; bond?: bigint; reason?: string }[];
   claims: { sentinel: string; bondReturn: bigint; feeReward: bigint }[];
   bondLocked: bigint;
   disputed: boolean;
@@ -209,6 +218,8 @@ export async function buildRequests(rpc: Pick<Rpc, "blockTime">, logs: SafenetLo
         fee: word(r.data, 0),
         daoFeeShare: word(r.data, 2),
         slashAmount: word(r.data, 3),
+        commitDeadline: Number(word(r.data, 4)),
+        revealDeadline: Number(word(r.data, 5)),
         votes: [],
         claims: [],
         bondLocked: 0n,
@@ -230,12 +241,12 @@ export async function buildRequests(rpc: Pick<Rpc, "blockTime">, logs: SafenetLo
     const time = await rpc.blockTime(l);
     const sentinel = l.topics[2] ? topicAddress(l.topics[2]) : "";
     if (name === "Committed") {
-      req.votes.push({ sentinel, approved: null });
+      req.votes.push({ sentinel, approved: null, committedAt: time, bond: word(l.data, 0) });
       req.bondLocked += word(l.data, 0);
     } else if (name === "Revealed") {
       const v = req.votes.find((x) => x.sentinel === sentinel);
       if (!v) issues.push(`request ${req.requestId}: reveal without commit by ${sentinel}`);
-      else Object.assign(v, { approved: word(l.data, 0) === 1n, time });
+      else Object.assign(v, { approved: word(l.data, 0) === 1n, time, reason: abiString(l.data, 2) });
     } else if (name === "Claimed") {
       req.claims.push({ sentinel, bondReturn: word(l.data, 0), feeReward: word(l.data, 1) });
     } else if (name === "DisputeTriggered") {

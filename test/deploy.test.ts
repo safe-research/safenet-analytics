@@ -49,7 +49,7 @@ describe("deploy", () => {
       dash.visualization_widgets.map((w) => w.visualization_id).sort(),
       Object.values(r.state.visualizations).map((v) => v.id).sort(),
     );
-    assert.equal(dash.text_widgets.length, 3);
+    assert.equal(dash.text_widgets.length, config.dashboard.widgets.filter((w) => w.kind === "text").length);
     const q = fake.queries.get(r.state.queries.transaction_checks_daily.id)!;
     assert.ok(q.tags.includes("safenet-analytics"));
     assert.equal(r.state.protected["safe/safenet-beta"].dashboard_id, beta.dashboardId);
@@ -129,7 +129,7 @@ describe("deploy", () => {
     fake.dashboards.get(dashId)!.text_widgets = [];
     const r = await deploy(fake, config, first.state, { force: true });
     assert.equal(actions(r)["dashboard:safenet"], "update");
-    assert.equal(fake.dashboards.get(dashId)!.text_widgets.length, 3);
+    assert.equal(fake.dashboards.get(dashId)!.text_widgets.length, config.dashboard.widgets.filter((w) => w.kind === "text").length);
     const again = await deploy(fake, config, r.state);
     assert.ok(again.plan.steps.every((s) => s.action === "noop"));
   });

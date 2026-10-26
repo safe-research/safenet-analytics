@@ -1,0 +1,123 @@
+{
+  "source": "safe-fndn/safenet-data",
+  "ref": "f74222fa8b395cc06d39636f56f0bba7c19e4576",
+  "addresses": [
+    "0x0637ccf4b63df46265cf4afcd7b0c9d06b98c3ca",
+    "0x101d59dbb8c5e70f45d52634f23800fca4fbe031",
+    "0x3bf9263cc7bb2312f69f5481c3337553469140a5",
+    "0x6d081448c04d9ef7cf8ecf54207b1931ecc25312",
+    "0xb28eb357bfa420c17bae3e6bfdb50094fb5babf2",
+    "0xc84a0928632382e75c543acced101b9525027362"
+  ],
+  "roots": [
+    {
+      "commit": "748a991a778d74809d5277cd671b04a8851cf6bb",
+      "published_at": "2026-03-16T14:30:51Z",
+      "rewards_until": "2026-03-15T00:00:00.000Z",
+      "merkle_root": "0x4e1c82fd130596b82f8fa763d7317ad71c10b5db888a3f4d6d798bd189bf422d"
+    },
+    {
+      "commit": "066a63e60fc4e91a1137712f5f3a1ea2ec9f777b",
+      "published_at": "2026-03-31T10:36:27Z",
+      "rewards_until": "2026-04-07T00:00:00.000Z",
+      "merkle_root": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "commit": "b392639bfc5e2547f1e9cabddd9b3e7c0425027d",
+      "published_at": "2026-04-22T11:12:21Z",
+      "rewards_until": "2026-04-21T00:00:00.000Z",
+      "merkle_root": "0x5aea53631d726e3cb245cb1ce31834212ab6667a4726d25168a583d3b57b6cc1"
+    },
+    {
+      "commit": "0dea01eb7988829106ad01148b8cf840bebfddbe",
+      "published_at": "2026-05-06T10:37:17Z",
+      "rewards_until": "2026-05-05T00:00:00.000Z",
+      "merkle_root": "0x1131c6c1167d3330854aaead2c28b62991e2809ee577cbe4374b369779d01f9e"
+    },
+    {
+      "commit": "4268abe7c454c26d705c28109d48ae405f874769",
+      "published_at": "2026-05-11T17:49:14Z",
+      "rewards_until": "2026-05-05T00:00:00.000Z",
+      "merkle_root": "0x6e4b28689b8b80bbce0d569d826e81a517c44c1d9342d02741821f90f885571b"
+    },
+    {
+      "commit": "3457b4103376d2922507b598ee7fed1ef50f1471",
+      "published_at": "2026-05-20T08:27:32Z",
+      "rewards_until": "2026-05-19T00:00:00.000Z",
+      "merkle_root": "0x2b6ec7b74b05b61ca5d4e0d8b57145a821e6f98f5972385d88819c57f0a7d93e"
+    },
+    {
+      "commit": "a7977758524a931aa9b60ffbbb1db5aea022916b",
+      "published_at": "2026-06-02T20:01:05Z",
+      "rewards_until": "2026-06-02T00:00:00.000Z",
+      "merkle_root": "0x8046d1df9d339a0f78d871028adcb20ae5ddbf95602ea5e10f7eb04faa46036c"
+    },
+    {
+      "commit": "474ab86eb5188ea904ef8afc939e2d7b0243c0fd",
+      "published_at": "2026-06-16T19:29:21Z",
+      "rewards_until": "2026-06-16T00:00:00.000Z",
+      "merkle_root": "0xa0b886872e438e06dbf343697ffb582d387f69947ce2395209d42b042e237f40"
+    },
+    {
+      "commit": "bca6417f5f03d99cb34f2ba421ae4b9198b27930",
+      "published_at": "2026-07-01T21:26:01Z",
+      "rewards_until": "2026-06-30T00:00:00.000Z",
+      "merkle_root": "0xf9bd9a1fc90c93361fd13b7fd6fa4ee486eb4a94c95c5b0b5f6655f153ee061b"
+    },
+    {
+      "commit": "50559ad7bd039a3ffe291ce8e4f21774e0248768",
+      "published_at": "2026-07-17T07:26:25Z",
+      "rewards_until": "2026-07-14T00:00:00.000Z",
+      "merkle_root": "0x262d6f6cb87cd25f87d5f177acf30d10c9a945dbd05368ce9a74d42fed7b8376"
+    },
+    {
+      "commit": "ea55795ba2ba98dad2dc6238471a5960a736c321",
+      "published_at": "2026-07-17T07:44:01Z",
+      "rewards_until": "2026-07-14T00:00:00.000Z",
+      "merkle_root": "0x54e19c31d2595c169ff3e307d0f9e91c856ce8b90e4a3b549b2a26ec1a3e4f1e"
+    },
+    {
+      "commit": "f7b9212a19c9c18a85e0d0975b646a1217d27a14",
+      "published_at": "2026-07-30T06:30:28Z",
+      "rewards_until": "2026-07-28T00:00:00.000Z",
+      "merkle_root": "0x24547935b48fba33a141606e24fa771f06a87f951bf82b829c6b9c34a3eed277"
+    },
+    {
+      "commit": "59be27eb11137b2b35c5b8cf64fa79c7364b8d32",
+      "published_at": "2026-08-06T08:11:10Z",
+      "rewards_until": "2026-07-28T00:00:00.000Z",
+      "merkle_root": "0x0b33b0fe9db7c954023aa92160d1a4117193955e09148f115ac716783917137a"
+    },
+    {
+      "commit": "1b4c8f82d22b369578ba1c731bbea47ad4d459fe",
+      "published_at": "2026-08-13T11:58:21Z",
+      "rewards_until": "2026-08-11T00:00:00.000Z",
+      "merkle_root": "0xdf595ebf37c7a5917c9296a4c04ca765f3b920ce697dbb08f9fd389eb9c103c8"
+    },
+    {
+      "commit": "0244a940afe3eda847d8502fde953da6506c1802",
+      "published_at": "2026-08-27T06:30:59Z",
+      "rewards_until": "2026-08-25T00:00:00.000Z",
+      "merkle_root": "0xd0fb4e3ff4339edf908e06ff62b0a23958190c60a5fff546aa90efca75c647ca"
+    },
+    {
+      "commit": "7bfb083836e67cec5efceceb0fd61826a47abf9a",
+      "published_at": "2026-09-10T05:27:47Z",
+      "rewards_until": "2026-09-08T00:00:00.000Z",
+      "merkle_root": "0x5fd4807092daad9a9df838622129c5eca7148f31f6e8ffdce7c6a26a83deda93"
+    },
+    {
+      "commit": "4155ad83ec9b83ab8ec2bf558bbc36a55e1474a6",
+      "published_at": "2026-09-24T05:37:51Z",
+      "rewards_until": "2026-09-22T00:00:00.000Z",
+      "merkle_root": "0xf806466669f4d3464fb8b4e6edde9027c0edbc9c899c8d3371756237a7439fa8"
+    },
+    {
+      "commit": "32d2f9ea501c2ec90ed19456779b54f33b864b7b",
+      "published_at": "2026-10-08T04:42:11Z",
+      "rewards_until": "2026-10-06T00:00:00.000Z",
+      "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef"
+    }
+  ],
+  "entries": []
+}

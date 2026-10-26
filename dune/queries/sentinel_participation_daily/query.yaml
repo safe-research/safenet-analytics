@@ -1,0 +1,25 @@
+name: "Safenet: Sentinel participation per day"
+description: >
+  Safenet production (Aegis): each Sentinel's daily participation rate (valid reveals / eligible
+  requests with a closed response window) over the last 30 UTC days. Days without eligible
+  requests are blank. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  heatmap:
+    name: Participation per day, % of eligible requests (last 30 days)
+    type: pivot
+    description: >
+      One row per Sentinel. Blank: the Sentinel was not eligible for any request that day (not a
+      member, or no requests). Response window open: not counted yet.
+    options:
+      rendererName: Table Heatmap
+      aggregatorName: Average
+      rows: [sentinel]
+      cols: [day]
+      vals: [participation_pct]
+      controls: { enabled: false }

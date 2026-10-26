@@ -28,6 +28,8 @@ docs/                         documentation
 | Latest requests with explorer links | `latest_requests` | [docs/metrics/transaction-checks.md](docs/metrics/transaction-checks.md#latest-requests) |
 | Network & revenue: headline counters, time windows, result breakdown, networks, Guard-enabled Safes, fees and fee allocation | `network_summary`, `results_daily`, `network_breakdown`, `guard_adoption`, `fee_revenue_daily`, `fee_allocation`, `fee_config` | [docs/metrics/network-and-revenue.md](docs/metrics/network-and-revenue.md) |
 | Shared models (not displayed): requests, oracle USDC.e flows, known traffic, SafenetGuard deployments and Safe guard status | `safenet_requests`, `safenet_fee_flows`, `safenet_known_traffic`, `safenet_guards`, `safenet_guard_status` | [docs/metrics/network-and-revenue.md](docs/metrics/network-and-revenue.md) |
+| Sentinels: overview, participation by window and per day, verdicts, coverage, disputes and arbitration, earnings (USDC.e fees, SAFE subsidies), bonds | `sentinel_overview`, `sentinel_windows`, `sentinel_participation_daily`, `sentinel_verdicts`, `sentinel_coverage`, `sentinel_disputes`, `sentinel_earnings`, `sentinel_earnings_daily`, `sentinel_bonds` | [docs/metrics/sentinels.md](docs/metrics/sentinels.md) |
+| Sentinel models (not displayed): membership terms, responses per request, reverted calls, Sentinel USDC.e transfers, SAFE rewards distributor events, published SAFE allocations | `safenet_sentinel_terms`, `safenet_sentinel_responses`, `safenet_sentinel_failed_calls`, `safenet_sentinel_wallet_transfers`, `safenet_reward_events`, `safenet_sentinel_rewards` | [docs/metrics/sentinels.md](docs/metrics/sentinels.md) |
 | Decoded production events (shared, not displayed) | `safenet_events` | [docs/decoding.md](docs/decoding.md) |
 | Participant labels (shared, not displayed) | `safenet_participant_labels` | [src/participants.ts](src/participants.ts) |
 
@@ -55,5 +57,7 @@ npm run verify:transaction-checks  # recompute the first metric from Gnosis Chai
 npm run verify:network-revenue     # recount the Network & revenue section and check fees against USDC.e flows
 npm run sync:known-traffic         # regenerate the known operational/test Safes query
 npm run sync:participants          # refresh participant labels from safe-fndn/safenet-data
+npm run sync:sentinel-rewards      # refresh published SAFE allocations of Sentinels from safe-fndn/safenet-data
+npm run verify:sentinels           # recount the Sentinels section from chain data (add -- --traces for reverted calls)
 npm run dune -- deploy --preview --sha <sha>   # preview deploy (normally done by CI)
 ```

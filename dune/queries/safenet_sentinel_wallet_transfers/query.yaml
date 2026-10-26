@@ -1,0 +1,10 @@
+name: "Safenet: Sentinel USDC.e transfers"
+description: >
+  Safenet production (Aegis): USDC.e transfers of Sentinel accounts on Gnosis Chain since the Sentinel Oracle deployment, decoded from raw logs, for the Sentinels' available bond token.
+  Read by the Sentinel queries; not shown on the dashboard. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+# Executed as part of the queries that read it, so it needs no schedule of its own.
+refresh: none
+performance: medium

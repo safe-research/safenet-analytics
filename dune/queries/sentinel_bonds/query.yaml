@@ -1,0 +1,33 @@
+name: "Safenet: Sentinel bonds"
+description: >
+  Safenet production (Aegis): per Sentinel, USDC.e available in its account and bonds locked in
+  the Sentinel Oracle now, and all-time bonds posted, returned and slashed. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Sentinel bonds (USDC.e; available and locked now, movements all time)
+    type: table
+    description: >
+      Available: USDC.e in the Sentinel's own account. Locked: bonds of unclaimed commitments held
+      by the oracle. Slashed: taken for a missing response or a lost ruled dispute; confirmed by the
+      Sentinel's claim, or not yet claimed.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: sentinel_link, title: Sentinel, type: normal, alignContent: left, isHidden: false }
+        - { name: current_status, title: Status (now), type: normal, alignContent: left, isHidden: false }
+        - { name: available_usdc, title: Available now, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: locked_usdc, title: Locked now, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: unclaimed_commitments, title: Unclaimed commitments, type: normal, alignContent: right, isHidden: false }
+        - { name: posted_usdc, title: Posted (all time), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: returned_usdc, title: Returned, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: slashed_confirmed_usdc, title: Slashed (claimed), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: slashed_unclaimed_usdc, title: Slashed (not yet claimed), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: slashed_missing_response_usdc, title: "of which: missing response", type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: slashed_dispute_lost_usdc, title: "of which: lost dispute", type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: slash_rule_mismatches, title: Check (expected 0), type: normal, alignContent: right, isHidden: false }

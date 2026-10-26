@@ -118,6 +118,7 @@ Where the fees went, per the contract rules (`SentinelOracleRequests.sol`):
 | Bonds (not revenue): deposited, returned, slashed, outstanding | 800 USDC.e per committed vote | Bond transfers in; claims | Unclaimed bonds |
 | Checks (expected 0) | Fees recorded minus received; claim events minus claim transfers; unclassified oracle transfers; oracle balance minus obligations | | |
 
+- **Per-Sentinel rows** come from [`safenet_sentinel_responses`](../../dune/queries/safenet_sentinel_responses), the per-(request, Sentinel) model of the [Sentinels](sentinels.md) section, with the same rule. The query reads each model once and expands its rows from one row of totals: Dune inlines every query reference and CTE, and the earlier form exceeded Dune's limit on query stages ([decoding.md](../decoding.md#the-decoding-query)).
 - **Classification is never by amount.** Refunds and receiver payouts have no event of their own. They are identified as transfers from the oracle to the request's sponsor, or to the receiver, in the transaction that ended the request ([`safenet_fee_flows`](../../dune/queries/safenet_fee_flows)).
 - **Recipients are never assumed.** They are the addresses in `Claimed` events and transfers, and Sentinel names come from [safe-fndn/safenet-data](https://github.com/safe-fndn/safenet-data) as labels only (unknown addresses show the address).
 - **Not part of this section:** SAFE incentives and staking (Ethereum), bond deposits, and funding transfers.

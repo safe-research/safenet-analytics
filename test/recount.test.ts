@@ -17,6 +17,8 @@ const base = (over: Partial<RequestRecord> = {}): RequestRecord => ({
   fee: 400_000n,
   daoFeeShare: 0n,
   slashAmount: 400_000n,
+  commitDeadline: 7,
+  revealDeadline: 13,
   votes: [],
   claims: [],
   bondLocked: 0n,

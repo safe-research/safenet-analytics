@@ -1,0 +1,57 @@
+name: "Safenet: Sentinel verdicts"
+description: >
+  Safenet production (Aegis): each Sentinel's own responses by kind (secure, insecure, missing
+  response, no commit) for the last 30 days and all time. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+# Colours: green secure, red insecure, dark grey missing response (committed, not revealed), yellow
+# commit reverted (late or invalid), light grey no commit (abstain or offline). The stack order keeps
+# green and red apart for colour-blind readers (as in the Network & revenue result breakdown); the
+# legend names every kind and the table has the numbers.
+visualizations:
+  bars:
+    name: Sentinel responses by kind (requests proposed in the last 30 days)
+    type: chart
+    options:
+      globalSeriesType: column
+      swappedAxes: true
+      series: { stacking: normal }
+      legend: { enabled: true }
+      xAxis: { title: { text: Sentinel } }
+      yAxis:
+        - title: { text: Eligible requests }
+      columnMapping:
+        sentinel: x
+        secure_30d: y
+        missing_30d: y
+        insecure_30d: y
+        reverted_commit_30d: y
+        no_commit_30d: y
+      seriesOptions:
+        secure_30d: { type: column, yAxis: 0, zIndex: 0, name: Secure, color: "#0ca30c" }
+        missing_30d: { type: column, yAxis: 0, zIndex: 1, name: "Missing response (committed, not revealed)", color: "#6f6e69" }
+        insecure_30d: { type: column, yAxis: 0, zIndex: 2, name: Insecure, color: "#d03b3b" }
+        reverted_commit_30d: { type: column, yAxis: 0, zIndex: 3, name: "Commit reverted (late or invalid)", color: "#eda100" }
+        no_commit_30d: { type: column, yAxis: 0, zIndex: 4, name: "No commit (abstain or offline)", color: "#b5b3ab" }
+  table:
+    name: Sentinel responses by kind (table)
+    type: table
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: sentinel, title: Sentinel, type: normal, alignContent: left, isHidden: false }
+        - { name: secure_30d, title: Secure 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: insecure_30d, title: Insecure 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: missing_30d, title: Missing 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: reverted_commit_30d, title: Commit reverted 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: no_commit_30d, title: No commit 30d, type: normal, alignContent: right, isHidden: false }
+        - { name: secure_all, title: Secure all time, type: normal, alignContent: right, isHidden: false }
+        - { name: insecure_all, title: Insecure all time, type: normal, alignContent: right, isHidden: false }
+        - { name: missing_all, title: Missing all time, type: normal, alignContent: right, isHidden: false }
+        - { name: reverted_commit_all, title: Commit reverted all time, type: normal, alignContent: right, isHidden: false }
+        - { name: no_commit_all, title: No commit all time, type: normal, alignContent: right, isHidden: false }
+        - { name: total_all, title: Eligible all time, type: normal, alignContent: right, isHidden: false }

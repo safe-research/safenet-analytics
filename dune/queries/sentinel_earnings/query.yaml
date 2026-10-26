@@ -1,0 +1,30 @@
+name: "Safenet: Sentinel earnings"
+description: >
+  Safenet production (Aegis): Sentinel transaction-fee rewards in USDC.e (accrued, claimed,
+  outstanding) and published SAFE subsidies (published, claimed, claimable) per Sentinel, in
+  separate columns. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Sentinel earnings (USDC.e fees and SAFE subsidies, never added together)
+    type: table
+    description: >
+      Fee rewards: the Sentinel's share of decided requests it won, paid when claimed. SAFE: as
+      published by the Safe Foundation for the address (all reward types; no Sentinel split is
+      published) and claimed from the Ethereum distributor. Bonds are not earnings.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: sentinel_link, title: Sentinel, type: normal, alignContent: left, isHidden: false }
+        - { name: fee_accrued_usdc, title: Fees accrued (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: fee_claimed_usdc, title: Fees claimed (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: fee_outstanding_usdc, title: Fees outstanding (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: fee_accrued_30d_usdc, title: Fees accrued 30d (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: safe_published, title: SAFE published, type: normal, alignContent: left, isHidden: false }
+        - { name: safe_claimed, title: SAFE claimed, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: safe_claimable, title: SAFE claimable, type: normal, alignContent: left, isHidden: false }
