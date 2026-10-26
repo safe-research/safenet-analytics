@@ -1,0 +1,83 @@
+name: "Safenet: staking per day (SAFE)"
+description: >
+  Safenet Staking on Ethereum per UTC day, all time (Beta and production in one contract): deposits,
+  withdrawal requests, completed withdrawals, active stake, outstanding withdrawals and cumulative
+  net flow, in SAFE. Charts split Beta and production at 2026-10-07. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+# Colours: production blue and Beta grey, as one series split in two; inflows blue, outflows orange.
+visualizations:
+  active_stake:
+    name: Active stake (SAFE, all time; Beta before 2026-10-07)
+    type: chart
+    options:
+      globalSeriesType: area
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Day (UTC) } }
+      yAxis:
+        - title: { text: SAFE }
+      columnMapping:
+        day: x
+        active_stake_beta: y
+        active_stake_production: y
+      seriesOptions:
+        active_stake_beta: { type: area, yAxis: 0, zIndex: 0, name: Active stake (Beta), color: "#b5b3ab" }
+        active_stake_production: { type: area, yAxis: 0, zIndex: 1, name: Active stake (production), color: "#2a78d6" }
+  flows:
+    name: Deposits and completed withdrawals per day (SAFE, all time)
+    type: chart
+    options:
+      globalSeriesType: column
+      sortX: true
+      series: { stacking: normal }
+      legend: { enabled: true }
+      xAxis: { title: { text: Day (UTC) } }
+      yAxis:
+        - title: { text: SAFE (withdrawals below zero) }
+      columnMapping:
+        day: x
+        deposits: y
+        withdrawals_completed_negative: y
+      seriesOptions:
+        deposits: { type: column, yAxis: 0, zIndex: 0, name: Deposits, color: "#2a78d6" }
+        withdrawals_completed_negative: { type: column, yAxis: 0, zIndex: 1, name: Completed withdrawals, color: "#eb6834" }
+  net_flow:
+    name: Net capital flow, cumulative (deposits minus completed withdrawals, SAFE)
+    type: chart
+    options:
+      globalSeriesType: line
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Day (UTC) } }
+      yAxis:
+        - title: { text: SAFE }
+      columnMapping:
+        day: x
+        net_flow: y
+        active_stake: y
+      seriesOptions:
+        net_flow: { type: line, yAxis: 0, zIndex: 1, name: Net capital flow, color: "#2a78d6" }
+        active_stake: { type: line, yAxis: 0, zIndex: 0, name: "Active stake (for comparison; gap = outstanding withdrawals)", color: "#b5b3ab" }
+  requests:
+    name: Withdrawal requests per day (SAFE, all time)
+    type: chart
+    options:
+      globalSeriesType: column
+      sortX: true
+      series: { stacking: normal }
+      legend: { enabled: true }
+      xAxis: { title: { text: Day (UTC) } }
+      yAxis:
+        - title: { text: SAFE requested }
+      columnMapping:
+        day: x
+        withdrawals_requested_beta: y
+        withdrawals_requested_production: y
+      seriesOptions:
+        withdrawals_requested_beta: { type: column, yAxis: 0, zIndex: 0, name: Requested (Beta), color: "#b5b3ab" }
+        withdrawals_requested_production: { type: column, yAxis: 0, zIndex: 1, name: Requested (production), color: "#eb6834" }

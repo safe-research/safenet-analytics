@@ -30,11 +30,12 @@ export function rpcClient(url: string) {
     }
   };
 
+  // Block range per eth_getLogs request; the staking verification passes its own (ETH_LOG_STEP).
   const STEP = 200_000;
-  const getLogs = async (address: string, topics: (string | string[] | null)[], from: number, to: number) => {
+  const getLogs = async (address: string, topics: (string | string[] | null)[], from: number, to: number, step = STEP) => {
     const logs: Log[] = [];
-    for (let start = from; start <= to; start += STEP) {
-      const end = Math.min(start + STEP - 1, to);
+    for (let start = from; start <= to; start += step) {
+      const end = Math.min(start + step - 1, to);
       logs.push(
         ...(await call<Log[]>("eth_getLogs", [{ address, topics, fromBlock: `0x${start.toString(16)}`, toBlock: `0x${end.toString(16)}` }])),
       );

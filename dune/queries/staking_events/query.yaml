@@ -1,0 +1,12 @@
+name: "Safenet: staking events (Ethereum)"
+description: >
+  Safenet Staking contract on Ethereum (0x115E78f1…8509), one row per event from Dune's decoded
+  tables: deposits, withdrawal requests and claims, validator registration and withdraw-delay
+  changes, Beta and production in one history. Shared model for the staking and validator queries;
+  not shown on the dashboard. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+# Executed as part of the queries that read it, so it needs no schedule of its own.
+refresh: none
+performance: medium

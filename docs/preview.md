@@ -8,9 +8,9 @@ Every pull request from a branch of this repository is deployed to a **private p
    1. Runs the checks (typecheck, tests, offline validation).
    2. Prints the **production plan**: a dry run of what merging would change in production. It makes no writes.
    3. Deploys the pull request to its preview track. Resources are created private, or updated in place.
-   4. Executes the preview queries whose SQL changed, within the cost caps.
-   5. Recounts the request metric from Gnosis Chain logs over exactly the block range of the preview result, and compares every day and column, the counter and the sum of the daily bars. The Network & revenue and Sentinels sections are recounted the same way (`verify:network-revenue`, `verify:sentinels`), with representative cases to check on the Safenet explorer.
-   6. Renders images of the panels from the preview results, including the Sentinel overview, heatmap, verdicts, coverage, disputes, earnings and bonds.
+   4. Executes the preview queries whose SQL changed, within the cost caps. Queries whose SQL, with every referenced query inlined, equals production's on `main` are not executed (`run-preview --baseline`), so a new track runs only the section under review. Their preview panels stay empty, production shows them, and their reconciliation step is skipped. *Run workflow* with *force run* executes everything.
+   5. Recounts the request metric from Gnosis Chain logs over exactly the block range of the preview result, and compares every day and column, the counter and the sum of the daily bars. The Network & revenue and Sentinels sections are recounted the same way (`verify:network-revenue`, `verify:sentinels`), with representative cases to check on the Safenet explorer. The Staking section is replayed from Ethereum logs and checked against the contract's state at the same block and against transaction receipts (`verify:staking`).
+   6. Renders images of the panels from the preview results, including the Sentinel and Staking panels.
    7. Posts or updates one comment on the pull request with the private URL, the deployed commit, the images, the reconciliation, the preview resource IDs and the production plan.
 2. **Review.** Open the preview URL while signed in to Dune with access to the `safe` team. Each push to the pull request redeploys the same preview resources. The banner at the top names the pull request and commit.
 3. **Merge.** *Deploy* updates production in place (same IDs and URL), and *Refresh* executes the production queries and checks the metric against on-chain events. See [deployment.md](deployment.md).
@@ -23,7 +23,7 @@ A track is a set of preview resources. `dune/preview.yaml` on the branch names i
 | Track | Dashboard | Queries |
 | --- | --- | --- |
 | `default` | *Safenet — Preview*, `safe/safenet-preview` | `[Preview] Safenet: …` |
-| `<name>`, e.g. `staking`, `beta-replacement` | *Safenet — Preview (`<name>`)*, `safe/safenet-preview-<name>` | `[Preview <name>] Safenet: …` |
+| `<name>`, e.g. `staking-validators`, `beta-replacement` | *Safenet — Preview (`<name>`)*, `safe/safenet-preview-<name>` | `[Preview <name>] Safenet: …` |
 
 Pull requests on the same track share its resources, and the last deployment wins. Work packages that run in parallel set their own track on their branch, so they never overwrite each other. The eventual replacement of the Beta dashboard is previewed on its own track (`beta-replacement`). Beta itself, [safe/safenet-beta](https://dune.com/safe/safenet-beta), stays protected: no deploy or cleanup writes to it.
 
@@ -51,7 +51,7 @@ Edits made in the Dune UI to preview resources are overwritten by the next previ
 
 ## Images
 
-The preview dashboard is private, and CI cannot sign in to Dune, so a browser in CI cannot capture it. `scripts/render-preview.ts` instead draws the counter, the daily chart (with its values as a table) and the latest-requests table from the preview's query results, fetched through the API. Each image says it is rendered, not a Dune screenshot. The images are kept on the `dune-preview-state` branch under `screenshots/<track>/<commit>/` and uploaded as the `preview` artifact. For the Dune rendering itself, open the preview URL.
+The preview dashboard is private, and CI cannot sign in to Dune, so a browser in CI cannot capture it. `scripts/render-preview.ts` instead draws the panels (counters, charts with their values as a table, and tables) from the preview's query results, fetched through the API. Each image says it is rendered, not a Dune screenshot. The images are kept on the `dune-preview-state` branch under `screenshots/<track>/<commit>/` and uploaded as the `preview` artifact. For the Dune rendering itself, open the preview URL.
 
 ## Setup
 

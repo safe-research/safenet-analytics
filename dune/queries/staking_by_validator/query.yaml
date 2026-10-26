@@ -1,0 +1,55 @@
+name: "Safenet: stake by validator"
+description: >
+  Safenet active stake by validator now, in SAFE: self-stake (the validator's registered staker,
+  from Consensus.ValidatorStakerSet) and delegated stake, with stake on validators deregistered in the
+  Staking contract shown separately. Rows add up to the headline active stake. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  bars:
+    name: Active stake by validator now (SAFE)
+    type: chart
+    options:
+      globalSeriesType: column
+      swappedAxes: true
+      series: { stacking: normal }
+      legend: { enabled: true }
+      xAxis: { title: { text: Validator } }
+      yAxis:
+        - title: { text: SAFE }
+      columnMapping:
+        validator_label: x
+        self_stake: y
+        delegated_stake: y
+        unattributed_stake: y
+        deregistered_stake: y
+      seriesOptions:
+        self_stake: { type: column, yAxis: 0, zIndex: 0, name: "Self-stake (registered staker)", color: "#184f95" }
+        delegated_stake: { type: column, yAxis: 0, zIndex: 1, name: Delegated stake, color: "#6da7ec" }
+        unattributed_stake: { type: column, yAxis: 0, zIndex: 2, name: "No registered staker (split unknown)", color: "#eda100" }
+        deregistered_stake: { type: column, yAxis: 0, zIndex: 3, name: "On deregistered validator (not backing the set)", color: "#b5b3ab" }
+  table:
+    name: Active stake by validator now (table)
+    type: table
+    description: >
+      Status is the validator's registration in the Staking contract, not live validator-set
+      membership. Self-stake and delegated stake are blank when the validator has no registered
+      staker. Names from safe-fndn/safenet-data; unknown validators show their address.
+      Shares add up to 100% of the headline active stake.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: validator, title: Validator, type: normal, alignContent: left, isHidden: false }
+        - { name: staking_status, title: Staking registration, type: normal, alignContent: left, isHidden: false }
+        - { name: registered_staker, title: Registered staker, type: normal, alignContent: left, isHidden: false }
+        - { name: self_stake_any_status, title: Self-stake (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: delegated_stake_any_status, title: Delegated stake (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: total_stake, title: Total stake (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: share_of_active_stake, title: Share of active stake, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: stakers, title: Stakers, type: normal, alignContent: right, isHidden: false }
+        - { name: validator_address, title: Validator address, type: normal, alignContent: left, isHidden: true }
+        - { name: unreconciled_stake, title: "Rows minus headline (expected 0)", type: normal, alignContent: right, isHidden: true }

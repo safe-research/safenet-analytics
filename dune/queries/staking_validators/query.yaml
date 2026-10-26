@@ -1,0 +1,11 @@
+name: "Safenet: staking by validator"
+description: >
+  Safenet validators as the Staking contract sees them, one row per validator ever registered there
+  or holding stake: registration status, registered staker, active stake split into self-stake and
+  delegated stake, and stakers. Not a statement of live validator-set membership. Shared model;
+  not shown on the dashboard. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

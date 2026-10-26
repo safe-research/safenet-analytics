@@ -40,6 +40,9 @@ jobs:
     env:
       DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
       GNOSIS_RPC_URL: ${{ secrets.GNOSIS_RPC_URL }}
+      # Optional; the staking verification needs archive state and long eth_getLogs ranges and
+      # falls back to a public endpoint that serves both (scripts/lib/staking.ts).
+      ETHEREUM_RPC_URL: ${{ secrets.ETHEREUM_RPC_URL }}
       GH_TOKEN: ${{ github.token }}
       PR: ${{ inputs.pr || github.event.pull_request.number }}
       CI: "true"
@@ -89,6 +92,8 @@ jobs:
         run: |
           git fetch origin main
           git show origin/main:dune/state.json > dune/state.json
+          # main's configuration: preview queries whose SQL equals production's are not executed.
+          git worktree add --detach "$RUNNER_TEMP/main" origin/main
           TRACK=$(node --input-type=module -e 'import("./src/preview.ts").then(async (m) => console.log((await m.loadPreviewSettings()).track))')
           echo "track=$TRACK" >> "$GITHUB_OUTPUT"
           STATE_DIR="$RUNNER_TEMP/preview-state"
@@ -132,29 +137,40 @@ jobs:
       - name: Run preview queries
         id: run
         if: steps.deploy.outcome == 'success'
-        run: npm run dune -- run-preview --sha "${{ steps.pr.outputs.sha }}" ${{ inputs.force_run && '--force' || '' }}
+        run: >-
+          npm run dune -- run-preview --sha "${{ steps.pr.outputs.sha }}" --baseline "$RUNNER_TEMP/main/dune"
+          ${{ inputs.force_run && '--force' || '' }}
 
-      # Shows mismatches in the comment; fails the job after the comment is posted.
+      # Shows mismatches in the comment; fails the job after the comment is posted. Each section is
+      # reconciled only if the preview has its results: sections whose SQL equals production's are
+      # not executed in the preview (run-preview --baseline); Refresh verifies them in production.
       - name: Reconcile against on-chain events
-        if: always() && steps.run.outcome == 'success'
+        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' transaction_checks_daily ')
         run: >-
           npm run verify:transaction-checks --
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --out "$RUNNER_TEMP/verification.json"
 
       - name: Reconcile network and revenue against on-chain events and token flows
-        if: always() && steps.run.outcome == 'success'
+        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' network_summary ')
         run: >-
           npm run verify:network-revenue --
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --out "$RUNNER_TEMP/verification-network-revenue.json"
 
       - name: Reconcile Sentinels against on-chain events, balances and SAFE rewards
-        if: always() && steps.run.outcome == 'success'
+        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' sentinel_overview ')
         run: >-
           npm run verify:sentinels --
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --out "$RUNNER_TEMP/verification-sentinels.json"
+
+      - name: Reconcile staking against contract state, receipts and the registered stakers
+        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' staking_overview ')
+        run: >-
+          npm run verify:staking --
+          --state "dune/.preview/${{ steps.state.outputs.track }}.json"
+          --out "$RUNNER_TEMP/verification-staking.json"
 
       - name: Render result images
         if: always() && steps.run.outcome == 'success'
@@ -194,6 +210,7 @@ jobs:
             ${{ runner.temp }}/verification.json
             ${{ runner.temp }}/verification-network-revenue.json
             ${{ runner.temp }}/verification-sentinels.json
+            ${{ runner.temp }}/verification-staking.json
             ${{ runner.temp }}/production-plan.txt
           if-no-files-found: ignore
 
@@ -218,13 +235,14 @@ jobs:
               echo "Images rendered from the preview's query results through the API (the dashboard is private, so CI cannot screenshot Dune):"
               echo
               for f in counter daily results fees network_summary network_breakdown guard_adoption fee_allocation fee_config latest \
-                sentinel_overview sentinel_windows sentinel_heatmap sentinel_verdicts sentinel_coverage sentinel_disputes sentinel_earnings sentinel_earnings_daily sentinel_bonds; do
+                sentinel_overview sentinel_windows sentinel_heatmap sentinel_verdicts sentinel_coverage sentinel_disputes sentinel_earnings sentinel_earnings_daily sentinel_bonds \
+                staking_overview staking_flows staking_active staking_daily_flows staking_net_flow staking_requests staking_outstanding staking_validators; do
                 if [ -f "$T/render/$f.png" ]; then echo "<img src=\"$IMG/$f.png?raw=true\" alt=\"$f\" width=\"$([ $f = counter ] && echo 320 || echo 900)\">"; echo; fi
               done
               echo "<details><summary>Network and revenue: reconciliation with on-chain events and USDC.e flows</summary>"
               echo
               echo '```json'
-              if [ -f "$T/verification-network-revenue.json" ]; then jq '{finalized_block, requests, statuses, fee_checks, issues, dune}' "$T/verification-network-revenue.json"; else echo '"not run"'; fi
+              if [ -f "$T/verification-network-revenue.json" ]; then jq '{finalized_block, requests, statuses, fee_checks, issues, dune}' "$T/verification-network-revenue.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
               echo '```'
               echo "</details>"
               echo
@@ -240,7 +258,7 @@ jobs:
               echo "<details><summary>Sentinels: reconciliation with on-chain events, balances and SAFE rewards</summary>"
               echo
               echo '```json'
-              if [ -f "$T/verification-sentinels.json" ]; then jq '{finalized_block, requests, open_response_windows, coverage, safe_rewards, issues, dune}' "$T/verification-sentinels.json"; else echo '"not run"'; fi
+              if [ -f "$T/verification-sentinels.json" ]; then jq '{finalized_block, requests, open_response_windows, coverage, safe_rewards, issues, dune}' "$T/verification-sentinels.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
               echo '```'
               echo "</details>"
               echo
@@ -253,10 +271,26 @@ jobs:
                 echo "</details>"
                 echo
               fi
+              echo "<details><summary>Staking: reconciliation with contract state, receipts and registered stakers</summary>"
+              echo
+              echo '```json'
+              if [ -f "$T/verification-staking.json" ]; then jq '{block, block_time, events, totals_safe, contract_checks: [.contract_checks[] | {check, ok}], registered_stakers, issues, dune}' "$T/verification-staking.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
+              echo '```'
+              echo "</details>"
+              echo
+              if [ -f "$T/verification-staking.json" ]; then
+                echo "<details><summary>Representative staking transactions (receipts checked; compare on Etherscan)</summary>"
+                echo
+                echo '```json'
+                jq '.representative' "$T/verification-staking.json"
+                echo '```'
+                echo "</details>"
+                echo
+              fi
               echo "<details><summary>Reconciliation with on-chain events</summary>"
               echo
               echo '```json'
-              if [ -f "$T/verification.json" ]; then jq '{to_block, totals, issues, dune_comparison}' "$T/verification.json"; else echo '"not run"'; fi
+              if [ -f "$T/verification.json" ]; then jq '{to_block, totals, issues, dune_comparison}' "$T/verification.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
               echo '```'
               echo "</details>"
               echo

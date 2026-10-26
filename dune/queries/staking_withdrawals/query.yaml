@@ -1,0 +1,10 @@
+name: "Safenet: staking withdrawals"
+description: >
+  Safenet staking withdrawals on Ethereum, one row per withdrawal ID: staker, validator, amount,
+  request, earliest claim time under the contract's rules, claim, and status (waiting, claimable,
+  completed). Shared model; not shown on the dashboard. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

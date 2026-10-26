@@ -152,6 +152,62 @@ export const REWARDS_DISTRIBUTOR = {
 } as const;
 export const SAFE_TOKEN = { symbol: "SAFE", address: "0x5afe3855358e112b5647b952709e6165e1c1eeee", decimals: 18 } as const;
 
+// Safenet Staking on Ethereum (safe-research/safenet contracts/src/Staking.sol at 4ed5101; not a
+// proxy). One contract since 2026-03-04, used by Beta and production alike. Dune decodes it as
+// safe_ethereum.Staking_evt_<Event> (docs/decoding.md); the topic0 values are for the RPC
+// verification (scripts/verify-staking.ts). Definitions: docs/metrics/staking.md.
+export const STAKING = {
+  chain: "ethereum",
+  address: "0x115e78f160e1e3ef163b05c84562fa16fa338509",
+  deployBlock: 24585750,
+  deployDate: "2026-03-04",
+  decodedSchema: "safe_ethereum",
+  events: {
+    StakeIncreased: {
+      signature: "StakeIncreased(address,address,uint256)",
+      topic0: "0x835b6b05d09416215e9d638808ff68a75b79bb61e485812125e29950d722de5e",
+      table: "safe_ethereum.Staking_evt_StakeIncreased",
+    },
+    WithdrawalInitiated: {
+      signature: "WithdrawalInitiated(address,address,uint64,uint256)",
+      topic0: "0xe77a460de02956e5b769dc1b86f3dedb6471a5a1480b18e5e60c025d3842a134",
+      table: "safe_ethereum.Staking_evt_WithdrawalInitiated",
+    },
+    WithdrawalClaimed: {
+      signature: "WithdrawalClaimed(address,uint64,uint256)",
+      topic0: "0x6ee1930b1249317355da0ca051522261bf0c5287979ae2907223ac0a03017ba6",
+      table: "safe_ethereum.Staking_evt_WithdrawalClaimed",
+    },
+    ValidatorUpdated: {
+      signature: "ValidatorUpdated(address,bool)",
+      topic0: "0x763b63b30e91c843bb39e4379603697003d3b7c1f192619cd782fa33bdc44396",
+      table: "safe_ethereum.Staking_evt_ValidatorUpdated",
+    },
+    WithdrawDelayChanged: {
+      signature: "WithdrawDelayChanged(uint256,uint256)",
+      topic0: "0x675b321b815964c5762534007d46e2c87681ec7cca84b6fc979e979470ca522c",
+      table: "safe_ethereum.Staking_evt_WithdrawDelayChanged",
+    },
+    TokensRecovered: {
+      signature: "TokensRecovered(address,address,uint256)",
+      topic0: "0x401f439d865a766757ec78675925bd67198d5e78805aa41691b34b5d6a6cbbe6",
+      table: "safe_ethereum.Staking_evt_TokensRecovered",
+    },
+  },
+} as const;
+
+// Consensus.ValidatorStakerSet(address indexed validator, address staker) on the production
+// Consensus (Gnosis Chain): the Ethereum account that puts up the validator's own stake
+// (safenet docs/configuration.md "Staking"). Self-stake is this account's stake on its validator.
+export const VALIDATOR_STAKER_SET = {
+  signature: "ValidatorStakerSet(address,address)",
+  topic0: "0xf0a005469b11e09422034ffe29da663a2969918f3663a27fae9fd5eed38778bb",
+} as const;
+
+// Start of production in the continuous staking history: the production Consensus deployment on
+// Gnosis Chain (PRODUCTION.consensus.deployBlock, mined at this UTC time). Staking before it backed Beta.
+export const PRODUCTION_START_TIME = "2026-10-07 13:51:55";
+
 // EIP-712 domain separator of the production Consensus: keccak256(abi.encode(
 // keccak256("EIP712Domain(uint256 chainId,address verifyingContract)"), 100, Consensus)).
 // Equals Consensus.domainSeparator() on chain. A SafenetGuard bound to production stores it.
@@ -168,6 +224,6 @@ export const DECODING_CANDIDATES = [
   // Shared by production and the Aegis testnet; its events cannot be attributed to production alone.
   { name: "FROSTCoordinator", chain: "gnosis", address: "0xc6b34da4c99c043a093214d58423a8be39585b78" },
   { name: "Safenet7702Executor", chain: "gnosis", address: "0x4dfe88adf2d7c3fbd2e334ce820b9adfa541215c" },
-  { name: "Staking", chain: "ethereum", address: "0x115e78f160e1e3ef163b05c84562fa16fa338509" },
+  { name: "Staking", chain: "ethereum", address: STAKING.address },
   { name: "CumulativeMerkleDrop (SAFE rewards)", chain: "ethereum", address: REWARDS_DISTRIBUTOR.address },
 ] as const;
