@@ -1,47 +1,51 @@
 -- Safenet production: Sentinel membership terms from the Sentinel Oracle's own events, one row per
--- term. Definitions: docs/metrics/sentinels.md#membership.
+-- term. Definitions: docs/metrics/sentinels.md#membership-and-eligibility.
 --
 -- SentinelMap.sol: SentinelScheduled(sentinel, activeAtBlock) starts a term; the Sentinel may
 -- commit from active_from_block on (the scheduling block plus the 51840-block governance delay).
--- SentinelRemoved ends it at once. A Sentinel removed before active_from_block never became active.
--- Labels come from safe-fndn/safenet-data and are display names only; membership comes from here.
+-- SentinelRemoved ends it at once; a term ends at the first removal after its scheduling and before
+-- the next scheduling of the same Sentinel. A Sentinel removed before active_from_block never
+-- became active. Labels come from safe-fndn/safenet-data and are display names only.
+--
+-- Dune inlines every query reference and CTE where it is used, so safenet_events is read once here
+-- (window functions instead of self-joins) to keep the Sentinel queries small enough to run.
 
 with
 
 admin as (
-    select * from {{query:safenet_events}}
+    select
+        event,
+        sentinel,
+        block_number,
+        block_time,
+        log_index,
+        tx_url,
+        active_at_block,
+        -- The next scheduling of the same Sentinel, and the first removal from this row on.
+        min(if(event = 'sentinel_scheduled', block_number)) over (
+            partition by sentinel order by block_number, log_index rows between 1 following and unbounded following
+        ) as next_scheduled_block,
+        min(if(event = 'sentinel_removed', block_number)) over (
+            partition by sentinel order by block_number, log_index rows between current row and unbounded following
+        ) as next_removed_block,
+        min(if(event = 'sentinel_removed', block_time)) over (
+            partition by sentinel order by block_number, log_index rows between current row and unbounded following
+        ) as next_removed_at
+    from {{query:safenet_events}}
     where event in ('sentinel_scheduled', 'sentinel_removed')
 ),
 
-scheduled as (
+terms as (
     select
         sentinel,
         block_number as scheduled_block,
         block_time as scheduled_at,
         tx_url as scheduled_tx_url,
         active_at_block as active_from_block,
-        lead(block_number) over (partition by sentinel order by block_number, log_index) as next_scheduled_block
+        if(next_scheduled_block is null or next_removed_block < next_scheduled_block, next_removed_block) as removed_block,
+        if(next_scheduled_block is null or next_removed_block < next_scheduled_block, next_removed_at) as removed_at
     from admin
     where event = 'sentinel_scheduled'
-),
-
--- A term ends at the first removal at or after its scheduling (and before any re-scheduling).
-terms as (
-    select
-        s.sentinel,
-        s.scheduled_block,
-        s.scheduled_at,
-        s.scheduled_tx_url,
-        s.active_from_block,
-        min(r.block_number) as removed_block,
-        min(r.block_time) as removed_at
-    from scheduled as s
-    left join admin as r
-        on r.event = 'sentinel_removed'
-        and r.sentinel = s.sentinel
-        and r.block_number >= s.scheduled_block
-        and (s.next_scheduled_block is null or r.block_number < s.next_scheduled_block)
-    group by 1, 2, 3, 4, 5
 ),
 
 head as (

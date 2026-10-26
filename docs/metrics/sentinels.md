@@ -1,16 +1,21 @@
 # Sentinels
 
-The *Sentinels* section of [dune.com/safe/safenet](https://dune.com/safe/safenet) covers participation, verdicts, coverage, arbitration, earnings and bonds of the Safenet **production** ("Aegis") Sentinels. Beta is never read. It builds on the shared models of the [Network & revenue](network-and-revenue.md) section:
-- requests and their lifecycle come from [`safenet_requests`](../../dune/queries/safenet_requests);
-- events come from [`safenet_events`](../../dune/queries/safenet_events);
-- known operational and test Safes come from [`safenet_known_traffic`](../../dune/queries/safenet_known_traffic).
+The *Sentinels* section of [dune.com/safe/safenet](https://dune.com/safe/safenet) covers participation, verdicts, coverage, arbitration, earnings and bonds of the Safenet **production** ("Aegis") Sentinels. Beta is never read. It reads the shared decoding model [`safenet_events`](../../dune/queries/safenet_events), unchanged, and applies the request rules of the [Network & revenue](network-and-revenue.md) section's [`safenet_requests`](../../dune/queries/safenet_requests):
+- the request identifier (`request_id`);
+- the lifecycle (verdict, dispute, timeout);
+- one row per log;
+- the Charter-chain population (`covered_chain`);
+- the fee split.
 
-Request identifiers, lifecycle, deduplication and time boundaries are therefore the same in both sections.
+The verification checks both sections against the same chain data.
+
+**Query size.** Dune inlines every query reference and CTE where it is used, so the Sentinel models read `safenet_events` once each: one aggregation per request, with each Sentinel's actions kept in arrays. They do not read `safenet_requests`, which reads it several times over. See [decoding.md](../decoding.md#the-decoding-query).
 
 | Model | One row per | Used for |
 | --- | --- | --- |
 | [`safenet_sentinel_terms`](../../dune/queries/safenet_sentinel_terms) | Sentinel membership term | current status, eligibility |
 | [`safenet_sentinel_responses`](../../dune/queries/safenet_sentinel_responses) | (request, Sentinel) where the Sentinel was eligible or committed | every Sentinel panel |
+| [`safenet_sentinel_texts`](../../dune/queries/safenet_sentinel_texts) | recorded reveal reason or arbitrator context | disputes |
 | [`safenet_sentinel_failed_calls`](../../dune/queries/safenet_sentinel_failed_calls) | reverted `commit` / `reveal` call (traces) | reverted commits, reverted calls |
 | [`safenet_sentinel_wallet_transfers`](../../dune/queries/safenet_sentinel_wallet_transfers) | USDC.e transfer of a Sentinel account | available bond token |
 | [`safenet_reward_events`](../../dune/queries/safenet_reward_events) | event of the SAFE rewards distributor on Ethereum | SAFE claimed |

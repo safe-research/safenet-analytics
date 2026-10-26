@@ -18,27 +18,21 @@
 --   claimed    SAFE claimed by the address from the distributor (Claimed events)
 --   claimable  published - claimed, when the latest published root is the distributor's current root
 -- Without a published entry the subsidy columns say so instead of showing 0.
+-- Rows: every Sentinel that was ever eligible for a request or committed.
 
 with
-
-responses as (
-    select * from {{query:safenet_sentinel_responses}}
-),
-
-terms as (
-    select sentinel, max_by(name, scheduled_block) as name, max_by(sentinel_url, scheduled_block) as sentinel_url
-    from {{query:safenet_sentinel_terms}}
-    group by 1
-),
 
 fees as (
     select
         sentinel,
+        max(name) as name,
+        max(sentinel_url) as sentinel_url,
         sum(fee_reward_accrued) as accrued,
         coalesce(sum(fee_reward_claimed), 0) as claimed,
         sum(if(outcome_at >= now() - interval '30' day, fee_reward_accrued, 0)) as accrued_30d,
-        count_if(fee_reward_accrued > 0) as rewarded_requests
-    from responses
+        count_if(fee_reward_accrued > 0) as rewarded_requests,
+        max(through_block) as through_block
+    from {{query:safenet_sentinel_responses}}
     group by 1
 ),
 
@@ -52,12 +46,6 @@ latest_root as (
     where kind = 'root'
 ),
 
-onchain_root as (
-    select max_by(new_root, block_number) as merkle_root
-    from {{query:safenet_reward_events}}
-    where event = 'root_updated'
-),
-
 safe_published as (
     select p.address, p.cumulative_amount
     from published as p
@@ -65,38 +53,44 @@ safe_published as (
     where p.kind = 'entry'
 ),
 
-safe_claimed as (
-    select account, sum(amount) as amount
-    from {{query:safenet_reward_events}}
-    where event = 'claimed'
-    group by 1
+-- One row: the distributor's current root and SAFE claimed per account (read once).
+distributor as (
+    select
+        max(root) as onchain_root,
+        map_agg(account, claimed) filter (where account is not null) as claimed_by_account
+    from (
+        select
+            account,
+            sum(amount) filter (where event = 'claimed') as claimed,
+            max_by(new_root, block_number) filter (where event = 'root_updated') as root
+        from {{query:safenet_reward_events}}
+        group by 1
+    ) as per_account
 )
 
 select
-    '<a href="' || t.sentinel_url || '" target="_blank">' || t.name || '</a>' as sentinel_link,
-    t.name,
-    '0x' || lower(to_hex(t.sentinel)) as address,
-    coalesce(f.accrued, 0) / 1e6 as fee_accrued_usdc,
-    coalesce(f.claimed, 0) / 1e6 as fee_claimed_usdc,
-    (coalesce(f.accrued, 0) - coalesce(f.claimed, 0)) / 1e6 as fee_outstanding_usdc,
-    coalesce(f.accrued_30d, 0) / 1e6 as fee_accrued_30d_usdc,
-    coalesce(f.rewarded_requests, 0) as rewarded_requests,
+    '<a href="' || f.sentinel_url || '" target="_blank">' || f.name || '</a>' as sentinel_link,
+    f.name,
+    '0x' || lower(to_hex(f.sentinel)) as address,
+    f.accrued / 1e6 as fee_accrued_usdc,
+    f.claimed / 1e6 as fee_claimed_usdc,
+    (f.accrued - f.claimed) / 1e6 as fee_outstanding_usdc,
+    f.accrued_30d / 1e6 as fee_accrued_30d_usdc,
+    f.rewarded_requests,
     case
         when sp.address is null then 'No allocation published (latest root: rewards until ' || format_datetime(l.rewards_until, 'yyyy-MM-dd') || ')'
         else format('%,.2f', cast(sp.cumulative_amount as double) / 1e18) || ' SAFE (all reward types)'
     end as safe_published,
-    coalesce(cast(sc.amount as double), 0) / 1e18 as safe_claimed,
+    coalesce(cast(element_at(d.claimed_by_account, f.sentinel) as double), 0) / 1e18 as safe_claimed,
     case
         when sp.address is null then 'n/a'
-        when o.merkle_root is null or l.merkle_root <> o.merkle_root then 'not available: published root is not the distributor''s current root'
-        else format('%,.2f', (cast(sp.cumulative_amount as double) - coalesce(cast(sc.amount as double), 0)) / 1e18) || ' SAFE'
+        when d.onchain_root is null or l.merkle_root <> d.onchain_root then 'not available: published root is not the distributor''s current root'
+        else format('%,.2f', (cast(sp.cumulative_amount as double) - coalesce(cast(element_at(d.claimed_by_account, f.sentinel) as double), 0)) / 1e18) || ' SAFE'
     end as safe_claimable,
-    coalesce(l.merkle_root = o.merkle_root, false) as published_root_is_current,
-    (select max(block_number) from {{query:safenet_events}}) as through_block -- for the verification
-from terms as t
-left join fees as f on f.sentinel = t.sentinel
-left join safe_published as sp on sp.address = t.sentinel
-left join safe_claimed as sc on sc.account = t.sentinel
+    coalesce(l.merkle_root = d.onchain_root, false) as published_root_is_current,
+    max(f.through_block) over () as through_block -- for the verification
+from fees as f
+left join safe_published as sp on sp.address = f.sentinel
 cross join latest_root as l
-cross join onchain_root as o
-order by fee_accrued_usdc desc, t.name
+cross join distributor as d
+order by fee_accrued_usdc desc, f.name

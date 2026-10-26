@@ -54,6 +54,7 @@ const RAW_LOG_MODELS = [
   "safenet_sentinel_failed_calls",
   "safenet_sentinel_wallet_transfers",
   "safenet_reward_events",
+  "safenet_sentinel_texts",
 ];
 
 test("only the decoding models read raw logs; other queries read them by reference", async () => {
@@ -101,6 +102,10 @@ test("the Sentinel decoding queries use the production contracts, events and sel
 
   for (const name of ["Committed", "Revealed", "Claimed", "SentinelScheduled", "SentinelRemoved"] as const)
     assert.ok(sql.includes(EVENTS[name].topic0), `${name} topic0 missing from safenet_events`);
+
+  const texts = await read("safenet_sentinel_texts");
+  assert.ok(texts.includes(PRODUCTION.sentinelOracle.address));
+  for (const name of ["Revealed", "DisputeResolved", "DisputeOutOfScope"] as const) assert.ok(texts.includes(EVENTS[name].topic0), name);
 });
 
 test("Sentinel panel queries read the shared models, not their own decoding", async () => {
@@ -119,4 +124,24 @@ test("Sentinel panel queries read the shared models, not their own decoding", as
     assert.ok(/\{\{query:safenet_sentinel_(responses|terms)\}\}/.test(q), `${key} does not read the Sentinel models`);
     assert.ok(q.includes("through_block"), `${key} has no through_block for the verification`);
   }
+});
+
+// Dune inlines every query reference (and every CTE) where it is used, so a query that reaches
+// safenet_events many times hits Dune's limit on query stages ("too many stages"). fee_allocation
+// reaches it through six references, and more often still through CTEs used several times. The
+// Sentinel queries must stay well below that: at most three references, and their models
+// (safenet_sentinel_terms, safenet_sentinel_responses) use each CTE once.
+test("Sentinel queries read safenet_events at most three times once references are inlined", async () => {
+  const { readdir } = await import("node:fs/promises");
+  const keys = new Set(await readdir(`${DEFAULT_ROOT}/queries`));
+  const memo = new Map<string, number>();
+  const expansions = async (key: string): Promise<number> => {
+    if (key === "safenet_events") return 1;
+    if (memo.has(key)) return memo.get(key)!;
+    let n = 0;
+    for (const m of (await read(key)).matchAll(/\{\{query:([a-z0-9_]+)\}\}/g)) if (keys.has(m[1])) n += await expansions(m[1]);
+    memo.set(key, n);
+    return n;
+  };
+  for (const key of [...keys].filter((k) => k.startsWith("sentinel_"))) assert.ok((await expansions(key)) <= 3, `${key}: ${await expansions(key)}`);
 });

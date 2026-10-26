@@ -22,18 +22,6 @@
 
 with
 
-responses as (
-    select * from {{query:safenet_sentinel_responses}}
-    where committed_at is not null
-),
-
-terms as (
-    select sentinel, max_by(name, scheduled_block) as name, max_by(sentinel_url, scheduled_block) as sentinel_url,
-        max_by(term_status, scheduled_block) as status
-    from {{query:safenet_sentinel_terms}}
-    group by 1
-),
-
 wallet as (
     select
         sentinel,
@@ -45,38 +33,41 @@ wallet as (
 bonds as (
     select
         sentinel,
-        count(*) as commitments,
-        count_if(claimed_at is null) as unclaimed_commitments,
+        max(name) as name,
+        max(sentinel_url) as sentinel_url,
+        max(current_status) as status,
+        count_if(committed_at is not null) as commitments,
+        count_if(committed_at is not null and claimed_at is null) as unclaimed_commitments,
         sum(bond_amount) as posted,
-        sum(if(claimed_at is null, bond_amount - slash_due, 0)) as locked,
+        sum(if(committed_at is not null and claimed_at is null, bond_amount - slash_due, 0)) as locked,
         coalesce(sum(bond_returned), 0) as returned,
         sum(if(claimed_at is not null, bond_amount - bond_returned, 0)) as slashed_confirmed,
-        sum(if(claimed_at is null, slash_due, 0)) as slashed_unclaimed,
+        sum(if(committed_at is not null and claimed_at is null, slash_due, 0)) as slashed_unclaimed,
         sum(if(slash_reason = 'missing_response', slash_due, 0)) as slashed_missing_response,
         sum(if(slash_reason = 'dispute_lost', slash_due, 0)) as slashed_dispute_lost,
-        count_if(claimed_at is not null and bond_amount - bond_returned <> slash_due) as slash_rule_mismatches
-    from responses
+        count_if(claimed_at is not null and bond_amount - bond_returned <> slash_due) as slash_rule_mismatches,
+        max(through_block) as through_block
+    from {{query:safenet_sentinel_responses}}
     group by 1
 )
 
 select
-    '<a href="' || t.sentinel_url || '" target="_blank">' || t.name || '</a>' as sentinel_link,
-    t.name,
-    '0x' || lower(to_hex(t.sentinel)) as address,
-    case t.status when 'active' then 'Active' when 'scheduled' then 'Scheduled' else 'Removed' end as current_status,
+    '<a href="' || b.sentinel_url || '" target="_blank">' || b.name || '</a>' as sentinel_link,
+    b.name,
+    '0x' || lower(to_hex(b.sentinel)) as address,
+    case b.status when 'active' then 'Active' when 'scheduled' then 'Scheduled' else 'Removed' end as current_status,
     coalesce(w.balance, 0) / 1e6 as available_usdc,
-    coalesce(b.locked, 0) / 1e6 as locked_usdc,
-    coalesce(b.unclaimed_commitments, 0) as unclaimed_commitments,
-    coalesce(b.commitments, 0) as commitments,
-    coalesce(b.posted, 0) / 1e6 as posted_usdc,
-    coalesce(b.returned, 0) / 1e6 as returned_usdc,
-    coalesce(b.slashed_confirmed, 0) / 1e6 as slashed_confirmed_usdc,
-    coalesce(b.slashed_unclaimed, 0) / 1e6 as slashed_unclaimed_usdc,
-    coalesce(b.slashed_missing_response, 0) / 1e6 as slashed_missing_response_usdc,
-    coalesce(b.slashed_dispute_lost, 0) / 1e6 as slashed_dispute_lost_usdc,
-    coalesce(b.slash_rule_mismatches, 0) as slash_rule_mismatches,
-    (select max(block_number) from {{query:safenet_events}}) as through_block -- for the verification
-from terms as t
-left join bonds as b on b.sentinel = t.sentinel
-left join wallet as w on w.sentinel = t.sentinel
-order by locked_usdc desc, t.name
+    b.locked / 1e6 as locked_usdc,
+    b.unclaimed_commitments,
+    b.commitments,
+    b.posted / 1e6 as posted_usdc,
+    b.returned / 1e6 as returned_usdc,
+    b.slashed_confirmed / 1e6 as slashed_confirmed_usdc,
+    b.slashed_unclaimed / 1e6 as slashed_unclaimed_usdc,
+    b.slashed_missing_response / 1e6 as slashed_missing_response_usdc,
+    b.slashed_dispute_lost / 1e6 as slashed_dispute_lost_usdc,
+    b.slash_rule_mismatches,
+    max(b.through_block) over () as through_block -- for the verification
+from bonds as b
+left join wallet as w on w.sentinel = b.sentinel
+order by locked_usdc desc, b.name

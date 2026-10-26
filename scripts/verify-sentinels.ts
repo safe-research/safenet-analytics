@@ -284,9 +284,12 @@ async function compareDisputes(r: Result) {
   }
 }
 
+// Earnings and bonds list the Sentinels that were ever eligible or committed.
+const withResponses = (rec: Recount) => sentinelsOf(rec).filter((s) => rec.responses.some((x) => x.sentinel === s));
+
 async function compareEarnings(r: Result) {
   const rec = await recountFor(r);
-  for (const s of sentinelsOf(rec)) {
+  for (const s of withResponses(rec)) {
     const row = r.rows.find((x) => addressOf(x) === s) ?? {};
     const t = sentinelTotals(rec.responses, s);
     const where = `sentinel_earnings ${nameOf(s)}`;
@@ -312,7 +315,7 @@ async function compareEarnings(r: Result) {
 async function compareBonds(r: Result) {
   const rec = await recountFor(r);
   const block = boundOf(r)!;
-  for (const s of sentinelsOf(rec)) {
+  for (const s of withResponses(rec)) {
     const row = r.rows.find((x) => addressOf(x) === s) ?? {};
     const t = sentinelTotals(rec.responses, s);
     const where = `sentinel_bonds ${nameOf(s)}`;

@@ -10,12 +10,10 @@
 --                      SentinelOracle, paired with its SentinelOracle.NewRequest (request_id), with
 --                      the request's fee and bond terms from NewRequest
 --   committed          Sentinel commitment (Committed): bond_amount locked
---   revealed           Sentinel response (Revealed): vote_approved, bond_amount, reason
+--   revealed           Sentinel response (Revealed): vote_approved, bond_amount
 --   approved, denied   verdict: OracleResult (source_event = 'OracleResult'), or the arbitrator's
---                      ruling after a dispute (source_event = 'DisputeResolved', with slashed and
---                      the arbitrator's context in reason)
---   no_verdict         RequestTimedOut, DisputeOutOfScope (context in reason), ArbitrationTimedOut
---                      (source_event)
+--                      ruling after a dispute (source_event = 'DisputeResolved', with slashed)
+--   no_verdict         RequestTimedOut, DisputeOutOfScope, ArbitrationTimedOut (source_event)
 --   dispute            DisputeTriggered (not an outcome; the request continues to one of the above)
 --   claimed            Sentinel claim (Claimed): bond_amount returned, fee_reward paid
 --   attestation        Consensus.TransactionAttested with oracle = production SentinelOracle
@@ -156,25 +154,8 @@ oracle_events as (
         if(topic0 = 0x006f1d9d8ec7f5d7941e2363561ba0f1da911361b351d007f9b448d557e39e86,
             bytearray_to_bigint(bytearray_substring(data, 57, 8))) as fee_reward,
         if(topic0 = 0x7e739d167696b2e67be44f7ceb3afa7ad9e8ad5ee53d016de97ae7ab0b416a70,
-            bytearray_to_bigint(bytearray_substring(data, 57, 8))) as slashed,
-        -- Recorded text, an ABI string (offset word, then length word and bytes): Revealed.reason
-        -- (empty for approvals, Charter rule IDs for denials; offset in word 2), and the
-        -- arbitrator's context of DisputeResolved (word 2) and DisputeOutOfScope (word 0).
-        if(bytearray_to_bigint(bytearray_substring(data, string_at + 25, 8)) > 0,
-            from_utf8(bytearray_substring(data, string_at + 33, bytearray_to_bigint(bytearray_substring(data, string_at + 25, 8))))) as reason
-    from (
-        select
-            *,
-            case topic0
-                when 0xd2cdead965dbd376703d9a79240f31f1228055ab42384b68353332fcd2af939a -- Revealed
-                    then bytearray_to_bigint(bytearray_substring(data, 89, 8))
-                when 0x7e739d167696b2e67be44f7ceb3afa7ad9e8ad5ee53d016de97ae7ab0b416a70 -- DisputeResolved
-                    then bytearray_to_bigint(bytearray_substring(data, 89, 8))
-                when 0xe32b95dcf423c9ed3915554e30a0db65ad08358b5e5bdb1138c98dcb745dbe81 -- DisputeOutOfScope
-                    then bytearray_to_bigint(bytearray_substring(data, 25, 8))
-            end as string_at
-        from oracle_logs
-    )
+            bytearray_to_bigint(bytearray_substring(data, 57, 8))) as slashed
+    from oracle_logs
     where topic0 not in (
         0x8ec61272960f97d43d7f8f85ed630aa512818577f3d1e548e7627b06dbbbda86, -- NewRequest (see requests)
         0xce737c23e8e6ca890064e37caf80069010b1f755c3fae1708dd03974cc20967d, -- SentinelScheduled
@@ -254,7 +235,7 @@ events as (
         cast(null as varbinary) as sentinel, cast(null as boolean) as vote_approved,
         cast(null as bigint) as bond_amount, cast(null as bigint) as fee_reward, cast(null as bigint) as slashed,
         fee, bond_target, dao_fee_share, slash_amount, commit_deadline, reveal_deadline,
-        cast(null as bigint) as active_at_block, cast(null as varbinary) as config_data, cast(null as varchar) as reason
+        cast(null as bigint) as active_at_block, cast(null as varbinary) as config_data
     from requests
     union all
     select
@@ -263,7 +244,7 @@ events as (
         r.request_id is not null as matched,
         o.sentinel, o.vote_approved, o.bond_amount, o.fee_reward, o.slashed,
         cast(null as bigint), cast(null as bigint), cast(null as bigint), cast(null as bigint), cast(null as bigint), cast(null as bigint),
-        cast(null as bigint), cast(null as varbinary), o.reason
+        cast(null as bigint), cast(null as varbinary)
     from oracle_events as o
     left join requests as r on r.request_id = o.request_id
     union all
@@ -273,7 +254,7 @@ events as (
         true as matched,
         cast(null as varbinary), cast(null as boolean), cast(null as bigint), cast(null as bigint), cast(null as bigint),
         cast(null as bigint), cast(null as bigint), cast(null as bigint), cast(null as bigint), cast(null as bigint), cast(null as bigint),
-        cast(null as bigint), cast(null as varbinary), cast(null as varchar)
+        cast(null as bigint), cast(null as varbinary)
     from attestations
     union all
     select
@@ -282,7 +263,7 @@ events as (
         false as matched,
         sentinel, cast(null as boolean), cast(null as bigint), cast(null as bigint), cast(null as bigint),
         cast(null as bigint), cast(null as bigint), cast(null as bigint), cast(null as bigint), cast(null as bigint), cast(null as bigint),
-        active_at_block, config_data, cast(null as varchar)
+        active_at_block, config_data
     from admin_events
 ),
 
@@ -317,8 +298,7 @@ decoded as (
         commit_deadline,
         reveal_deadline,
         active_at_block,
-        config_data,
-        reason
+        config_data
     from events
 )
 

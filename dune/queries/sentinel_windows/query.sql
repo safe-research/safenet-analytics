@@ -9,60 +9,44 @@
 
 with
 
-responses as (
-    select r.*, t.name, t.sentinel_url
-    from {{query:safenet_sentinel_responses}} as r
-    join (
-        select sentinel, max_by(name, scheduled_block) as name, max_by(sentinel_url, scheduled_block) as sentinel_url
-        from {{query:safenet_sentinel_terms}}
-        group by 1
-    ) as t on t.sentinel = r.sentinel
-    where r.covered_chain and r.eligible and r.window_closed
-),
-
-windows as (
-    select * from (
-        values
-            ('all', timestamp '2026-10-07 00:00:00 UTC'),
-            ('30d', now() - interval '30' day),
-            ('7d', now() - interval '7' day),
-            ('24h', now() - interval '24' hour)
-    ) as t (w, since)
-),
-
 counts as (
     select
-        r.sentinel,
-        r.name,
-        r.sentinel_url,
-        w.w,
-        count_if(r.proposed_at >= w.since) as eligible,
-        count_if(r.proposed_at >= w.since and r.valid_response) as valid,
-        count_if(r.proposed_at >= w.since and r.response_state = 'no_commit') as no_commit,
-        count_if(r.proposed_at >= w.since and r.response_state = 'reverted_commit') as reverted_commit,
-        count_if(r.proposed_at >= w.since and r.response_state = 'missing_response') as missing
-    from responses as r
-    cross join windows as w
-    group by 1, 2, 3, 4
+        sentinel,
+        name,
+        sentinel_url,
+        max(through_block) as through_block,
+        count(*) as eligible_all,
+        count_if(valid_response) as valid_all,
+        count_if(proposed_at >= now() - interval '30' day) as eligible_30d,
+        count_if(proposed_at >= now() - interval '30' day and valid_response) as valid_30d,
+        count_if(proposed_at >= now() - interval '30' day and response_state = 'no_commit') as no_commit_30d,
+        count_if(proposed_at >= now() - interval '30' day and response_state = 'reverted_commit') as reverted_commit_30d,
+        count_if(proposed_at >= now() - interval '30' day and response_state = 'missing_response') as missing_30d,
+        count_if(proposed_at >= now() - interval '7' day) as eligible_7d,
+        count_if(proposed_at >= now() - interval '7' day and valid_response) as valid_7d,
+        count_if(proposed_at >= now() - interval '24' hour) as eligible_24h,
+        count_if(proposed_at >= now() - interval '24' hour and valid_response) as valid_24h
+    from {{query:safenet_sentinel_responses}}
+    where covered_chain and eligible and window_closed
+    group by 1, 2, 3
 )
 
 select
     '<a href="' || sentinel_url || '" target="_blank">' || name || '</a>' as sentinel_link,
     name,
     '0x' || lower(to_hex(sentinel)) as address,
-    max(if(w = '24h', eligible)) as eligible_24h,
-    max(if(w = '24h' and eligible > 0, cast(valid as double) / eligible)) as rate_24h,
-    max(if(w = '7d', eligible)) as eligible_7d,
-    max(if(w = '7d' and eligible > 0, cast(valid as double) / eligible)) as rate_7d,
-    max(if(w = '30d', eligible)) as eligible_30d,
-    max(if(w = '30d' and eligible > 0, cast(valid as double) / eligible)) as rate_30d,
-    max(if(w = '30d', no_commit)) as no_commit_30d,
-    max(if(w = '30d', reverted_commit)) as reverted_commit_30d,
-    max(if(w = '30d', missing)) as missing_30d,
-    max(if(w = 'all', eligible)) as eligible_all,
-    max(if(w = 'all' and eligible > 0, cast(valid as double) / eligible)) as rate_all,
+    eligible_24h,
+    if(eligible_24h > 0, cast(valid_24h as double) / eligible_24h) as rate_24h,
+    eligible_7d,
+    if(eligible_7d > 0, cast(valid_7d as double) / eligible_7d) as rate_7d,
+    eligible_30d,
+    if(eligible_30d > 0, cast(valid_30d as double) / eligible_30d) as rate_30d,
+    no_commit_30d,
+    reverted_commit_30d,
+    missing_30d,
+    eligible_all,
+    if(eligible_all > 0, cast(valid_all as double) / eligible_all) as rate_all,
     now() as computed_at,
-    (select max(block_number) from {{query:safenet_events}}) as through_block -- for the verification
+    max(through_block) over () as through_block -- for the verification
 from counts
-group by 1, 2, 3
 order by eligible_all desc, rate_all desc, name

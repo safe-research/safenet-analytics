@@ -1,0 +1,323 @@
+{
+  "generated_at": "2026-10-26T11:23:15.264Z",
+  "rpc": "rpc.gnosischain.com",
+  "finalized_block": 48951573,
+  "membership": [
+    {
+      "sentinel": "BlockSec",
+      "address": "0xc84a0928632382e75c543acced101b9525027362",
+      "scheduled_block": 48669611,
+      "active_from_block": 48721451,
+      "removed_block": null,
+      "status_now": "active"
+    },
+    {
+      "sentinel": "OpenCover",
+      "address": "0x101d59dbb8c5e70f45d52634f23800fca4fbe031",
+      "scheduled_block": 48669611,
+      "active_from_block": 48721451,
+      "removed_block": null,
+      "status_now": "active"
+    },
+    {
+      "sentinel": "Candide",
+      "address": "0x6d081448c04d9ef7cf8ecf54207b1931ecc25312",
+      "scheduled_block": 48669611,
+      "active_from_block": 48721451,
+      "removed_block": null,
+      "status_now": "active"
+    },
+    {
+      "sentinel": "0x0637ccf4b63df46265cf4afcd7b0c9d06b98c3ca",
+      "address": "0x0637ccf4b63df46265cf4afcd7b0c9d06b98c3ca",
+      "scheduled_block": 48669611,
+      "active_from_block": 48721451,
+      "removed_block": 48670645,
+      "status_now": "removed"
+    },
+    {
+      "sentinel": "0x3bf9263cc7bb2312f69f5481c3337553469140a5",
+      "address": "0x3bf9263cc7bb2312f69f5481c3337553469140a5",
+      "scheduled_block": 48669611,
+      "active_from_block": 48721451,
+      "removed_block": null,
+      "status_now": "active"
+    },
+    {
+      "sentinel": "IntentGuard",
+      "address": "0xb28eb357bfa420c17bae3e6bfdb50094fb5babf2",
+      "scheduled_block": 48670645,
+      "active_from_block": 48722485,
+      "removed_block": null,
+      "status_now": "active"
+    }
+  ],
+  "first_active_block": 48721451,
+  "first_request_block": 48752182,
+  "requests": 266,
+  "open_response_windows": 0,
+  "sentinels": {
+    "0x0637ccf4b63df46265cf4afcd7b0c9d06b98c3ca": {
+      "eligible_requests": 0,
+      "commits": 0,
+      "valid_reveals": 0,
+      "participation_rate": null,
+      "secure": 0,
+      "insecure": 0,
+      "no_commit": 0,
+      "missing_responses": 0,
+      "pending": 0,
+      "fee_accrued": 0,
+      "fee_claimed": 0,
+      "posted": 0,
+      "locked": 0,
+      "unclaimed_commitments": 0,
+      "returned": 0,
+      "slashed_confirmed": 0,
+      "slashed_unclaimed": 0,
+      "slash_rule_mismatches": 0,
+      "available_usdc": 0,
+      "safe_published": null,
+      "safe_claimed": 0
+    },
+    "OpenCover": {
+      "eligible_requests": 265,
+      "commits": 33,
+      "valid_reveals": 33,
+      "participation_rate": 0.12452830188679245,
+      "secure": 33,
+      "insecure": 0,
+      "no_commit": 232,
+      "missing_responses": 0,
+      "pending": 0,
+      "fee_accrued": 4.733325,
+      "fee_claimed": 4.733325,
+      "posted": 26400,
+      "locked": 800,
+      "unclaimed_commitments": 1,
+      "returned": 25600,
+      "slashed_confirmed": 0,
+      "slashed_unclaimed": 0,
+      "slash_rule_mismatches": 0,
+      "available_usdc": 1612.745896,
+      "safe_published": null,
+      "safe_claimed": 0
+    },
+    "0x3bf9263cc7bb2312f69f5481c3337553469140a5": {
+      "eligible_requests": 265,
+      "commits": 0,
+      "valid_reveals": 0,
+      "participation_rate": 0,
+      "secure": 0,
+      "insecure": 0,
+      "no_commit": 265,
+      "missing_responses": 0,
+      "pending": 0,
+      "fee_accrued": 0,
+      "fee_claimed": 0,
+      "posted": 0,
+      "locked": 0,
+      "unclaimed_commitments": 0,
+      "returned": 0,
+      "slashed_confirmed": 0,
+      "slashed_unclaimed": 0,
+      "slash_rule_mismatches": 0,
+      "available_usdc": 0,
+      "safe_published": null,
+      "safe_claimed": 0
+    },
+    "Candide": {
+      "eligible_requests": 265,
+      "commits": 159,
+      "valid_reveals": 159,
+      "participation_rate": 0.6,
+      "secure": 107,
+      "insecure": 52,
+      "no_commit": 106,
+      "missing_responses": 0,
+      "pending": 0,
+      "fee_accrued": 30.399992,
+      "fee_claimed": 29.86666,
+      "posted": 127200,
+      "locked": 3200,
+      "unclaimed_commitments": 4,
+      "returned": 123999.6,
+      "slashed_confirmed": 0.4,
+      "slashed_unclaimed": 0,
+      "slash_rule_mismatches": 0,
+      "available_usdc": 28836.468541,
+      "safe_published": null,
+      "safe_claimed": 0
+    },
+    "IntentGuard": {
+      "eligible_requests": 265,
+      "commits": 16,
+      "valid_reveals": 16,
+      "participation_rate": 0.06037735849056604,
+      "secure": 11,
+      "insecure": 5,
+      "no_commit": 249,
+      "missing_responses": 0,
+      "pending": 0,
+      "fee_accrued": 2.599999,
+      "fee_claimed": 2.599999,
+      "posted": 12800,
+      "locked": 800,
+      "unclaimed_commitments": 1,
+      "returned": 11999.2,
+      "slashed_confirmed": 0.8,
+      "slashed_unclaimed": 0,
+      "slash_rule_mismatches": 0,
+      "available_usdc": 160.225433,
+      "safe_published": null,
+      "safe_claimed": 0
+    },
+    "BlockSec": {
+      "eligible_requests": 265,
+      "commits": 258,
+      "valid_reveals": 258,
+      "participation_rate": 0.9735849056603774,
+      "secure": 205,
+      "insecure": 53,
+      "no_commit": 7,
+      "missing_responses": 0,
+      "pending": 0,
+      "fee_accrued": 65.466658,
+      "fee_claimed": 65.466658,
+      "posted": 207200,
+      "locked": 800,
+      "unclaimed_commitments": 1,
+      "returned": 206398,
+      "slashed_confirmed": 2,
+      "slashed_unclaimed": 0,
+      "slash_rule_mismatches": 0,
+      "available_usdc": 9238.509483,
+      "safe_published": null,
+      "safe_claimed": 0
+    }
+  },
+  "coverage": {
+    "0": 7,
+    "1": 80,
+    "2": 148,
+    "3": 30
+  },
+  "safe_rewards": {
+    "distributor": "0xe5139fc0fb8eae81e30d8a85c22e88c6757120f2",
+    "onchain_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+    "latest_published_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+    "published_source": "safe-fndn/safenet-data@f74222fa8b395cc06d39636f56f0bba7c19e4576",
+    "sentinel_entries": 0
+  },
+  "issues": [],
+  "dune": {
+    "skipped": "DUNE_API_KEY not set"
+  },
+  "representative": [
+    {
+      "case": "secure vote",
+      "sentinel": "Candide",
+      "state": "secure",
+      "request_status": {
+        "status": "secure_unanimous",
+        "ruling": null,
+        "completed": true
+      },
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0x951642d001ceeee5119796a1210fb97e0796447821b92dab1b20ea383539c311",
+      "proposal_tx": "https://gnosisscan.io/tx/0x4ecc3d3421400c89bb300bed848a51618c58e3162be80f2e6f198ac17bce1fd4",
+      "outcome_tx": "https://gnosisscan.io/tx/0xadbe4706c3c0d392d055e7c394e03d3f25a91661b71fa0423b3d070fae52eeba",
+      "votes": [
+        "BlockSec: secure",
+        "OpenCover: secure",
+        "Candide: secure"
+      ]
+    },
+    {
+      "case": "insecure vote",
+      "sentinel": "Candide",
+      "state": "insecure",
+      "request_status": {
+        "status": "insecure_unanimous",
+        "ruling": null,
+        "completed": true
+      },
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0xac8ceeb9a1e59de9435beee575a0d74c08de7d2c108abf20c8a56fd904c7a015",
+      "proposal_tx": "https://gnosisscan.io/tx/0xbdba66eebb9764e999a93cf0dc31aa09ddce0d7e7f82d7f671231b931b94acaa",
+      "outcome_tx": "https://gnosisscan.io/tx/0xb865eaa9e740593a28925e5c16748c0f61f81d58fe012dbf7434e10262adf81f",
+      "votes": [
+        "BlockSec: insecure (R-4.1)",
+        "Candide: insecure (R-4.1)"
+      ]
+    },
+    {
+      "case": "no commit (abstain or offline)",
+      "sentinel": "IntentGuard",
+      "state": "no_commit",
+      "request_status": {
+        "status": "secure_unanimous",
+        "ruling": null,
+        "completed": true
+      },
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0x951642d001ceeee5119796a1210fb97e0796447821b92dab1b20ea383539c311",
+      "proposal_tx": "https://gnosisscan.io/tx/0x4ecc3d3421400c89bb300bed848a51618c58e3162be80f2e6f198ac17bce1fd4",
+      "outcome_tx": "https://gnosisscan.io/tx/0xadbe4706c3c0d392d055e7c394e03d3f25a91661b71fa0423b3d070fae52eeba",
+      "votes": [
+        "BlockSec: secure",
+        "OpenCover: secure",
+        "Candide: secure"
+      ]
+    },
+    {
+      "case": "disputed, ruled secure",
+      "sentinel": "IntentGuard",
+      "state": "insecure",
+      "request_status": {
+        "status": "disputed",
+        "ruling": "secure",
+        "completed": true
+      },
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=100&safeTxHash=0xe0b3069cdf9b700f202c6cbc01385ef2a943b5ec8f4a627c98adf272a8b02ef2",
+      "proposal_tx": "https://gnosisscan.io/tx/0x138439506d0979ef6d2ff374ab78a00bf110b390cecaa10897040ad80962a18f",
+      "outcome_tx": "https://gnosisscan.io/tx/0x9e35d7512185505e7bf1696690668dd47bc83e78fe846cf3e7f401f701f2cde6",
+      "votes": [
+        "BlockSec: secure",
+        "IntentGuard: insecure (R-4.3)"
+      ]
+    },
+    {
+      "case": "disputed, ruled insecure",
+      "sentinel": "IntentGuard",
+      "state": "no_commit",
+      "request_status": {
+        "status": "disputed",
+        "ruling": "insecure",
+        "completed": true
+      },
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0x31c8b9d4998c448e1a97031ab6f94dcbd3ad2bbdbb3863038d0e61e106a9d9c7",
+      "proposal_tx": "https://gnosisscan.io/tx/0x220132bc38ea53ff0a5715609a1435861dc36ed3394331a24d011874ee2c71b8",
+      "outcome_tx": "https://gnosisscan.io/tx/0x1bc3146467ac4cb98c0fe54c45eb0f768818254a1a68ae7625abf96f507b5966",
+      "votes": [
+        "Candide: insecure (R-4.1)",
+        "BlockSec: secure"
+      ]
+    },
+    {
+      "case": "disputed, awaiting ruling",
+      "sentinel": "IntentGuard",
+      "state": "insecure",
+      "request_status": {
+        "status": "disputed",
+        "ruling": "awaiting",
+        "completed": false
+      },
+      "safe_tx": "https://safenet-explorer.eth.limo/#/safeTx?chainId=1&safeTxHash=0x70992c78cd0681c643e0f9db997122f2b42ce1ce0aae2e5de959bfe3f1905117",
+      "proposal_tx": "https://gnosisscan.io/tx/0x24161543714972df72aa2d364ab3549eda90da8714ea7acb4b467f85a7820022",
+      "outcome_tx": null,
+      "votes": [
+        "BlockSec: secure",
+        "OpenCover: secure",
+        "IntentGuard: insecure (R-4.3)"
+      ]
+    }
+  ]
+}
