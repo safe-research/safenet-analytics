@@ -1,8 +1,8 @@
 {
   "dashboard": {
-    "desired": "f1a4109fc2c3307e",
+    "desired": "d71ab81887d91728",
     "id": 222526,
-    "remote": "cd5bbbe8759f4784",
+    "remote": "e369eb593eea9c23",
     "url": "https://dune.com/safe/safenet"
   },
   "protected": {
@@ -45,9 +45,9 @@
   },
   "queries": {
     "fee_allocation": {
-      "desired": "131eff2e83e40982",
+      "desired": "46687a477bc91890",
       "id": 9012049,
-      "remote": "131eff2e83e40982"
+      "remote": "46687a477bc91890"
     },
     "fee_config": {
       "desired": "7b07f4c57b762994",
@@ -90,9 +90,9 @@
       "remote": "000859167f1a38e8"
     },
     "safenet_fee_flows": {
-      "desired": "cae23819efb91fd2",
+      "desired": "865a6b9681a7c1be",
       "id": 9012046,
-      "remote": "cae23819efb91fd2"
+      "remote": "865a6b9681a7c1be"
     },
     "safenet_guard_status": {
       "desired": "19edab2f8da0461a",
@@ -110,14 +110,94 @@
       "remote": "b6027a748d4df99d"
     },
     "safenet_participant_labels": {
-      "desired": "cf68bd8bfa9b0284",
+      "desired": "706baf4e0cd4aec5",
       "id": 8997313,
-      "remote": "cf68bd8bfa9b0284"
+      "remote": "706baf4e0cd4aec5"
     },
     "safenet_requests": {
-      "desired": "7b4b88b4ca64bac6",
+      "desired": "5ff5a1ded22b2ab0",
       "id": 9012048,
-      "remote": "7b4b88b4ca64bac6"
+      "remote": "5ff5a1ded22b2ab0"
+    },
+    "safenet_reward_events": {
+      "desired": "6f205a20b97d55d3",
+      "id": 9013456,
+      "remote": "6f205a20b97d55d3"
+    },
+    "safenet_sentinel_failed_calls": {
+      "desired": "de229335ac2baa75",
+      "id": 9013453,
+      "remote": "de229335ac2baa75"
+    },
+    "safenet_sentinel_responses": {
+      "desired": "a8f55891e7940949",
+      "id": 9013455,
+      "remote": "a8f55891e7940949"
+    },
+    "safenet_sentinel_rewards": {
+      "desired": "4cbfcc1c493a819f",
+      "id": 9013457,
+      "remote": "4cbfcc1c493a819f"
+    },
+    "safenet_sentinel_terms": {
+      "desired": "d45af274de46f2dd",
+      "id": 9013454,
+      "remote": "d45af274de46f2dd"
+    },
+    "safenet_sentinel_texts": {
+      "desired": "40fcac941628e38c",
+      "id": 9013458,
+      "remote": "40fcac941628e38c"
+    },
+    "safenet_sentinel_wallet_transfers": {
+      "desired": "56a0750802df6852",
+      "id": 9013459,
+      "remote": "56a0750802df6852"
+    },
+    "sentinel_bonds": {
+      "desired": "4df3916f33d69923",
+      "id": 9013461,
+      "remote": "4df3916f33d69923"
+    },
+    "sentinel_coverage": {
+      "desired": "b69fa28ee71f90c2",
+      "id": 9013462,
+      "remote": "b69fa28ee71f90c2"
+    },
+    "sentinel_disputes": {
+      "desired": "19c96b0b9a510222",
+      "id": 9013463,
+      "remote": "19c96b0b9a510222"
+    },
+    "sentinel_earnings": {
+      "desired": "6d892d1b14cbfde9",
+      "id": 9013464,
+      "remote": "6d892d1b14cbfde9"
+    },
+    "sentinel_earnings_daily": {
+      "desired": "be487e2de1461dfd",
+      "id": 9013465,
+      "remote": "be487e2de1461dfd"
+    },
+    "sentinel_overview": {
+      "desired": "158db040e3a3d662",
+      "id": 9013466,
+      "remote": "158db040e3a3d662"
+    },
+    "sentinel_participation_daily": {
+      "desired": "281d4a3779aa3d72",
+      "id": 9013467,
+      "remote": "281d4a3779aa3d72"
+    },
+    "sentinel_verdicts": {
+      "desired": "fba803eb8cd19658",
+      "id": 9013468,
+      "remote": "fba803eb8cd19658"
+    },
+    "sentinel_windows": {
+      "desired": "12561d2e62425b7f",
+      "id": 9013469,
+      "remote": "12561d2e62425b7f"
     },
     "transaction_checks_daily": {
       "desired": "0be2f79aa6137f37",
@@ -228,6 +308,78 @@
       "id": 13056276,
       "query_id": 9012057,
       "remote": "b254125915b43c62"
+    },
+    "sentinel_bonds/table": {
+      "desired": "12064a99074e82d4",
+      "id": 13057795,
+      "query_id": 9013461,
+      "remote": "12064a99074e82d4"
+    },
+    "sentinel_coverage/bars": {
+      "desired": "c7e00db82577427b",
+      "id": 13057796,
+      "query_id": 9013462,
+      "remote": "c7e00db82577427b"
+    },
+    "sentinel_coverage/table": {
+      "desired": "d3d6b6d32ae32965",
+      "id": 13057797,
+      "query_id": 9013462,
+      "remote": "d3d6b6d32ae32965"
+    },
+    "sentinel_disputes/table": {
+      "desired": "fc88caa5e4cbe43a",
+      "id": 13057798,
+      "query_id": 9013463,
+      "remote": "fc88caa5e4cbe43a"
+    },
+    "sentinel_earnings/table": {
+      "desired": "2a519efe881e7f2f",
+      "id": 13057799,
+      "query_id": 9013464,
+      "remote": "2a519efe881e7f2f"
+    },
+    "sentinel_earnings_daily/bars": {
+      "desired": "1fee795eafeeeec3",
+      "id": 13057800,
+      "query_id": 9013465,
+      "remote": "1fee795eafeeeec3"
+    },
+    "sentinel_overview/freshness": {
+      "desired": "f12c6e651f3bbabb",
+      "id": 13057803,
+      "query_id": 9013466,
+      "remote": "f12c6e651f3bbabb"
+    },
+    "sentinel_overview/table": {
+      "desired": "00ef1702af1743fe",
+      "id": 13057802,
+      "query_id": 9013466,
+      "remote": "00ef1702af1743fe"
+    },
+    "sentinel_participation_daily/heatmap": {
+      "desired": "df8a0170f0858862",
+      "id": 13057804,
+      "query_id": 9013467,
+      "remote": "df8a0170f0858862"
+    },
+    "sentinel_verdicts/bars": {
+      "desired": "501bb38792de4010",
+      "id": 13057805,
+      "query_id": 9013468,
+      "remote": "501bb38792de4010"
+    },
+    "sentinel_verdicts/table": {
+      "desired": "d95ee43164f05893",
+      "id": 13057806,
+      "query_id": 9013468,
+      "remote": "d95ee43164f05893"
+    },
+    "sentinel_windows/table": {
+      "desired": "21fdfb2b00318ac9",
+      "id": 13057807,
+      "query_id": 9013469,
+      "remote": "21fdfb2b00318ac9"
     },
     "transaction_checks_daily/daily_chart": {
       "desired": "6a5c3b7ef243d5ee",
