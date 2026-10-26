@@ -1,17 +1,17 @@
 {
   "dashboard": {
-    "desired": "3d48614f37db9c1f",
+    "desired": "f92a318e51079640",
     "id": 222586,
-    "remote": "ecf82b10591bed3d",
+    "remote": "40f0e37c13a0d381",
     "url": "https://dune.com/safe/safenet-preview-sentinels"
   },
   "executions": {
     "fee_allocation": {
-      "credits": 1.294264706,
-      "ended_at": "2026-10-26T12:01:07.116155012Z",
-      "execution_id": "01M5W1BQ02MZN7Q9YGMRKWQNEJ",
+      "credits": 1.209558824,
+      "ended_at": "2026-10-26T12:09:30.301339446Z",
+      "execution_id": "01M5W1V3EGBTGV955RF07MJCD3",
       "query_id": 9013289,
-      "sql": "d90f161f6fc91ba0"
+      "sql": "ca86e57157bcae90"
     },
     "fee_config": {
       "credits": 0.165205883,
@@ -21,11 +21,11 @@
       "sql": "76cfe393b52d9eaa"
     },
     "fee_revenue_daily": {
-      "credits": 1.378970589,
-      "ended_at": "2026-10-26T12:01:21.060145506Z",
-      "execution_id": "01M5W1C6Z4CHSFK13GJ1QEZNKC",
+      "credits": 1.491911765,
+      "ended_at": "2026-10-26T12:09:35.984481422Z",
+      "execution_id": "01M5W1V90RBKZWTM8H410236AE",
       "query_id": 9013291,
-      "sql": "8d4401efa217e213"
+      "sql": "80e3d68aa62783e7"
     },
     "guard_adoption": {
       "credits": 2.014264706,
@@ -35,95 +35,95 @@
       "sql": "f812cf862aba4b42"
     },
     "latest_requests": {
-      "credits": 0.6805,
-      "ended_at": "2026-10-26T12:01:45.290435331Z",
-      "execution_id": "01M5W1CQ0994MRF0AQJMVY40F4",
+      "credits": 0.486029412,
+      "ended_at": "2026-10-26T12:09:39.544092917Z",
+      "execution_id": "01M5W1VEHQCFXGFV3FWD5H12QC",
       "query_id": 9013295,
-      "sql": "4a8977c4bbe11060"
+      "sql": "29ad1cb5341133ed"
     },
     "network_breakdown": {
-      "credits": 1.105131579,
-      "ended_at": "2026-10-26T12:01:55.355886962Z",
-      "execution_id": "01M5W1D6QWNPDS66N1B9MWKZPW",
+      "credits": 1.174868422,
+      "ended_at": "2026-10-26T12:09:48.102745628Z",
+      "execution_id": "01M5W1VM2M8BAHA3HAANT526W1",
       "query_id": 9013296,
-      "sql": "d7a51534ce48b525"
+      "sql": "a63508ebb35f6acb"
     },
     "network_summary": {
-      "credits": 0.653676471,
-      "ended_at": "2026-10-26T12:02:20.613899107Z",
-      "execution_id": "01M5W1DHB305AHFDDH29NFCG8G",
+      "credits": 0.635088236,
+      "ended_at": "2026-10-26T12:09:58.509892725Z",
+      "execution_id": "01M5W1VYTVSZQX3D139XF7ZBSQ",
       "query_id": 9013297,
-      "sql": "bc779a9a77490cc1"
+      "sql": "e842e1e29775e1a2"
     },
     "results_daily": {
-      "credits": 0.540970589,
-      "ended_at": "2026-10-26T12:02:30.003092169Z",
-      "execution_id": "01M5W1E67C1AWJZWJTWCW35PB7",
+      "credits": 0.558852942,
+      "ended_at": "2026-10-26T12:10:03.324073107Z",
+      "execution_id": "01M5W1W4AYVDHRKQ2VB2Q44WZD",
       "query_id": 9013298,
-      "sql": "60e0d70f1684148c"
+      "sql": "105110d4fa8a3b4f"
     },
     "sentinel_bonds": {
-      "credits": 1.386029412,
-      "ended_at": "2026-10-26T12:03:02.112981716Z",
-      "execution_id": "01M5W1EGT9BVYF68GG2GS13NMG",
+      "credits": 0.778970589,
+      "ended_at": "2026-10-26T12:10:09.654157103Z",
+      "execution_id": "01M5W1W9XWQ1G575XTKAP9YWAQ",
       "query_id": 9013305,
-      "sql": "a06417d0566e5c15"
+      "sql": "bcc12ef44c835320"
     },
     "sentinel_coverage": {
-      "credits": 0.891911765,
-      "ended_at": "2026-10-26T12:03:22.165226502Z",
-      "execution_id": "01M5W1FG1WK8RAGMYM60PT8GRC",
+      "credits": 0.927205883,
+      "ended_at": "2026-10-26T12:11:00.02828813Z",
+      "execution_id": "01M5W1WFE4VXQ3MQYSK1HWG7S4",
       "query_id": 9013306,
-      "sql": "588a83e2aa6c60c6"
+      "sql": "815ead989f19bb7e"
     },
     "sentinel_disputes": {
-      "credits": 0.501794118,
-      "ended_at": "2026-10-26T12:03:31.786389106Z",
-      "execution_id": "01M5W1G4YRXECSS30GGJBZR381",
+      "credits": 0.51132353,
+      "ended_at": "2026-10-26T12:11:08.925816265Z",
+      "execution_id": "01M5W1Y4621VS41345SX95CS8H",
       "query_id": 9013307,
-      "sql": "cf59e59e68391b11"
+      "sql": "ae2445a5482aad38"
     },
     "sentinel_earnings": {
-      "credits": 0.927205883,
-      "ended_at": "2026-10-26T12:03:45.265143058Z",
-      "execution_id": "01M5W1GFH9CZE0MB0TWVSM5G3X",
+      "credits": 0.743676471,
+      "ended_at": "2026-10-26T12:11:16.380666441Z",
+      "execution_id": "01M5W1Y9PBHD3AQQ7KHWZWVGAE",
       "query_id": 9013308,
-      "sql": "6c1c7205cc1341a6"
+      "sql": "6d93d33dac2056f9"
     },
     "sentinel_earnings_daily": {
-      "credits": 0.46132353,
-      "ended_at": "2026-10-26T12:03:51.147342416Z",
-      "execution_id": "01M5W1GT3CT4JTH7JA5MKVHQ8W",
+      "credits": 0.509794118,
+      "ended_at": "2026-10-26T12:11:26.103461103Z",
+      "execution_id": "01M5W1YMEVTNH34NAC20W6BAA1",
       "query_id": 9013309,
-      "sql": "d3885708611f9d40"
+      "sql": "026dd543c6338457"
     },
     "sentinel_overview": {
-      "credits": 0.65932353,
-      "ended_at": "2026-10-26T12:03:59.760297948Z",
-      "execution_id": "01M5W1GZGJN3HDBZ04QZ8DCY43",
+      "credits": 0.662735295,
+      "ended_at": "2026-10-26T12:11:33.282152265Z",
+      "execution_id": "01M5W1YSZ5B24GY4A1M1YY3TX2",
       "query_id": 9013310,
-      "sql": "b07b6d4f1d573445"
+      "sql": "933f360cde974a7e"
     },
     "sentinel_participation_daily": {
-      "credits": 0.521205883,
-      "ended_at": "2026-10-26T12:04:08.102512743Z",
-      "execution_id": "01M5W1HA3P44NMC4QFAA2WX7X2",
+      "credits": 0.477794118,
+      "ended_at": "2026-10-26T12:11:42.042939567Z",
+      "execution_id": "01M5W1Z4QG15PQZZZVX7DC4BG3",
       "query_id": 9013311,
-      "sql": "8deb672ff5d3cee1"
+      "sql": "98cdd2ea79ba2bda"
     },
     "sentinel_verdicts": {
-      "credits": 0.4765,
-      "ended_at": "2026-10-26T12:04:14.482130103Z",
-      "execution_id": "01M5W1HFH0FJ6EHJFANT3TQRCG",
+      "credits": 0.491088236,
+      "ended_at": "2026-10-26T12:11:47.342144993Z",
+      "execution_id": "01M5W1ZA7S27K3M0NXW5CKTR43",
       "query_id": 9013312,
-      "sql": "5ce3fa9141513c21"
+      "sql": "db85d920ff44a842"
     },
     "sentinel_windows": {
-      "credits": 0.449911765,
-      "ended_at": "2026-10-26T12:04:18.845584971Z",
-      "execution_id": "01M5W1HMYAJZRC1D1AZXCQQ2FW",
+      "credits": 0.453088236,
+      "ended_at": "2026-10-26T12:11:54.351264259Z",
+      "execution_id": "01M5W1ZFRH7BYKMZVA0QGBHKTY",
       "query_id": 9013313,
-      "sql": "00741d202ed564fe"
+      "sql": "a516d9eec2f6e5ce"
     },
     "transaction_checks_daily": {
       "credits": 0.612264706,
@@ -243,9 +243,9 @@
       "remote": "2a0b3ec1f7ad5dc5"
     },
     "safenet_requests": {
-      "desired": "f60424dbbe55e56b",
+      "desired": "706947e31d3e63d4",
       "id": 9013288,
-      "remote": "f60424dbbe55e56b"
+      "remote": "706947e31d3e63d4"
     },
     "safenet_reward_events": {
       "desired": "b64f43c44a41cbf4",
@@ -258,9 +258,9 @@
       "remote": "45244ff412f12d09"
     },
     "safenet_sentinel_responses": {
-      "desired": "858bfd9d9538cb4f",
+      "desired": "179d4b2f2ddb6732",
       "id": 9013302,
-      "remote": "858bfd9d9538cb4f"
+      "remote": "179d4b2f2ddb6732"
     },
     "safenet_sentinel_rewards": {
       "desired": "473236fae342f16e",
