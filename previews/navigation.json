@@ -1,0 +1,75 @@
+{
+  "dashboards": {},
+  "protected": {
+    "safe/safenet-beta": {
+      "checked_at": "2026-10-27T17:05:16.823Z",
+      "dashboard_id": 206254,
+      "fingerprint": "42cd9ab92977fa7b",
+      "query_ids": [
+        6766099,
+        6766101,
+        6766102,
+        6766104,
+        6766105,
+        6766182,
+        6939635,
+        6939866,
+        6939942,
+        8122056,
+        8204106
+      ],
+      "visualization_ids": [
+        10634367,
+        10634368,
+        10634369,
+        10634372,
+        10634373,
+        10634376,
+        10634377,
+        10634538,
+        10847140,
+        10847372,
+        10847380,
+        10847383,
+        10847486,
+        10847490,
+        12111148,
+        12196771
+      ]
+    }
+  },
+  "queries": {
+    "safenet_events": {
+      "desired": "54cc43b7898cfe31",
+      "id": 9022698,
+      "remote": "54cc43b7898cfe31"
+    },
+    "safenet_fee_flows": {
+      "desired": "e5412b89019deb85",
+      "id": 9022699,
+      "remote": "e5412b89019deb85"
+    },
+    "safenet_known_traffic": {
+      "desired": "2e98884afd05a162",
+      "id": 9022700,
+      "remote": "2e98884afd05a162"
+    },
+    "safenet_participant_labels": {
+      "desired": "328d44bdc806e732",
+      "id": 9022704,
+      "remote": "328d44bdc806e732"
+    },
+    "safenet_requests": {
+      "desired": "056024127fac19c4",
+      "id": 9022702,
+      "remote": "056024127fac19c4"
+    },
+    "safenet_sentinel_failed_calls": {
+      "desired": "aaeda0724e87db86",
+      "id": 9022703,
+      "remote": "aaeda0724e87db86"
+    }
+  },
+  "version": 1,
+  "visualizations": {}
+}
