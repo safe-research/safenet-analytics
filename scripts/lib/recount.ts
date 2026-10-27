@@ -25,8 +25,10 @@ export function rpcClient(url: string) {
       });
       const body = (await res.json().catch(() => ({}))) as { result?: T; error?: { message: string } };
       if (res.ok && body.result !== undefined) return body.result;
-      if (attempt >= 4) throw new Error(`${method} failed: ${res.status} ${body.error?.message ?? ""}`);
-      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+      // Public RPCs rate-limit shared CI addresses (429): wait longer and try more often then.
+      const limited = res.status === 429;
+      if (attempt >= (limited ? 7 : 4)) throw new Error(`${method} failed: ${res.status} ${body.error?.message ?? ""}`);
+      await new Promise((r) => setTimeout(r, (limited ? 3000 : 1000) * 2 ** Math.min(attempt, 5)));
     }
   };
 

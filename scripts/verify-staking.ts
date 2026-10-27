@@ -59,18 +59,36 @@ const ethCall = (to: string, signature: string, argsHex: string[], block: number
   eth.call<string>("eth_call", [{ to, data: `0x${selector(signature)}${argsHex.join("")}` }, hexBlock(block)]);
 const read = async (signature: string, argsHex: string[], block: number) => word(await ethCall(STAKING.address, signature, argsHex, block), 0);
 
-// Runs `f` over `items` with limited concurrency (public RPCs rate-limit bursts).
-async function pool<T, R>(items: T[], f: (x: T) => Promise<R>, size = 6): Promise<R[]> {
-  const out: R[] = new Array(items.length);
-  let next = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(size, items.length) }, async () => {
-      while (next < items.length) {
-        const i = next++;
-        out[i] = await f(items[i]);
-      }
-    }),
-  );
+// Many single-word reads of the Staking contract at block B, batched through Multicall3
+// (aggregate3, deployed at the same address on every chain) so that a public RPC sees a handful of
+// requests instead of one per staker and validator. Every call must succeed.
+const MULTICALL3 = "0xca11bde05977b3631167028862be2a173976ca11";
+const hexWord = (n: number) => n.toString(16).padStart(64, "0");
+async function readMany(calls: { signature: string; args: string[] }[], block: number, chunk = 250): Promise<bigint[]> {
+  const out: bigint[] = [];
+  for (let i = 0; i < calls.length; i += chunk) {
+    const part = calls.slice(i, i + chunk).map((c) => `${selector(c.signature)}${c.args.join("")}`);
+    // aggregate3((address target, bool allowFailure, bytes callData)[]): each tuple is dynamic.
+    const tuples = part.map((data) => {
+      const len = data.length / 2;
+      return `${pad(STAKING.address)}${hexWord(0)}${hexWord(0x60)}${hexWord(len)}${data.padEnd(Math.ceil(len / 32) * 64, "0")}`;
+    });
+    let offset = 32 * tuples.length;
+    const heads = tuples.map((t) => {
+      const h = hexWord(offset);
+      offset += t.length / 2;
+      return h;
+    });
+    const data = `0x${selector("aggregate3((address,bool,bytes)[])")}${hexWord(0x20)}${hexWord(tuples.length)}${heads.join("")}${tuples.join("")}`;
+    const result = await eth.call<string>("eth_call", [{ to: MULTICALL3, data }, hexBlock(block)]);
+    // Result[] (bool success, bytes returnData): array offset, length, element offsets, elements.
+    const n = Number(word(result, 1));
+    for (let j = 0; j < n; j++) {
+      const at = 2 + Number(word(result, 2 + j)) / 32; // element start, in words
+      if (word(result, at) !== 1n) throw new Error(`multicall: ${calls[i + j].signature} failed`);
+      out.push(word(result, at + 3)); // success, bytes offset, bytes length, first data word
+    }
+  }
   return out;
 }
 
@@ -124,9 +142,16 @@ for (const k of Object.keys(contract) as (keyof typeof contract)[])
 
 // Every validator: stake and registration.
 const validators = [...new Set([...atB.registered.keys(), ...atB.validatorTotals.keys()])];
-for (const v of validators) {
-  const total = await read("totalValidatorStakes(address)", [pad(v)], B);
-  const reg = (await read("isValidator(address)", [pad(v)], B)) !== 0n;
+const validatorReads = await readMany(
+  validators.flatMap((v) => [
+    { signature: "totalValidatorStakes(address)", args: [pad(v)] },
+    { signature: "isValidator(address)", args: [pad(v)] },
+  ]),
+  B,
+);
+for (const [i, v] of validators.entries()) {
+  const total = validatorReads[2 * i];
+  const reg = validatorReads[2 * i + 1] !== 0n;
   const ok = total === (atB.validatorTotals.get(v) ?? 0n) && reg === (atB.registered.get(v) ?? false);
   contractChecks.push({ check: `validator ${v}`, contract: { stake: total.toString(), registered: reg }, replay: { stake: (atB.validatorTotals.get(v) ?? 0n).toString(), registered: atB.registered.get(v) ?? false }, ok });
 }
@@ -134,10 +159,11 @@ for (const v of validators) {
 // Every (staker, validator) pair that ever staked, including those now at zero.
 const pairs = [...new Set(upTo(B).filter((e) => e.event === "deposit").map((e) => `${e.staker}:${e.validator}`))];
 const active = new Map(atB.positions.map((p) => [`${p.staker}:${p.validator}`, p.amount]));
-const stakeReads = await pool(pairs, async (p) => {
-  const [s, v] = p.split(":");
-  return { p, chain: await read("stakes(address,address)", [pad(s), pad(v)], B) };
-});
+const stakeValues = await readMany(
+  pairs.map((p) => ({ signature: "stakes(address,address)", args: p.split(":").map(pad) })),
+  B,
+);
+const stakeReads = pairs.map((p, i) => ({ p, chain: stakeValues[i] }));
 const pairMismatches = stakeReads.filter((r) => r.chain !== (active.get(r.p) ?? 0n));
 contractChecks.push({ check: `stakes(staker, validator) for ${pairs.length} pairs`, mismatches: pairMismatches.length, ok: pairMismatches.length === 0 });
 
