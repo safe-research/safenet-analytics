@@ -25,16 +25,19 @@ export function rpcClient(url: string) {
       });
       const body = (await res.json().catch(() => ({}))) as { result?: T; error?: { message: string } };
       if (res.ok && body.result !== undefined) return body.result;
-      if (attempt >= 4) throw new Error(`${method} failed: ${res.status} ${body.error?.message ?? ""}`);
-      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+      // Public RPCs rate-limit shared CI addresses (429): wait longer and try more often then.
+      const limited = res.status === 429;
+      if (attempt >= (limited ? 7 : 4)) throw new Error(`${method} failed: ${res.status} ${body.error?.message ?? ""}`);
+      await new Promise((r) => setTimeout(r, (limited ? 3000 : 1000) * 2 ** Math.min(attempt, 5)));
     }
   };
 
+  // Block range per eth_getLogs request; the staking verification passes its own (ETH_LOG_STEP).
   const STEP = 200_000;
-  const getLogs = async (address: string, topics: (string | string[] | null)[], from: number, to: number) => {
+  const getLogs = async (address: string, topics: (string | string[] | null)[], from: number, to: number, step = STEP) => {
     const logs: Log[] = [];
-    for (let start = from; start <= to; start += STEP) {
-      const end = Math.min(start + STEP - 1, to);
+    for (let start = from; start <= to; start += step) {
+      const end = Math.min(start + step - 1, to);
       logs.push(
         ...(await call<Log[]>("eth_getLogs", [{ address, topics, fromBlock: `0x${start.toString(16)}`, toBlock: `0x${end.toString(16)}` }])),
       );

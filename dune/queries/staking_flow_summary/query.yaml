@@ -1,0 +1,28 @@
+name: "Safenet: staking flows (24h, 7d, 30d, all time)"
+description: >
+  Safenet Staking on Ethereum: deposits, withdrawal requests, completed withdrawals, net capital flow
+  and active-stake change over the last 24 hours, 7 days, 30 days and all time, in SAFE. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Staking flows (rolling windows up to the latest refresh)
+    type: table
+    options:
+      itemsPerPage: 4
+      columns:
+        - { name: period, title: Period, type: normal, alignContent: left, isHidden: false }
+        - { name: deposits, title: Deposits (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: withdrawals_requested, title: Withdrawal requests (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: withdrawals_completed, title: Completed withdrawals (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: net_capital_flow, title: "Net capital flow (deposits − completed)", type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: active_stake_change, title: "Active stake change (deposits − requests)", type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: deposit_count, title: Deposits, type: normal, alignContent: right, isHidden: false }
+        - { name: depositors, title: Depositors, type: normal, alignContent: right, isHidden: false }
+        - { name: request_count, title: Requests, type: normal, alignContent: right, isHidden: false }
+        - { name: claim_count, title: Claims, type: normal, alignContent: right, isHidden: false }
+        - { name: sort_order, title: Order, type: normal, alignContent: right, isHidden: true }

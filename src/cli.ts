@@ -37,8 +37,9 @@ Previews (docs/preview.md). They use --state (default dune/.preview/<track>.json
 IDs and --production-state (default dune/state.json) for the production IDs they must not touch:
   deploy --preview --sha SHA [--pr N] [--repository OWNER/NAME] [--track T] [--dry-run] [--out FILE]
                            Deploy the private preview of dune/ (always overwrites Dune edits)
-  run-preview [--track T] [--force]
-                           Execute changed preview queries within the cost caps in dune/preview.yaml
+  run-preview [--track T] [--force] [--baseline DIR]
+                           Execute changed preview queries within the cost caps in dune/preview.yaml;
+                           with --baseline (main's dune/ directory), skip queries whose SQL equals it
   cleanup-preview [--track T] [--dry-run]
                            Archive or delete a track's preview resources after checking dependencies
 `;
@@ -60,6 +61,7 @@ const { positionals, values } = parseArgs({
     pr: { type: "string" },
     repository: { type: "string" },
     out: { type: "string" },
+    baseline: { type: "string" },
   },
 });
 
@@ -216,10 +218,14 @@ async function runPreview(config: Config) {
   const ctx = await previewContext();
   const previewConfig = toPreview(config, ctx.settings, { sha: values.sha ?? "unknown" });
   try {
-    const runs = await runPreviewQueries(previewConfig, ctx.preview, client(), ctx.settings, { force: values.force });
+    const baseline = values.baseline ? await loadConfig(values.baseline) : undefined;
+    const runs = await runPreviewQueries(previewConfig, ctx.preview, client(), ctx.settings, { force: values.force, baseline });
     await summary(
       `### Preview executions\n\n${runs.map((r) => `- ${r.key} (${r.query_id}): ${r.action}${r.credits === undefined ? "" : `, ${r.credits} credits`}`).join("\n")}\n`,
     );
+    // Queries with preview results (executed now or before), for the workflow's verification steps.
+    const previewed = runs.filter((r) => r.action !== "same as production").map((r) => r.key);
+    if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, `previewed= ${previewed.join(" ")} \n`);
   } finally {
     await savePreview(ctx.statePath)(ctx.preview);
   }

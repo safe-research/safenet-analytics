@@ -1,0 +1,274 @@
+{
+  "generated_at": "2026-10-26T17:20:44.649Z",
+  "eth_rpc": "gateway.tenderly.co",
+  "block": 26278309,
+  "block_time": "2026-10-26T17:18:47.000Z",
+  "events": {
+    "delay_changed": 1,
+    "validator_updated": 8,
+    "deposit": 1399,
+    "withdrawal_requested": 118,
+    "withdrawal_claimed": 97
+  },
+  "first_event_block": 24585750,
+  "totals_safe": {
+    "active_stake": 69555583.21125512,
+    "outstanding_withdrawals": 5924343.977566872,
+    "waiting": 1580929.271831471,
+    "claimable": 4343414.705735401,
+    "net_capital_flow": 75479927.18882199,
+    "stakers": 887,
+    "validators_with_stake": 6
+  },
+  "contract_checks": [
+    {
+      "check": "totalStakedAmount",
+      "contract": "69555583211255109215240029",
+      "replay": "69555583211255109215240029",
+      "ok": true
+    },
+    {
+      "check": "totalPendingWithdrawals",
+      "contract": "5924343977566872354969673",
+      "replay": "5924343977566872354969673",
+      "ok": true
+    },
+    {
+      "check": "withdrawals",
+      "contract": "118",
+      "replay": "118",
+      "ok": true
+    },
+    {
+      "check": "withdrawDelay",
+      "contract": "172800",
+      "replay": "172800",
+      "ok": true
+    },
+    {
+      "check": "safeBalance",
+      "contract": "75479927188821981570209702",
+      "replay": "75479927188821981570209702",
+      "ok": true
+    },
+    {
+      "check": "validator 0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "contract": {
+        "stake": "19992137184009844636509978",
+        "registered": true
+      },
+      "replay": {
+        "stake": "19992137184009844636509978",
+        "registered": true
+      },
+      "ok": true
+    },
+    {
+      "check": "validator 0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "contract": {
+        "stake": "13477385100802047047713745",
+        "registered": true
+      },
+      "replay": {
+        "stake": "13477385100802047047713745",
+        "registered": true
+      },
+      "ok": true
+    },
+    {
+      "check": "validator 0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "contract": {
+        "stake": "3004952549603370333402234",
+        "registered": true
+      },
+      "replay": {
+        "stake": "3004952549603370333402234",
+        "registered": true
+      },
+      "ok": true
+    },
+    {
+      "check": "validator 0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "contract": {
+        "stake": "15626677613413900683879347",
+        "registered": true
+      },
+      "replay": {
+        "stake": "15626677613413900683879347",
+        "registered": true
+      },
+      "ok": true
+    },
+    {
+      "check": "validator 0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "contract": {
+        "stake": "2815177957489309149790928",
+        "registered": false
+      },
+      "replay": {
+        "stake": "2815177957489309149790928",
+        "registered": false
+      },
+      "ok": true
+    },
+    {
+      "check": "validator 0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "contract": {
+        "stake": "14639252805936637363943797",
+        "registered": true
+      },
+      "replay": {
+        "stake": "14639252805936637363943797",
+        "registered": true
+      },
+      "ok": true
+    },
+    {
+      "check": "validator 0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "contract": {
+        "stake": "0",
+        "registered": false
+      },
+      "replay": {
+        "stake": "0",
+        "registered": false
+      },
+      "ok": true
+    },
+    {
+      "check": "stakes(staker, validator) for 1073 pairs",
+      "mismatches": 0,
+      "ok": true
+    },
+    {
+      "check": "getPendingWithdrawals for 16 stakers (21 withdrawals: amount and claimableAt)",
+      "mismatches": 0,
+      "ok": true
+    }
+  ],
+  "registered_stakers": [
+    {
+      "validator": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "staker": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "ok": true
+    },
+    {
+      "validator": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "staker": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "ok": true
+    },
+    {
+      "validator": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "staker": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "ok": true
+    },
+    {
+      "validator": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "staker": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "ok": true
+    },
+    {
+      "validator": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "staker": "0x0000000000000000000000000000000000000000",
+      "ok": true
+    },
+    {
+      "validator": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "staker": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "ok": true
+    },
+    {
+      "validator": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "staker": "0x0000000000000000000000000000000000000000",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "dune": {
+    "skipped": "DUNE_API_KEY not set"
+  },
+  "representative": [
+    {
+      "case": "latest deposit",
+      "staker": "https://etherscan.io/address/0xb18a4b8d3904b265aa443026ce4920d928c6fdae",
+      "validator": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "amount_safe": 1190.2824084878757,
+      "tx": "https://etherscan.io/tx/0xea508e087b52e5937d88aba1c34de2088a599d173ec19cb1d5ce62368d8e90d3",
+      "status": "success",
+      "log_found": true,
+      "amount_matches": true
+    },
+    {
+      "case": "waiting withdrawal",
+      "withdrawal_id": 118,
+      "staker": "https://etherscan.io/address/0xd42270832b791343a0078fcdfb06d0f3ab69b5e7",
+      "validator": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "amount_safe": 750929.2718314709,
+      "requested_at": "2026-10-24T23:07:47.000Z",
+      "earliest_withdrawal": "2026-10-26T23:07:47.000Z",
+      "claimed_at": null,
+      "request": {
+        "tx": "https://etherscan.io/tx/0x9fde0c5bd4b230a4e30e5f13fdc61ca1957b4e57f5349525523eeb1f12636d4c",
+        "status": "success",
+        "log_found": true,
+        "amount_matches": true
+      },
+      "claim": null
+    },
+    {
+      "case": "claimable withdrawal",
+      "withdrawal_id": 116,
+      "staker": "https://etherscan.io/address/0x4e4b6aaccaefdea87ff1f393485f8979f6dce3cc",
+      "validator": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "amount_safe": 500,
+      "requested_at": "2026-10-22T13:26:59.000Z",
+      "earliest_withdrawal": "2026-10-24T13:26:59.000Z",
+      "claimed_at": null,
+      "request": {
+        "tx": "https://etherscan.io/tx/0x71a3740259c1af43ad6bd7769187e64f72da1cf6e9f0fb154ccc46c3e6874216",
+        "status": "success",
+        "log_found": true,
+        "amount_matches": true
+      },
+      "claim": null
+    },
+    {
+      "case": "completed withdrawal",
+      "withdrawal_id": 113,
+      "staker": "https://etherscan.io/address/0xde4aaf47413e87bf469c13ac4647c985b2fc6846",
+      "validator": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "amount_safe": 465669.6788776948,
+      "requested_at": "2026-10-20T20:24:11.000Z",
+      "earliest_withdrawal": "2026-10-22T20:24:11.000Z",
+      "claimed_at": "2026-10-24T19:58:59.000Z",
+      "request": {
+        "tx": "https://etherscan.io/tx/0xe1e83de10dc5ded42df6515756a43423eb1981997125253b5214b9788ec47ced",
+        "status": "success",
+        "log_found": true,
+        "amount_matches": true
+      },
+      "claim": {
+        "tx": "https://etherscan.io/tx/0x3a3e95bb45f0eea06555b33724519cd4d73e017a3dd842ac54573e19d5c0a576",
+        "status": "success",
+        "log_found": true,
+        "amount_matches": true
+      }
+    },
+    {
+      "case": "largest self-stake",
+      "validator": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "staker": "https://etherscan.io/address/0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "amount_safe": 4000000.578938239,
+      "registered_by": "https://gnosisscan.io/tx/0x3838fb4e3cc4600d5b89c18b750b2a2e9bd21aced40ff606546a4bd46eb9c1a7",
+      "contract_stakes_at_block": 4000000.578938239
+    },
+    {
+      "case": "stake on deregistered validators",
+      "validators": [
+        "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b"
+      ],
+      "positions": 19,
+      "amount_safe": 2815177.957489309
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+name: "Safenet: outstanding staking withdrawals"
+description: >
+  Safenet staking withdrawals requested and not yet claimed, now: staker, validator, amount, request
+  date, earliest withdrawal date under the contract's rules, and status (claimable now or waiting),
+  earliest first. Managed in github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Outstanding withdrawals now (earliest withdrawal first)
+    type: table
+    description: >
+      Current state, independent of the history charts. Earliest withdrawal = request time plus the
+      withdraw delay in force at the request (2 days since deployment). Claimable now: the staker can
+      claim it; waiting: not yet. Claimed withdrawals are not listed.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: staker, title: Staker, type: normal, alignContent: left, isHidden: false }
+        - { name: validator, title: Validator, type: normal, alignContent: left, isHidden: false }
+        - { name: amount, title: Amount (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: requested_at, title: Requested (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: earliest_withdrawal, title: Earliest withdrawal (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: status, title: Status now, type: normal, alignContent: left, isHidden: false }
+        - { name: request_tx, title: Request tx, type: normal, alignContent: left, isHidden: false }
+        - { name: withdrawal_id, title: Withdrawal ID, type: normal, alignContent: right, isHidden: false }
+        - { name: staker_full, title: Staker address, type: normal, alignContent: left, isHidden: true }
+        - { name: validator_full, title: Validator address, type: normal, alignContent: left, isHidden: true }
+        - { name: request_tx_full, title: Request tx hash, type: normal, alignContent: left, isHidden: true }

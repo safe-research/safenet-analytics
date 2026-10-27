@@ -105,3 +105,42 @@ widgets:
 
   - text_file: text/sentinels_definitions.md
     position: { row: 151, col: 0, size_x: 6, size_y: 9 }
+
+  # ---- Staking ----
+  - text_file: text/staking.md
+    position: { row: 160, col: 0, size_x: 4, size_y: 4 }
+  - visualization: staking_overview/freshness
+    position: { row: 160, col: 4, size_x: 2, size_y: 4 }
+
+  # Current state
+  - visualization: staking_overview/active_stake
+    position: { row: 164, col: 0, size_x: 2, size_y: 4 }
+  - visualization: staking_overview/stakers
+    position: { row: 164, col: 2, size_x: 2, size_y: 4 }
+  - visualization: staking_overview/outstanding
+    position: { row: 164, col: 4, size_x: 1, size_y: 4 }
+  - visualization: staking_overview/claimable
+    position: { row: 164, col: 5, size_x: 1, size_y: 4 }
+  - visualization: staking_flow_summary/table
+    position: { row: 168, col: 0, size_x: 6, size_y: 5 }
+
+  # History (all time)
+  - visualization: staking_daily/active_stake
+    position: { row: 173, col: 0, size_x: 3, size_y: 8 }
+  - visualization: staking_daily/net_flow
+    position: { row: 173, col: 3, size_x: 3, size_y: 8 }
+  - visualization: staking_daily/flows
+    position: { row: 181, col: 0, size_x: 3, size_y: 8 }
+  - visualization: staking_daily/requests
+    position: { row: 181, col: 3, size_x: 3, size_y: 8 }
+
+  # Withdrawals and validators (current state)
+  - visualization: staking_withdrawals_outstanding/table
+    position: { row: 189, col: 0, size_x: 6, size_y: 9 }
+  - visualization: staking_by_validator/bars
+    position: { row: 198, col: 0, size_x: 3, size_y: 8 }
+  - visualization: staking_by_validator/table
+    position: { row: 198, col: 3, size_x: 3, size_y: 8 }
+
+  - text_file: text/staking_definitions.md
+    position: { row: 206, col: 0, size_x: 6, size_y: 10 }

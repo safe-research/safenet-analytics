@@ -223,6 +223,20 @@ describe("preview executions", () => {
     assert.ok(third.some((r) => r.action === "unchanged"), "queries not reading safenet_events are not rerun");
   });
 
+  test("with a production baseline, runs only the queries whose SQL differs from production", async () => {
+    const baseline = structuredClone(config);
+    // As if main had an older staking model: every query that reads it differs from production.
+    baseline.queries.find((q) => q.key === "staking_events")!.sql += "-- older\n";
+    const runs = await run(settings, { baseline });
+    const reads = (key: string): boolean =>
+      key === "staking_events" || cfg.queries.find((q) => q.key === key)!.dependencies.some(reads);
+    for (const r of runs) assert.equal(r.action, reads(r.key) ? "executed" : "same as production", r.key);
+    assert.ok(runs.some((r) => r.action === "executed") && runs.some((r) => r.action === "same as production"));
+    // --force runs them all.
+    const forced = await run(settings, { baseline, force: true });
+    assert.ok(forced.every((r) => r.action === "executed"));
+  });
+
   test("stops at the per-execution credit cap", async () => {
     fake.executionCredits = 30;
     await assert.rejects(run(), /cost 30 credits, above the cap of 25/);

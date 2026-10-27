@@ -4,8 +4,8 @@ import { test } from "node:test";
 import { keccak_256 } from "@noble/hashes/sha3.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { DEFAULT_ROOT } from "../src/config.ts";
-import { LINK_SQL } from "../src/links.ts";
-import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, PRODUCTION, REWARDS_DISTRIBUTOR } from "../src/safenet.ts";
+import { EXPLORERS, LINK_SQL, STAKING_LINK_SQL } from "../src/links.ts";
+import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, PRODUCTION, PRODUCTION_START_TIME, REWARDS_DISTRIBUTOR, STAKING, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 
 const read = (key: string) => readFile(`${DEFAULT_ROOT}/queries/${key}/query.sql`, "utf8");
 // All raw-log decoding is in safenet_events.
@@ -55,6 +55,7 @@ const RAW_LOG_MODELS = [
   "safenet_sentinel_wallet_transfers",
   "safenet_reward_events",
   "safenet_sentinel_texts",
+  "staking_validator_stakers",
 ];
 
 test("only the decoding models read raw logs; other queries read them by reference", async () => {
@@ -144,4 +145,77 @@ test("Sentinel queries read safenet_events at most three times once references a
     return n;
   };
   for (const key of [...keys].filter((k) => k.startsWith("sentinel_"))) assert.ok((await expansions(key)) <= 3, `${key}: ${await expansions(key)}`);
+});
+
+// Staking (docs/metrics/staking.md). The decoded tables are read in staking_events only.
+const STAKING_PANELS = [
+  "staking_overview",
+  "staking_daily",
+  "staking_flow_summary",
+  "staking_withdrawals_outstanding",
+  "staking_by_validator",
+];
+
+test("staking event signatures match their topic0 values", () => {
+  for (const e of [...Object.values(STAKING.events), VALIDATOR_STAKER_SET]) assert.equal(hash(e.signature), e.topic0, e.signature);
+});
+
+test("staking_events reads every decoded Staking table for the production contract from its deployment", async () => {
+  const q = (await read("staking_events")).toLowerCase();
+  for (const e of Object.values(STAKING.events)) assert.ok(q.includes(e.table.toLowerCase()), e.table);
+  assert.equal(q.match(new RegExp(`contract_address = ${STAKING.address}`, "g"))?.length, Object.keys(STAKING.events).length);
+  assert.equal(q.match(new RegExp(`evt_block_number >= ${STAKING.deployBlock}`, "g"))?.length, Object.keys(STAKING.events).length);
+  assert.ok(q.includes(`date '${STAKING.deployDate}'`));
+  assert.ok(q.includes(`timestamp '${PRODUCTION_START_TIME}'`), "era boundary");
+});
+
+test("staking_validator_stakers reads ValidatorStakerSet from the production Consensus only", async () => {
+  const q = await read("staking_validator_stakers");
+  assert.ok(q.includes(PRODUCTION.consensus.address) && q.includes(VALIDATOR_STAKER_SET.topic0));
+  assert.ok(q.includes(String(PRODUCTION.consensus.deployBlock)));
+  assert.ok(!q.includes("223624cbf099e5a8f8cd5af22afa424a1d1acee9"), "Beta Consensus");
+});
+
+test("only staking_events reads the decoded Staking tables; staking panels read the models", async () => {
+  const { readdir } = await import("node:fs/promises");
+  for (const key of await readdir(`${DEFAULT_ROOT}/queries`)) {
+    const decoded = /\bsafe_ethereum\.staking_evt_/i.test(await read(key));
+    assert.equal(decoded, key === "staking_events", key);
+  }
+  for (const key of STAKING_PANELS) {
+    const q = await read(key);
+    assert.ok(/\{\{query:staking_(events|positions|withdrawals|validators)\}\}/.test(q), `${key} does not read the staking models`);
+  }
+  for (const key of ["staking_overview", "staking_daily"]) assert.ok((await read(key)).includes("through_block"), `${key} has no through_block`);
+});
+
+test("the shared staking models are not scheduled and the panels are", async () => {
+  const { parse } = await import("yaml");
+  const meta = async (key: string) => parse(await readFile(`${DEFAULT_ROOT}/queries/${key}/query.yaml`, "utf8"));
+  for (const key of ["staking_events", "staking_validator_stakers", "staking_withdrawals", "staking_positions", "staking_validators"])
+    assert.equal((await meta(key)).refresh, "none", key);
+  for (const key of STAKING_PANELS) assert.equal((await meta(key)).refresh, "daily", key);
+});
+
+// Same limit as the Sentinel queries, for staking_events.
+test("staking queries read staking_events at most three times once references are inlined", async () => {
+  const { readdir } = await import("node:fs/promises");
+  const keys = new Set(await readdir(`${DEFAULT_ROOT}/queries`));
+  const memo = new Map<string, number>();
+  const expansions = async (key: string): Promise<number> => {
+    if (key === "staking_events") return 1;
+    if (memo.has(key)) return memo.get(key)!;
+    let n = 0;
+    for (const m of (await read(key)).matchAll(/\{\{query:([a-z0-9_]+)\}\}/g)) if (keys.has(m[1])) n += await expansions(m[1]);
+    memo.set(key, n);
+    return n;
+  };
+  for (const key of [...keys].filter((k) => k.startsWith("staking_"))) assert.ok((await expansions(key)) <= 3, `${key}: ${await expansions(key)}`);
+});
+
+test("staking queries link to Etherscan with the expressions from src/links.ts", async () => {
+  const q = await read("staking_events");
+  for (const [column, expression] of Object.entries(STAKING_LINK_SQL)) assert.ok(q.includes(`${expression} as ${column}`), column);
+  for (const key of ["staking_positions", "staking_validators", "staking_withdrawals_outstanding"])
+    assert.ok((await read(key)).includes(`${EXPLORERS[1]}/address/`), key);
 });

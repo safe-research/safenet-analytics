@@ -1,0 +1,9 @@
+name: "Safenet: staking positions"
+description: >
+  Safenet active stake now, one row per staker and validator with positive stake, flagged as
+  self-stake when the staker is the validator's registered staker. Shared model; not shown on the
+  dashboard. Managed in github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

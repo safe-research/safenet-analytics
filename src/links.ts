@@ -42,3 +42,8 @@ export const LINK_SQL = {
   tx_url: `'${EXPLORERS[100]}/tx/0x' || lower(to_hex(tx_hash))`,
   safe_tx_url: `'${SAFENET_EXPLORER}/#/safeTx?chainId=' || cast(safe_chain_id as varchar) || '&safeTxHash=0x' || lower(to_hex(safe_tx_hash))`,
 } as const;
+
+// URL column of staking_events (Ethereum). Address links in the staking queries use the same base.
+export const STAKING_LINK_SQL = {
+  tx_url: `'${EXPLORERS[1]}/tx/0x' || lower(to_hex(tx_hash))`,
+} as const;

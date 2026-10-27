@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { columnChartHtml, hbarHtml, heatmapHtml, latestHtml, pivotByDay, RESPONSE_SERIES, sentinelSeries, tableHtml } from "../scripts/render-preview.ts";
+import { columnChartHtml, hbarHtml, heatmapHtml, latestHtml, pivotByDay, RESPONSE_SERIES, sentinelSeries, stakingPages, tableHtml, timeSeriesHtml } from "../scripts/render-preview.ts";
 
 const series = [
   { column: "secure_unanimous", name: "Secure (unanimous)", color: "#0ca30c" },
@@ -73,4 +73,37 @@ test("Sentinel colours follow the name, not the order of appearance; daily rows 
   const rows = pivotByDay([{ day: "2026-10-25", sentinel: "A", fee: 1 }, { day: "2026-10-25", sentinel: "B", fee: 2 }], "sentinel", "fee");
   assert.deepEqual(rows, [{ day: "2026-10-25", A: 1, B: 2 }]);
   assert.match(columnChartHtml("Fees", rows, sentinelSeries(["A", "B"]), "f", { stacked: true }), /2026-10-25 B: 2/);
+});
+
+test("time series draw withdrawals below zero, areas from zero, and gaps where a series has no value", () => {
+  const rows = [
+    { day: "2026-10-06", deposits: 10, out: 0, beta: 5, production: null },
+    { day: "2026-10-07", deposits: 0, out: -4, beta: 9, production: 9 },
+  ];
+  const html = timeSeriesHtml("Flows", rows, [
+    { column: "deposits", name: "Deposits", color: "#2a78d6", kind: "column" },
+    { column: "out", name: "Completed withdrawals", color: "#eb6834", kind: "column" },
+    { column: "beta", name: "Beta", color: "#b5b3ab", kind: "area" },
+    { column: "production", name: "Production", color: "#2a78d6", kind: "area" },
+  ], "footer");
+  assert.equal((html.match(/<rect /g) ?? []).length, 2);
+  assert.match(html, /2026-10-07 Completed withdrawals: -4/);
+  assert.match(html, />-4</, "negative axis tick");
+  assert.equal((html.match(/fill-opacity/g) ?? []).length, 2, "one area per series");
+  assert.match(timeSeriesHtml("Empty", [{ day: "2026-10-07", deposits: 0 }], [{ column: "deposits", name: "D", color: "#000", kind: "column" }], "f"), /No data in range/);
+});
+
+test("staking pages render only for queries with results, and an empty outstanding queue says so", () => {
+  assert.deepEqual(stakingPages({}, "f"), []);
+  const pages = stakingPages(
+    {
+      staking_overview: [{ active_stake: 1.5e7, active_stakers: 3, outstanding_withdrawals: 0, claimable_withdrawals: 0, deregistered_stake: 0, through_block: 1, as_of_time: "2026-10-26 12:00" }],
+      staking_withdrawals_outstanding: [{ staker: "No outstanding withdrawals" }],
+      staking_by_validator: [{ validator_label: "Gnosis", self_stake: 1, delegated_stake: 2, unattributed_stake: 0, deregistered_stake: 0 }],
+    },
+    "f",
+  );
+  assert.deepEqual(pages.map((p) => p[0]), ["staking_overview", "staking_outstanding", "staking_validators"]);
+  assert.match(pages[0][1], /15,000,000/);
+  assert.match(pages[1][1], /No outstanding withdrawals/);
 });

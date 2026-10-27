@@ -174,6 +174,86 @@ ${table}`,
   );
 }
 
+// Daily series over a long range as areas, lines or (stacked) columns, with negative values below
+// the zero line (staking: completed withdrawals). The table lists the latest days with data.
+export type TimeSeries = Series & { kind: "area" | "line" | "column" };
+export function timeSeriesHtml(title: string, rows: Row[], series: readonly TimeSeries[], footer: string, options: { unit?: string; tableDays?: number } = {}) {
+  const days = [...rows].sort((a, b) => String(a.day).localeCompare(String(b.day)));
+  const W = 900;
+  const H = 300;
+  const m = { top: 10, right: 10, bottom: 28, left: 96 };
+  const cols = series.filter((s) => s.kind === "column");
+  const has = (d: Row, s: Series) => d[s.column] !== null && d[s.column] !== undefined;
+  const ups = (d: Row) => cols.reduce((t, s) => t + Math.max(0, num(d[s.column])), 0);
+  const downs = (d: Row) => cols.reduce((t, s) => t + Math.min(0, num(d[s.column])), 0);
+  const values = days.flatMap((d) => [ups(d), downs(d), ...series.filter((s) => s.kind !== "column" && has(d, s)).map((s) => num(d[s.column]))]);
+  const hi = Math.max(0, ...values);
+  const lo = Math.min(0, ...values);
+  const step = 10 ** Math.floor(Math.log10(Math.max(1e-9, hi - lo)));
+  const top = Math.ceil(hi / step) * step;
+  const bottom = Math.floor(lo / step) * step;
+  const y = (v: number) => m.top + ((H - m.top - m.bottom) * (top - v)) / Math.max(1e-9, top - bottom);
+  const band = (W - m.left - m.right) / Math.max(1, days.length);
+  const cx = (i: number) => m.left + i * band + band / 2;
+  const marks: string[] = [];
+  for (const s of series.filter((x) => x.kind !== "column")) {
+    const pts = days.flatMap((d, i) => (has(d, s) ? [[cx(i), y(num(d[s.column]))] as const] : []));
+    if (!pts.length) continue;
+    const line = pts.map(([x, v], i) => `${i ? "L" : "M"}${x.toFixed(1)},${v.toFixed(1)}`).join(" ");
+    if (s.kind === "area")
+      marks.push(`<path d="${line} L${pts.at(-1)![0].toFixed(1)},${y(0)} L${pts[0][0].toFixed(1)},${y(0)} Z" fill="${s.color}" fill-opacity="0.35"/>`);
+    marks.push(`<path d="${line}" fill="none" stroke="${s.color}" stroke-width="2"/>`);
+  }
+  const bar = Math.max(1, band - 1);
+  days.forEach((d, i) => {
+    let up = 0;
+    let down = 0;
+    for (const s of cols) {
+      const v = num(d[s.column]);
+      if (!v) continue;
+      const from = v > 0 ? up : down;
+      const to = from + v;
+      v > 0 ? (up = to) : (down = to);
+      marks.push(`<rect x="${(cx(i) - bar / 2).toFixed(1)}" y="${Math.min(y(from), y(to)).toFixed(1)}" width="${bar.toFixed(1)}" height="${Math.abs(y(to) - y(from)).toFixed(1)}" fill="${s.color}"><title>${esc(String(d.day).slice(0, 10))} ${esc(s.name)}: ${fmt(v)}</title></rect>`);
+    }
+  });
+  const ticks = [...new Set([bottom, 0, top / 2, top])];
+  const grid = ticks
+    .map((t) => `<line x1="${m.left}" x2="${W - m.right}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)" stroke-width="1"/><text x="${m.left - 6}" y="${y(t) + 4}" text-anchor="end">${fmt(Math.round(t))}</text>`)
+    .join("");
+  const every = Math.ceil(days.length / 10);
+  const xLabels = days.map((d, i) => (i % every ? "" : `<text x="${cx(i)}" y="${H - 8}" text-anchor="middle">${esc(String(d.day).slice(0, 10))}</text>`)).join("");
+  const shown = [...days].reverse().filter((d) => series.some((s) => num(d[s.column]))).slice(0, options.tableDays ?? 10);
+  const cell = (v: unknown) => (v === null || v === undefined ? "" : num(v).toLocaleString("en-US", { maximumFractionDigits: 2 }));
+  const table = `<table><thead><tr><th>Day (UTC)</th>${series.map((s) => `<th class="n">${esc(s.name)}</th>`).join("")}</tr></thead><tbody>
+${shown.map((d) => `<tr><td>${esc(String(d.day).slice(0, 10))}</td>${series.map((s) => `<td class="n">${cell(d[s.column])}</td>`).join("")}</tr>`).join("\n")}
+</tbody></table><div class="note">Latest ${shown.length} days with data.</div>`;
+  const empty = days.every((d) => series.every((s) => !num(d[s.column])));
+  return page(
+    title,
+    W + 48,
+    empty
+      ? `<div class="label">No data in range.</div>`
+      : `<div class="legend">${series.map((s) => `<span><span class="key" style="background:${s.color}"></span>${esc(s.name)}</span>`).join("")}</div>
+<svg width="${W}" height="${H}" role="img" aria-label="${esc(title)}">${grid}${marks.join("")}${xLabels}</svg>
+${options.unit ? `<div class="note">${esc(options.unit)}</div>` : ""}
+${table}`,
+    footer,
+  );
+}
+
+// Several counters side by side (staking headline).
+export function countersHtml(title: string, items: { label: string; value: unknown }[], footer: string) {
+  return page(
+    title,
+    1400,
+    `<div style="display:flex;flex-wrap:wrap;gap:24px 48px">${items
+      .map((i) => `<div><div class="hero" style="font-size:40px">${i.value === null || i.value === undefined ? "–" : fmt(Math.round(num(i.value)))}</div><div class="label">${esc(i.label)}</div></div>`)
+      .join("")}</div>`,
+    footer,
+  );
+}
+
 // A results table as on the dashboard. Missing values (null) read "not available"; links show
 // their text, marked with ↗.
 export type Col = [string, string] | [string, string, "pct"];
@@ -222,9 +302,10 @@ const short = (v: unknown) => {
 export function hbarHtml(title: string, rows: Row[], label: string, series: readonly Series[], footer: string, labelTitle = "") {
   const W = 900;
   const rowH = 28;
-  const left = 190;
-  const right = 50;
   const total = (r: Row) => series.reduce((s, x) => s + num(r[x.column]), 0);
+  // Room for the longest label and total (about 7px per character at 12px).
+  const left = Math.max(190, 7 * Math.max(0, ...rows.map((r) => short(r[label]).length)) + 16);
+  const right = Math.max(50, 7 * Math.max(0, ...rows.map((r) => fmt(total(r)).length)) + 12);
   const max = Math.max(1e-9, ...rows.map(total));
   const x = (v: number) => ((W - left - right) * v) / max;
   const H = rows.length * rowH + 24;
@@ -496,6 +577,128 @@ const TABLES: Record<string, { title: string; cols: Col[] }> = {
   },
 };
 
+// Staking section (docs/metrics/staking.md). Names match the image list in .github/workflows/preview.yml.
+const STAKING_QUERIES = ["staking_overview", "staking_daily", "staking_flow_summary", "staking_withdrawals_outstanding", "staking_by_validator"];
+const BETA = "#b5b3ab";
+export function stakingPages(results: Record<string, Row[]>, footer: string): [string, string, number, number][] {
+  const pages: [string, string, number, number][] = [];
+  const o = results.staking_overview?.[0];
+  if (o)
+    pages.push([
+      "staking_overview",
+      countersHtml(
+        `Staking now (Ethereum data as of ${String(o.as_of_time ?? "").slice(0, 16)} UTC, block ${o.through_block})`,
+        [
+          { label: "Active stake now (SAFE)", value: o.active_stake },
+          { label: "Stakers with active stake", value: o.active_stakers },
+          { label: "Outstanding withdrawals (SAFE)", value: o.outstanding_withdrawals },
+          { label: "of which claimable now (SAFE)", value: o.claimable_withdrawals },
+          { label: "On deregistered validators (SAFE)", value: o.deregistered_stake },
+        ],
+        footer,
+      ),
+      1448,
+      240,
+    ]);
+  if (results.staking_flow_summary)
+    pages.push([
+      "staking_flows",
+      tableHtml("Staking flows (SAFE)", results.staking_flow_summary, [
+        ["period", "Period"],
+        ["deposits", "Deposits"],
+        ["withdrawals_requested", "Withdrawal requests"],
+        ["withdrawals_completed", "Completed withdrawals"],
+        ["net_capital_flow", "Net capital flow"],
+        ["active_stake_change", "Active stake change"],
+        ["deposit_count", "Deposits (n)"],
+        ["depositors", "Depositors"],
+        ["request_count", "Requests (n)"],
+        ["claim_count", "Claims (n)"],
+      ], footer),
+      1448,
+      320,
+    ]);
+  const d = results.staking_daily;
+  if (d) {
+    const h = 440 + 30 * 10;
+    pages.push([
+      "staking_active",
+      timeSeriesHtml("Active stake (SAFE, all time; Beta before 2026-10-07)", d, [
+        { column: "active_stake_beta", name: "Active stake (Beta)", color: BETA, kind: "area" },
+        { column: "active_stake_production", name: "Active stake (production)", color: "#2a78d6", kind: "area" },
+      ], footer),
+      996,
+      h,
+    ]);
+    pages.push([
+      "staking_daily_flows",
+      timeSeriesHtml("Deposits and completed withdrawals per day (SAFE, all time)", d, [
+        { column: "deposits", name: "Deposits", color: "#2a78d6", kind: "column" },
+        { column: "withdrawals_completed_negative", name: "Completed withdrawals", color: "#eb6834", kind: "column" },
+      ], footer),
+      996,
+      h,
+    ]);
+    pages.push([
+      "staking_net_flow",
+      timeSeriesHtml("Net capital flow, cumulative (SAFE)", d, [
+        { column: "active_stake", name: "Active stake (gap = outstanding withdrawals)", color: BETA, kind: "line" },
+        { column: "net_flow", name: "Net capital flow", color: "#2a78d6", kind: "line" },
+      ], footer),
+      996,
+      h,
+    ]);
+    pages.push([
+      "staking_requests",
+      timeSeriesHtml("Withdrawal requests per day (SAFE, all time)", d, [
+        { column: "withdrawals_requested_beta", name: "Requested (Beta)", color: BETA, kind: "column" },
+        { column: "withdrawals_requested_production", name: "Requested (production)", color: "#eb6834", kind: "column" },
+      ], footer),
+      996,
+      h,
+    ]);
+  }
+  const w = results.staking_withdrawals_outstanding;
+  if (w)
+    pages.push([
+      "staking_outstanding",
+      tableHtml(
+        "Outstanding withdrawals now (earliest withdrawal first)",
+        w.map((r) => ({ ...r, requested_at: String(r.requested_at ?? "").slice(0, 16), earliest_withdrawal: String(r.earliest_withdrawal ?? "").slice(0, 16) })),
+        [
+          ["staker", "Staker"],
+          ["validator", "Validator"],
+          ["amount", "Amount (SAFE)"],
+          ["requested_at", "Requested (UTC)"],
+          ["earliest_withdrawal", "Earliest withdrawal (UTC)"],
+          ["status", "Status now"],
+          ["request_tx", "Request tx"],
+          ["withdrawal_id", "ID"],
+        ],
+        `${footer} Links (↗) go to Etherscan.`,
+      ),
+      1448,
+      160 + 30 * Math.max(1, w.length),
+    ]);
+  const v = results.staking_by_validator;
+  if (v)
+    pages.push([
+      "staking_validators",
+      hbarHtml("Active stake by validator now (SAFE, rounded)", v.map((r) => ({
+        ...r,
+        ...Object.fromEntries(["self_stake", "delegated_stake", "unattributed_stake", "deregistered_stake"].map((c) => [c, Math.round(num(r[c]))])),
+      })), "validator_label", [
+        { column: "self_stake", name: "Self-stake (registered staker)", color: "#184f95" },
+        { column: "delegated_stake", name: "Delegated stake", color: "#6da7ec" },
+        { column: "unattributed_stake", name: "No registered staker (split unknown)", color: "#eda100" },
+        { column: "deregistered_stake", name: "On deregistered validator", color: BETA },
+      ], footer, "Validator"),
+      996,
+      300 + 64 * v.length,
+    ]);
+  return pages;
+}
+
 async function main() {
   const results: Record<string, Row[]> = {};
   let source: string;
@@ -522,25 +725,30 @@ async function main() {
       "sentinel_verdicts",
       "sentinel_coverage",
       "sentinel_earnings_daily",
+      ...STAKING_QUERIES,
       ...Object.keys(TABLES),
     ]) {
       const id = state.queries[q]?.id;
       if (!id) continue;
-      const r = await dune.latestResults(id, 200);
+      // Queries with the same SQL as production are not executed in a preview and have no results.
+      const r = await dune.latestResults(id, q === "staking_daily" ? 2000 : 200).catch(() => undefined);
+      if (!r?.rows.length) continue;
       results[q] = r.rows;
       ended.push(String(r.execution_ended_at ?? "?").slice(0, 16));
     }
-    if (!results.transaction_checks_daily) throw new Error("preview queries are not deployed");
+    if (!Object.keys(results).length) throw new Error("the preview has no query results");
     source = `the preview's query results (latest ${ended.sort().at(-1)} UTC)`;
   }
   const footer = `Rendered from ${esc(source)} for track ${esc(args.track)}, commit ${esc(args.sha!.slice(0, 7))}. Not a screenshot of Dune.`;
   await mkdir(args.out!, { recursive: true });
   const daily = results.transaction_checks_daily ?? [];
   const rowsHeight = (n: number) => 160 + 30 * Math.max(1, n);
-  const pages: [string, string, number, number][] = [
-    ["counter", counterHtml(daily, footer), 468, 260],
-    ["daily", dailyHtml(daily, footer), 996, 420 + 30 * daily.length],
-  ];
+  const pages: [string, string, number, number][] = daily.length
+    ? [
+        ["counter", counterHtml(daily, footer), 468, 260],
+        ["daily", dailyHtml(daily, footer), 996, 420 + 30 * daily.length],
+      ]
+    : [];
   if (results.results_daily)
     pages.push(["results", columnChartHtml("Requests by proposal day and current status (last 30 days)", results.results_daily, STATUS_SERIES, footer, { stacked: true }), 996, 440 + 30 * results.results_daily.length]);
   if (results.fee_revenue_daily)
@@ -609,6 +817,7 @@ async function main() {
       440 + 30 * rows.length,
     ]);
   }
+  pages.push(...stakingPages(results, footer));
   if (results.latest_requests) pages.push(["latest", latestHtml(results.latest_requests, footer), 1448, rowsHeight(results.latest_requests.length)]);
   const bin = chrome();
   for (const [name, html, width, height] of pages) {

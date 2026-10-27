@@ -1,6 +1,9 @@
 // Executes preview queries after a preview deploy, within the cost caps of dune/preview.yaml.
 // Only queries shown on the dashboard run, and only if their SQL (with every referenced query
-// inlined) changed since their last preview execution. Previews have no schedule.
+// inlined) changed since their last preview execution. With a baseline (the production
+// configuration on main), queries whose inlined SQL equals production's are not run either: a new
+// track would otherwise execute every section of the dashboard, not just the one under review.
+// Their preview panels stay empty; production shows them. Previews have no schedule.
 
 import { inlineSql, type Config } from "./config.ts";
 import type { DuneClient } from "./dune.ts";
@@ -8,14 +11,20 @@ import { fingerprint } from "./hash.ts";
 import type { PreviewSettings } from "./preview.ts";
 import type { ExecutionRecord, State } from "./state.ts";
 
-export type PreviewRun = { key: string; query_id: number; action: "executed" | "unchanged"; credits?: number; state?: string };
+export type PreviewRun = {
+  key: string;
+  query_id: number;
+  action: "executed" | "unchanged" | "same as production";
+  credits?: number;
+  state?: string;
+};
 
 export async function runPreviewQueries(
   config: Config, // the preview configuration (toPreview)
   state: State, // the preview state; executions are recorded in it
   client: DuneClient,
   settings: PreviewSettings,
-  options: { pollMs?: number; log?: (line: string) => void; force?: boolean } = {},
+  options: { pollMs?: number; log?: (line: string) => void; force?: boolean; baseline?: Config } = {},
 ): Promise<PreviewRun[]> {
   const log = options.log ?? console.log;
   const { performance, timeoutMinutes, maxCreditsPerExecution, maxCreditsPerRun } = settings.execution;
@@ -26,8 +35,15 @@ export async function runPreviewQueries(
   for (const q of config.queries.filter((x) => shown.has(x.key))) {
     const id = state.queries[q.key]?.id;
     if (!id) throw new Error(`preview query ${q.key} is not deployed; run the preview deploy first`);
-    const sql = fingerprint(inlineSql(q, config.queries));
+    const inlined = inlineSql(q, config.queries);
+    const sql = fingerprint(inlined);
     const previous = state.executions[q.key];
+    const production = options.baseline?.queries.find((x) => x.key === q.key);
+    if (!options.force && production && inlineSql(production, options.baseline!.queries) === inlined) {
+      log(`${q.key} (${id}): same SQL as production, not executed`);
+      runs.push({ key: q.key, query_id: id, action: "same as production" });
+      continue;
+    }
     if (!options.force && previous?.query_id === id && previous.sql === sql) {
       log(`${q.key} (${id}): unchanged since execution ${previous.execution_id}, not executed`);
       runs.push({ key: q.key, query_id: id, action: "unchanged" });
