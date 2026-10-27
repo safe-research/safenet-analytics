@@ -113,12 +113,18 @@ export class FakeDune {
 
     if (method === "GET" && path === "/api/whoami") return json(200, this.whoami);
 
-    if (method === "GET" && path === "/api/v1/queries")
+    // Paginated like Dune (limit, offset). Returning everything on every page would make the
+    // client page forever once there are 100 or more queries.
+    if (method === "GET" && path === "/api/v1/queries") {
+      const limit = Number(url.searchParams.get("limit") ?? 100);
+      const offset = Number(url.searchParams.get("offset") ?? 0);
       return json(200, {
         queries: [...this.queries.values()]
           .filter((q) => !q.is_archived)
+          .slice(offset, offset + limit)
           .map((q) => ({ id: q.query_id, name: q.name, tags: q.tags })),
       });
+    }
     if (method === "POST" && path === "/api/v1/query") {
       if (body.is_private && this.privacy === "reject") return json(402, { error: "private queries limit reached" });
       const q = this.seedQuery({ ...body, is_private: this.privacy === "ignore" ? false : (body.is_private ?? false) });

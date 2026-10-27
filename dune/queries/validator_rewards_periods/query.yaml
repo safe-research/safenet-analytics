@@ -1,0 +1,53 @@
+name: "Safenet: staking rewards by period (SAFE)"
+description: >
+  Safenet staking rewards per published reward period (safe-fndn/safenet-data), Beta and production:
+  allocated to validator stakers (commission and own-stake reward together), to delegators and as
+  Sentinel grants; production periods not yet published are listed without amounts. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  bars:
+    name: Rewards allocated per period (SAFE, as published)
+    type: chart
+    description: >
+      Validator stakers: the registered stakers' commission and own-stake reward, which the published
+      data does not split. Delegators: all other stakers. Production periods start 2026-10-13; a
+      period without bars is not published yet, not 0.
+    options:
+      globalSeriesType: column
+      series: { stacking: normal }
+      sortX: false
+      legend: { enabled: true }
+      xAxis: { title: { text: Reward period } }
+      yAxis:
+        - title: { text: SAFE }
+      columnMapping:
+        period: x
+        validator_stakers_allocated: y
+        delegators_allocated: y
+        sentinel_grants: y
+      seriesOptions:
+        validator_stakers_allocated: { type: column, yAxis: 0, zIndex: 0, name: "Validator stakers (commission + own stake)", color: "#184f95" }
+        delegators_allocated: { type: column, yAxis: 0, zIndex: 1, name: Delegators, color: "#6da7ec" }
+        sentinel_grants: { type: column, yAxis: 0, zIndex: 2, name: Sentinel grants, color: "#eda100" }
+  table:
+    name: Rewards by period (table)
+    type: table
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: period, title: Period, type: normal, alignContent: left, isHidden: false }
+        - { name: status, title: Status, type: normal, alignContent: left, isHidden: false }
+        - { name: total_allocated, title: Allocated (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: validator_stakers_allocated, title: Validator stakers, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: delegators_allocated, title: Delegators, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: sentinel_grants, title: Sentinel grants, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: commission_status, title: Commission split, type: normal, alignContent: left, isHidden: false }
+        - { name: unpaid_carried, title: Unpaid carried forward, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: reissues, title: Re-issues, type: normal, alignContent: right, isHidden: false }
+        - { name: root_on_chain, title: Root set on chain, type: normal, alignContent: left, isHidden: false }
+        - { name: merkle_root, title: Merkle root, type: normal, alignContent: left, isHidden: true }

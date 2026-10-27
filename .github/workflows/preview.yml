@@ -172,6 +172,13 @@ jobs:
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --out "$RUNNER_TEMP/verification-staking.json"
 
+      - name: Reconcile validators against contract state, signing events and published rewards
+        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' validator_overview ')
+        run: >-
+          npm run verify:validators --
+          --state "dune/.preview/${{ steps.state.outputs.track }}.json"
+          --out "$RUNNER_TEMP/verification-validators.json"
+
       - name: Render result images
         if: always() && steps.run.outcome == 'success'
         run: >-
@@ -211,6 +218,7 @@ jobs:
             ${{ runner.temp }}/verification-network-revenue.json
             ${{ runner.temp }}/verification-sentinels.json
             ${{ runner.temp }}/verification-staking.json
+            ${{ runner.temp }}/verification-validators.json
             ${{ runner.temp }}/production-plan.txt
           if-no-files-found: ignore
 
@@ -236,7 +244,9 @@ jobs:
               echo
               for f in counter daily results fees network_summary network_breakdown guard_adoption fee_allocation fee_config latest \
                 sentinel_overview sentinel_windows sentinel_heatmap sentinel_verdicts sentinel_coverage sentinel_disputes sentinel_earnings sentinel_earnings_daily sentinel_bonds \
-                staking_overview staking_flows staking_active staking_daily_flows staking_net_flow staking_requests staking_outstanding staking_validators; do
+                staking_overview staking_flows staking_active staking_daily_flows staking_net_flow staking_requests staking_outstanding staking_validators \
+                validator_overview validator_stake_status validator_participation_windows validator_heatmap validator_stake_daily \
+                validator_stake_split validator_rewards_periods validator_rewards_by_staker validator_withdrawal_exposure; do
                 if [ -f "$T/render/$f.png" ]; then echo "<img src=\"$IMG/$f.png?raw=true\" alt=\"$f\" width=\"$([ $f = counter ] && echo 320 || echo 900)\">"; echo; fi
               done
               echo "<details><summary>Network and revenue: reconciliation with on-chain events and USDC.e flows</summary>"
@@ -283,6 +293,22 @@ jobs:
                 echo
                 echo '```json'
                 jq '.representative' "$T/verification-staking.json"
+                echo '```'
+                echo "</details>"
+                echo
+              fi
+              echo "<details><summary>Validators: membership vs contract state, signing recount, stake and rewards</summary>"
+              echo
+              echo '```json'
+              if [ -f "$T/verification-validators.json" ]; then jq '{block, active_epoch, attestation_set, epochs, ceremonies, participation_production, membership_checks: [.membership_checks[] | {check, ok}], reward_checks, issues, dune}' "$T/verification-validators.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
+              echo '```'
+              echo "</details>"
+              echo
+              if [ -f "$T/verification-validators.json" ]; then
+                echo "<details><summary>Representative validator cases (membership change, missed signatures, excluded ceremonies)</summary>"
+                echo
+                echo '```json'
+                jq '.representative' "$T/verification-validators.json"
                 echo '```'
                 echo "</details>"
                 echo

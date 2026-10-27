@@ -73,6 +73,8 @@ Current status: **not yet checked against Dune in this repository.** The first `
 
 **Staking (Ethereum) is decoded on Dune** as `safe_ethereum.Staking_evt_*`, so the staking models read the decoded tables instead of raw logs. All reads go through one query, [`staking_events`](../dune/queries/staking_events/query.sql), which is the only query that names those tables (`test/safenet.test.ts`). The production Consensus is not decoded, so the validator → staker relation (`ValidatorStakerSet`) is decoded from `gnosis.logs` in `staking_validator_stakers`. Coverage of the decoded tables from the deploy block 24585750 is checked by `verify:staking`: each preview compares Dune's results with an RPC replay over the same block range ([metrics/staking.md](metrics/staking.md#validation)).
 
+The **Validators** models read Consensus (epochs, attestations, staker settings) and the FROSTCoordinator (key generation and signing) from `gnosis.logs` in `validator_epochs`, `validator_membership`, `validator_ceremonies` and `validator_staker_history`. Their sources, coverage and the conditions for moving them to decoded tables are in [metrics/validators.md](metrics/validators.md#decoding-and-coverage).
+
 The FROSTCoordinator is shared by production and the Aegis testnet. Even once decoded, its events cannot be attributed to production by address alone.
 
 ## Replacing raw logs with decoded tables

@@ -1,0 +1,10 @@
+name: "Safenet: validator attestation-set membership"
+description: >
+  Safenet production attestation set over time: the validators in each epoch's FROST group
+  (KeyGenConfirmed of the groups named by production Consensus). Separate from Ethereum staking
+  registration. Shared model; not shown on the dashboard. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

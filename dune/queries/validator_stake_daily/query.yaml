@@ -1,0 +1,36 @@
+name: "Safenet: active stake per validator per day (SAFE)"
+description: >
+  Safenet active stake per validator at the end of each UTC day, all time (Beta and production in one
+  Staking contract; production from 2026-10-07), with the Staking section's definition. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  area:
+    name: Active stake by validator (SAFE, all time; production from 2026-10-07)
+    type: chart
+    description: >
+      Stacked by validator; includes stake on validators later deregistered. Days before
+      2026-10-07 are Beta.
+    options:
+      globalSeriesType: area
+      series: { stacking: normal }
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Day (UTC) } }
+      yAxis:
+        - title: { text: SAFE }
+      columnMapping:
+        day: x
+        active_stake: y
+        validator: series
+      seriesOptions:
+        "Blockchain Capital": { type: area, yAxis: 0, name: "Blockchain Capital", color: "#2a78d6" }
+        "Core Contributors": { type: area, yAxis: 0, name: "Core Contributors", color: "#eb6834" }
+        "Gnosis": { type: area, yAxis: 0, name: "Gnosis", color: "#1baf7a" }
+        "Greenfield": { type: area, yAxis: 0, name: "Greenfield", color: "#eda100" }
+        "RockawayX": { type: area, yAxis: 0, name: "RockawayX", color: "#e87ba4" }
+        "Safe Labs": { type: area, yAxis: 0, name: "Safe Labs", color: "#008300" }

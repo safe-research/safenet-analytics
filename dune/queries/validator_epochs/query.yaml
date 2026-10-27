@@ -1,0 +1,9 @@
+name: "Safenet: validator epochs"
+description: >
+  Safenet production epochs on Gnosis Chain: each epoch's FROST group and the block range in which it
+  attests (genesis group, then EpochStaged at its rollover block). Shared model; not shown on the
+  dashboard. Managed in github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

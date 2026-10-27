@@ -16,6 +16,7 @@ import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { DuneClient } from "../src/dune.ts";
 import { loadState } from "../src/state.ts";
+import { validatorColor } from "../src/validators.ts";
 
 const { values: args } = parseArgs({
   options: {
@@ -348,7 +349,12 @@ const RAMP = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", 
 const rampColor = (pct: number) => RAMP[Math.min(RAMP.length - 1, Math.floor((pct / 100) * RAMP.length))];
 
 // Sentinel x day heatmap of participation_pct. Days without eligible requests stay blank.
-export function heatmapHtml(rows: Row[], footer: string) {
+// Labels default to the Sentinel heatmap; the Validators section passes its own.
+export function heatmapHtml(
+  rows: Row[],
+  footer: string,
+  labels = { title: "Participation per day, % of eligible requests (last 30 days)", entity: "Sentinel", unit: "eligible", empty: "No eligible requests in range." },
+) {
   // Every calendar day in range, so days without requests show as blank columns.
   const seen = [...new Set(rows.map((r) => String(r.day).slice(0, 10)))].sort();
   const days: string[] = [];
@@ -361,19 +367,19 @@ export function heatmapHtml(rows: Row[], footer: string) {
     if (!r) return `<td class="hm blank" title="${esc(s)} ${d}: not eligible"></td>`;
     const pct = num(r.participation_pct);
     const dark = pct >= 50;
-    return `<td class="hm" style="background:${rampColor(pct)};color:${dark ? "#fcfcfb" : "#0b0b0b"}" title="${esc(s)} ${d}: ${pct}% of ${fmt(num(r.eligible_requests))} eligible">${Math.round(pct)}</td>`;
+    return `<td class="hm" style="background:${rampColor(pct)};color:${dark ? "#fcfcfb" : "#0b0b0b"}" title="${esc(s)} ${d}: ${pct}% of ${fmt(num(r.eligible_requests))} ${labels.unit}">${pct >= 99.5 && pct < 100 ? pct.toFixed(1) : Math.round(pct)}</td>`; // never round up to 100
   };
   const legend = `<div class="legend">${RAMP.map((c, i) => `<span><span class="key" style="background:${c}"></span>${Math.round((i * 100) / RAMP.length)}–${Math.round(((i + 1) * 100) / RAMP.length)}%</span>`).join("")}<span><span class="key" style="background:var(--surface-1);outline:1px solid var(--grid)"></span>not eligible</span></div>`;
   return page(
-    "Participation per day, % of eligible requests (last 30 days)",
+    labels.title,
     Math.max(760, 300 + 48 * days.length),
     rows.length
       ? `<style>td.hm { width: 34px; text-align: center; padding: 6px 0; border: 2px solid var(--surface-1); font-size: 12px; } td.blank { background: var(--surface-1); } th { white-space: nowrap; }</style>
 ${legend}
-<table><thead><tr><th>Sentinel</th>${days.map((d) => `<th class="n">${esc(d.slice(5))}</th>`).join("")}</tr></thead><tbody>
+<table><thead><tr><th>${esc(labels.entity)}</th>${days.map((d) => `<th class="n">${esc(d.slice(5))}</th>`).join("")}</tr></thead><tbody>
 ${sentinels.map((s) => `<tr><td>${esc(short(s))}</td>${days.map((d) => cell(s, d)).join("")}</tr>`).join("\n")}
 </tbody></table>`
-      : `<div class="label">No eligible requests in range.</div>`,
+      : `<div class="label">${esc(labels.empty)}</div>`,
     footer,
   );
 }
@@ -699,6 +705,182 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
   return pages;
 }
 
+// Validators section (docs/metrics/validators.md). Names match the image list in .github/workflows/preview.yml.
+const VALIDATOR_QUERIES = [
+  "validator_overview",
+  "validator_stake_status",
+  "validator_participation_daily",
+  "validator_participation_windows",
+  "validator_stake_daily",
+  "validator_stake_split_daily",
+  "validator_rewards_periods",
+  "validator_rewards_by_staker",
+  "validator_withdrawal_exposure",
+];
+const pct = (v: unknown) => (v === null || v === undefined ? null : Math.round(num(v) * 1000) / 10);
+export function validatorPages(results: Record<string, Row[]>, footer: string): [string, string, number, number][] {
+  const pages: [string, string, number, number][] = [];
+  const rowsHeight = (n: number) => 160 + 30 * Math.max(1, n);
+  const o = results.validator_overview;
+  if (o)
+    pages.push([
+      "validator_overview",
+      tableHtml(
+        `Validators now (Gnosis Chain data as of ${String(o[0]?.as_of_time ?? "").slice(0, 16)} UTC)`,
+        o.map((r) => ({
+          ...r,
+          self_stake: r.self_stake === null ? null : Math.round(num(r.self_stake)),
+          delegated_stake: r.delegated_stake === null ? null : Math.round(num(r.delegated_stake)),
+          total_stake: Math.round(num(r.total_stake)),
+          last_signature_share: r.last_signature_share ? String(r.last_signature_share).slice(0, 16) : null,
+        })),
+        [
+          ["name", "Validator"],
+          ["attestation_set", "Attestation set now"],
+          ["staking_registration", "Staking"],
+          ["self_stake", "Self-stake"],
+          ["delegated_stake", "Delegated"],
+          ["total_stake", "Total (SAFE)"],
+          ["share_of_contract_stake", "Share of contract", "pct"],
+          ["share_of_live_set_stake", "Share of live set", "pct"],
+          ["observed_signed_30d", "Signed / eligible (30d)"],
+          ["reward_participation_period", "Used for rewards", "pct"],
+          ["last_signature_share", "Last signature share"],
+        ],
+        `${footer} Blank or "not available": no eligible ceremony, no registered staker, or outside the live set.`,
+        1600,
+      ),
+      1648,
+      rowsHeight(o.length),
+    ]);
+  const st = results.validator_stake_status;
+  if (st)
+    pages.push([
+      "validator_stake_status",
+      tableHtml("Stake by validator status now (SAFE)", st.map((r) => ({ ...r, stake: Math.round(num(r.stake)) })), [
+        ["status", "Status"],
+        ["stake", "Active stake (SAFE)"],
+        ["share_of_contract_stake", "Share of contract stake", "pct"],
+        ["validators", "Validators"],
+        ["names", "Names"],
+      ], footer),
+      1448,
+      rowsHeight(st.length),
+    ]);
+  const win = results.validator_participation_windows;
+  if (win)
+    pages.push([
+      "validator_participation_windows",
+      tableHtml("Signing participation by window", win, [
+        ["time_window", "Window"],
+        ["validator", "Validator"],
+        ["signed", "Signed"],
+        ["eligible", "Eligible ceremonies"],
+        ["observed_participation", "Observed", "pct"],
+        ["signed_transactions", "Signed attested txs"],
+        ["transactions", "All attested txs"],
+        ["reward_basis_rate", "Reward basis", "pct"],
+      ], footer),
+      1448,
+      rowsHeight(win.length),
+    ]);
+  const daily = results.validator_participation_daily;
+  if (daily) {
+    const n = new Set(daily.map((r) => r.validator)).size;
+    pages.push([
+      "validator_heatmap",
+      heatmapHtml(
+        daily.map((r) => ({ day: r.day, sentinel: r.validator, participation_pct: r.participation_pct, eligible_requests: r.eligible_ceremonies })),
+        footer,
+        { title: "Observed signing participation per day, % of eligible ceremonies (last 30 days)", entity: "Validator", unit: "eligible ceremonies", empty: "No eligible ceremonies in range." },
+      ),
+      1448,
+      220 + 34 * n,
+    ]);
+  }
+  const sd = results.validator_stake_daily;
+  if (sd) {
+    const names = [...new Set(sd.map((r) => String(r.validator)))].sort();
+    pages.push([
+      "validator_stake_daily",
+      timeSeriesHtml(
+        "Active stake by validator (SAFE, all time; production from 2026-10-07)",
+        pivotByDay(sd, "validator", "active_stake"),
+        names.map((name) => ({ column: name, name, color: validatorColor(name), kind: "line" as const })),
+        footer,
+      ),
+      996,
+      740,
+    ]);
+  }
+  const split = results.validator_stake_split_daily;
+  if (split)
+    pages.push([
+      "validator_stake_split",
+      timeSeriesHtml("Self-stake and delegated stake (SAFE, all time)", split, [
+        { column: "self_stake", name: "Self-stake (registered staker)", color: "#184f95", kind: "line" },
+        { column: "delegated_stake", name: "Delegated stake", color: "#6da7ec", kind: "line" },
+        { column: "unattributed_stake", name: "No registered staker (split unknown)", color: "#eda100", kind: "line" },
+      ], footer),
+      996,
+      740,
+    ]);
+  const rp = results.validator_rewards_periods;
+  if (rp) {
+    pages.push([
+      "validator_rewards_periods",
+      tableHtml("Rewards by period (SAFE, as published)", rp.map((r) => ({ ...r, total_allocated: r.total_allocated === null ? null : Math.round(num(r.total_allocated)), validator_stakers_allocated: r.validator_stakers_allocated === null ? null : Math.round(num(r.validator_stakers_allocated)), delegators_allocated: r.delegators_allocated === null ? null : Math.round(num(r.delegators_allocated)) })), [
+        ["period", "Period"],
+        ["status", "Status"],
+        ["total_allocated", "Allocated"],
+        ["validator_stakers_allocated", "Validator stakers"],
+        ["delegators_allocated", "Delegators"],
+        ["sentinel_grants", "Sentinel grants"],
+        ["commission_status", "Commission split"],
+        ["root_on_chain", "Root on chain"],
+      ], `${footer} "not available": the period is not published, which is not 0.`),
+      1448,
+      rowsHeight(rp.length),
+    ]);
+  }
+  const rs = results.validator_rewards_by_staker;
+  if (rs)
+    pages.push([
+      "validator_rewards_by_staker",
+      tableHtml("Validator staker rewards (SAFE, latest published root)", rs, [
+        ["staker", "Staker"],
+        ["validators", "Staker for"],
+        ["eras", "Era"],
+        ["allocated", "Allocated"],
+        ["withheld_kyc", "Withheld (KYC)"],
+        ["claimed", "Claimed"],
+        ["claimable", "Claimable"],
+        ["note", "Note"],
+      ], footer),
+      1448,
+      rowsHeight(rs.length),
+    ]);
+  const ex = results.validator_withdrawal_exposure;
+  if (ex)
+    pages.push([
+      "validator_withdrawal_exposure",
+      hbarHtml(
+        "Outstanding withdrawals by validator now (SAFE, rounded)",
+        ex.map((r) => ({ ...r, waiting: Math.round(num(r.waiting)), claimable: Math.round(num(r.claimable)) })),
+        "validator_label",
+        [
+          { column: "waiting", name: "Waiting", color: "#6da7ec" },
+          { column: "claimable", name: "Claimable now", color: "#eb6834" },
+        ],
+        footer,
+        "Validator",
+      ),
+      996,
+      300 + 64 * Math.max(1, ex.length),
+    ]);
+  return pages;
+}
+
 async function main() {
   const results: Record<string, Row[]> = {};
   let source: string;
@@ -726,12 +908,13 @@ async function main() {
       "sentinel_coverage",
       "sentinel_earnings_daily",
       ...STAKING_QUERIES,
+      ...VALIDATOR_QUERIES,
       ...Object.keys(TABLES),
     ]) {
       const id = state.queries[q]?.id;
       if (!id) continue;
       // Queries with the same SQL as production are not executed in a preview and have no results.
-      const r = await dune.latestResults(id, q === "staking_daily" ? 2000 : 200).catch(() => undefined);
+      const r = await dune.latestResults(id, ["staking_daily", "validator_stake_daily", "validator_stake_split_daily"].includes(q) ? 5000 : 200).catch(() => undefined);
       if (!r?.rows.length) continue;
       results[q] = r.rows;
       ended.push(String(r.execution_ended_at ?? "?").slice(0, 16));
@@ -818,6 +1001,7 @@ async function main() {
     ]);
   }
   pages.push(...stakingPages(results, footer));
+  pages.push(...validatorPages(results, footer));
   if (results.latest_requests) pages.push(["latest", latestHtml(results.latest_requests, footer), 1448, rowsHeight(results.latest_requests.length)]);
   const bin = chrome();
   for (const [name, html, width, height] of pages) {

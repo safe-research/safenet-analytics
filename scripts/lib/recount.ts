@@ -18,11 +18,12 @@ export function rpcClient(url: string) {
   let id = 0;
   const call = async <T>(method: string, params: unknown[]): Promise<T> => {
     for (let attempt = 0; ; attempt++) {
+      // A dropped connection is retried like a server error.
       const res = await fetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ jsonrpc: "2.0", id: ++id, method, params }),
-      });
+      }).catch((e: Error) => new Response(JSON.stringify({ error: { message: e.message } }), { status: 599 }));
       const body = (await res.json().catch(() => ({}))) as { result?: T; error?: { message: string } };
       if (res.ok && body.result !== undefined) return body.result;
       // Public RPCs rate-limit shared CI addresses (429): wait longer and try more often then.

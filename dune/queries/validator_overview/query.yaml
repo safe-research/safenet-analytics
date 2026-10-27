@@ -1,0 +1,50 @@
+name: "Safenet: validators now"
+description: >
+  Safenet validators, current snapshot: production attestation-set membership and Ethereum staking
+  registration (separate attributes), self-stake, delegated stake, stake shares with their
+  denominators, observed signing participation (30 days), the reward scripts' participation for the
+  current period, and the last signature share. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Validators now
+    type: table
+    description: >
+      Attestation set = member of the active epoch's signing group on Gnosis Chain; staking
+      registration = the Ethereum Staking contract. Share of contract stake: of all active stake;
+      share of live-set stake: of stake on validators both registered and in the attestation set.
+      Observed participation: recognised signature shares / completed ceremonies of its groups in the
+      last 30 days (n/a without any). Used for rewards: the reward scripts' rate for the current
+      two-week period so far (signed attested transactions / all attested transactions), not settled.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: validator, title: Validator, type: normal, alignContent: left, isHidden: false }
+        - { name: attestation_set, title: Attestation set now, type: normal, alignContent: left, isHidden: false }
+        - { name: staking_registration, title: Staking registration, type: normal, alignContent: left, isHidden: false }
+        - { name: registered_staker, title: Registered staker, type: normal, alignContent: left, isHidden: false }
+        - { name: self_stake, title: Self-stake (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: delegated_stake, title: Delegated stake (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: total_stake, title: Total stake (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: share_of_contract_stake, title: Share of contract stake, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: share_of_live_set_stake, title: Share of live-set stake, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: observed_participation_30d, title: "Observed signing, 30 days", type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: observed_signed_30d, title: "Signed / eligible ceremonies", type: normal, alignContent: right, isHidden: false }
+        - { name: reward_participation_period, title: "Used for rewards (current period, unsettled)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: last_signature_share, title: Last signature share (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: last_signature_share_tx, title: Share tx, type: normal, alignContent: left, isHidden: false }
+        - { name: validator_address, title: Validator address, type: normal, alignContent: left, isHidden: true }
+  freshness:
+    name: Validators data as of
+    type: table
+    options:
+      itemsPerPage: 1
+      columns:
+        - { name: as_of_time, title: Gnosis Chain data as of (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: through_block, title: Block, type: normal, alignContent: left, isHidden: false }
+        - { name: computed_at, title: Computed (UTC), type: normal, alignContent: left, isHidden: false }

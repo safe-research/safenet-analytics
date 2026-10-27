@@ -1,0 +1,916 @@
+{
+  "source": "safe-fndn/safenet-data",
+  "ref": "bfe15ba279f706c3963d331bc7fe238780c31a20",
+  "stakers": [
+    {
+      "validator": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "staker": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "era": "beta"
+    },
+    {
+      "validator": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "staker": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "era": "beta"
+    },
+    {
+      "validator": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "staker": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "era": "beta"
+    },
+    {
+      "validator": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "staker": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "era": "beta"
+    },
+    {
+      "validator": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "staker": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "era": "beta"
+    },
+    {
+      "validator": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "staker": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "era": "beta"
+    },
+    {
+      "validator": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "staker": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "era": "beta"
+    },
+    {
+      "validator": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "staker": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "era": "beta"
+    },
+    {
+      "validator": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "staker": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "era": "beta"
+    },
+    {
+      "validator": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "staker": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "era": "beta"
+    },
+    {
+      "validator": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "staker": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "era": "beta"
+    },
+    {
+      "validator": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "staker": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "era": "production"
+    },
+    {
+      "validator": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "staker": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "era": "production"
+    },
+    {
+      "validator": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "staker": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "era": "production"
+    },
+    {
+      "validator": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "staker": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "era": "production"
+    },
+    {
+      "validator": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "staker": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "era": "production"
+    }
+  ],
+  "roots": [
+    {
+      "commit": "b392639bfc5e2547f1e9cabddd9b3e7c0425027d",
+      "published_at": "2026-04-22T11:12:21Z",
+      "rewards_until": "2026-04-21T00:00:00.000Z",
+      "merkle_root": "0x5aea53631d726e3cb245cb1ce31834212ab6667a4726d25168a583d3b57b6cc1",
+      "kind": "period",
+      "token_total": "346151474022931470997436",
+      "sentinel_token_total": null,
+      "unpaid_amount": "2372130914682848717"
+    },
+    {
+      "commit": "0dea01eb7988829106ad01148b8cf840bebfddbe",
+      "published_at": "2026-05-06T10:37:17Z",
+      "rewards_until": "2026-05-05T00:00:00.000Z",
+      "merkle_root": "0x1131c6c1167d3330854aaead2c28b62991e2809ee577cbe4374b369779d01f9e",
+      "kind": "period",
+      "token_total": "692303975138564928404734",
+      "sentinel_token_total": null,
+      "unpaid_amount": "6089300042062136289"
+    },
+    {
+      "commit": "4268abe7c454c26d705c28109d48ae405f874769",
+      "published_at": "2026-05-11T17:49:14Z",
+      "rewards_until": "2026-05-05T00:00:00.000Z",
+      "merkle_root": "0x6e4b28689b8b80bbce0d569d826e81a517c44c1d9342d02741821f90f885571b",
+      "kind": "reissue",
+      "token_total": "692303975138564928404734",
+      "sentinel_token_total": null,
+      "unpaid_amount": "6089300042062136289"
+    },
+    {
+      "commit": "3457b4103376d2922507b598ee7fed1ef50f1471",
+      "published_at": "2026-05-20T08:27:32Z",
+      "rewards_until": "2026-05-19T00:00:00.000Z",
+      "merkle_root": "0x2b6ec7b74b05b61ca5d4e0d8b57145a821e6f98f5972385d88819c57f0a7d93e",
+      "kind": "period",
+      "token_total": "1038453757295616002648853",
+      "sentinel_token_total": null,
+      "unpaid_amount": "13870465964521025897"
+    },
+    {
+      "commit": "a7977758524a931aa9b60ffbbb1db5aea022916b",
+      "published_at": "2026-06-02T20:01:05Z",
+      "rewards_until": "2026-06-02T00:00:00.000Z",
+      "merkle_root": "0x8046d1df9d339a0f78d871028adcb20ae5ddbf95602ea5e10f7eb04faa46036c",
+      "kind": "period",
+      "token_total": "1384607513638846792033199",
+      "sentinel_token_total": null,
+      "unpaid_amount": "21741442502344377313"
+    },
+    {
+      "commit": "474ab86eb5188ea904ef8afc939e2d7b0243c0fd",
+      "published_at": "2026-06-16T19:29:21Z",
+      "rewards_until": "2026-06-16T00:00:00.000Z",
+      "merkle_root": "0xa0b886872e438e06dbf343697ffb582d387f69947ce2395209d42b042e237f40",
+      "kind": "period",
+      "token_total": "1730761522476475173379794",
+      "sentinel_token_total": null,
+      "unpaid_amount": "7708292755595850975"
+    },
+    {
+      "commit": "bca6417f5f03d99cb34f2ba421ae4b9198b27930",
+      "published_at": "2026-07-01T21:26:01Z",
+      "rewards_until": "2026-06-30T00:00:00.000Z",
+      "merkle_root": "0xf9bd9a1fc90c93361fd13b7fd6fa4ee486eb4a94c95c5b0b5f6655f153ee061b",
+      "kind": "period",
+      "token_total": "2076914606380793265667486",
+      "sentinel_token_total": null,
+      "unpaid_amount": "8470542283657409437"
+    },
+    {
+      "commit": "50559ad7bd039a3ffe291ce8e4f21774e0248768",
+      "published_at": "2026-07-17T07:26:25Z",
+      "rewards_until": "2026-07-14T00:00:00.000Z",
+      "merkle_root": "0x262d6f6cb87cd25f87d5f177acf30d10c9a945dbd05368ce9a74d42fed7b8376",
+      "kind": "period",
+      "token_total": "2423068395655291607183501",
+      "sentinel_token_total": null,
+      "unpaid_amount": "8527421631469739575"
+    },
+    {
+      "commit": "ea55795ba2ba98dad2dc6238471a5960a736c321",
+      "published_at": "2026-07-17T07:44:01Z",
+      "rewards_until": "2026-07-14T00:00:00.000Z",
+      "merkle_root": "0x54e19c31d2595c169ff3e307d0f9e91c856ce8b90e4a3b549b2a26ec1a3e4f1e",
+      "kind": "reissue",
+      "token_total": "2423068395655291607183501",
+      "sentinel_token_total": null,
+      "unpaid_amount": "0"
+    },
+    {
+      "commit": "f7b9212a19c9c18a85e0d0975b646a1217d27a14",
+      "published_at": "2026-07-30T06:30:28Z",
+      "rewards_until": "2026-07-28T00:00:00.000Z",
+      "merkle_root": "0x24547935b48fba33a141606e24fa771f06a87f951bf82b829c6b9c34a3eed277",
+      "kind": "period",
+      "token_total": "2769219954897851152282471",
+      "sentinel_token_total": null,
+      "unpaid_amount": "10814332918078486759"
+    },
+    {
+      "commit": "59be27eb11137b2b35c5b8cf64fa79c7364b8d32",
+      "published_at": "2026-08-06T08:11:10Z",
+      "rewards_until": "2026-07-28T00:00:00.000Z",
+      "merkle_root": "0x0b33b0fe9db7c954023aa92160d1a4117193955e09148f115ac716783917137a",
+      "kind": "reissue",
+      "token_total": "2769219954897851152282471",
+      "sentinel_token_total": null,
+      "unpaid_amount": "0"
+    },
+    {
+      "commit": "1b4c8f82d22b369578ba1c731bbea47ad4d459fe",
+      "published_at": "2026-08-13T11:58:21Z",
+      "rewards_until": "2026-08-11T00:00:00.000Z",
+      "merkle_root": "0xdf595ebf37c7a5917c9296a4c04ca765f3b920ce697dbb08f9fd389eb9c103c8",
+      "kind": "period",
+      "token_total": "3115374770193806301797846",
+      "sentinel_token_total": null,
+      "unpaid_amount": "9845190809082817538"
+    },
+    {
+      "commit": "0244a940afe3eda847d8502fde953da6506c1802",
+      "published_at": "2026-08-27T06:30:59Z",
+      "rewards_until": "2026-08-25T00:00:00.000Z",
+      "merkle_root": "0xd0fb4e3ff4339edf908e06ff62b0a23958190c60a5fff546aa90efca75c647ca",
+      "kind": "period",
+      "token_total": "3461527113791886501872278",
+      "sentinel_token_total": null,
+      "unpaid_amount": "11347746575036589260"
+    },
+    {
+      "commit": "7bfb083836e67cec5efceceb0fd61826a47abf9a",
+      "published_at": "2026-09-10T05:27:47Z",
+      "rewards_until": "2026-09-08T00:00:00.000Z",
+      "merkle_root": "0x5fd4807092daad9a9df838622129c5eca7148f31f6e8ffdce7c6a26a83deda93",
+      "kind": "period",
+      "token_total": "3807680571180200049555089",
+      "sentinel_token_total": null,
+      "unpaid_amount": "11736512107642752603"
+    },
+    {
+      "commit": "4155ad83ec9b83ab8ec2bf558bbc36a55e1474a6",
+      "published_at": "2026-09-24T05:37:51Z",
+      "rewards_until": "2026-09-22T00:00:00.000Z",
+      "merkle_root": "0xf806466669f4d3464fb8b4e6edde9027c0edbc9c899c8d3371756237a7439fa8",
+      "kind": "period",
+      "token_total": "4153830931360190431300456",
+      "sentinel_token_total": null,
+      "unpaid_amount": "15222485963414853390"
+    },
+    {
+      "commit": "32d2f9ea501c2ec90ed19456779b54f33b864b7b",
+      "published_at": "2026-10-08T04:42:11Z",
+      "rewards_until": "2026-10-06T00:00:00.000Z",
+      "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+      "kind": "period",
+      "token_total": "4499987774807670271201970",
+      "sentinel_token_total": null,
+      "unpaid_amount": "12225192329728798030"
+    }
+  ],
+  "entries": [
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x5aea53631d726e3cb245cb1ce31834212ab6667a4726d25168a583d3b57b6cc1",
+      "cumulative_amount": "50201158947661426154369",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x5aea53631d726e3cb245cb1ce31834212ab6667a4726d25168a583d3b57b6cc1",
+      "cumulative_amount": "26715465977364003568857",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x5aea53631d726e3cb245cb1ce31834212ab6667a4726d25168a583d3b57b6cc1",
+      "cumulative_amount": "28875144958881152289985",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x5aea53631d726e3cb245cb1ce31834212ab6667a4726d25168a583d3b57b6cc1",
+      "cumulative_amount": "45791397063639207331575",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x1131c6c1167d3330854aaead2c28b62991e2809ee577cbe4374b369779d01f9e",
+      "cumulative_amount": "27420492379240292401588",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x1131c6c1167d3330854aaead2c28b62991e2809ee577cbe4374b369779d01f9e",
+      "cumulative_amount": "23743309643810359374183",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x1131c6c1167d3330854aaead2c28b62991e2809ee577cbe4374b369779d01f9e",
+      "cumulative_amount": "76985006578367531078449",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x1131c6c1167d3330854aaead2c28b62991e2809ee577cbe4374b369779d01f9e",
+      "cumulative_amount": "53149921000902327621758",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x1131c6c1167d3330854aaead2c28b62991e2809ee577cbe4374b369779d01f9e",
+      "cumulative_amount": "55934339059813745736644",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x1131c6c1167d3330854aaead2c28b62991e2809ee577cbe4374b369779d01f9e",
+      "cumulative_amount": "73487687512252312853725",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x6e4b28689b8b80bbce0d569d826e81a517c44c1d9342d02741821f90f885571b",
+      "cumulative_amount": "27420492379240292401588",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x6e4b28689b8b80bbce0d569d826e81a517c44c1d9342d02741821f90f885571b",
+      "cumulative_amount": "23743309643810359374183",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x6e4b28689b8b80bbce0d569d826e81a517c44c1d9342d02741821f90f885571b",
+      "cumulative_amount": "76985006578367531078449",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x6e4b28689b8b80bbce0d569d826e81a517c44c1d9342d02741821f90f885571b",
+      "cumulative_amount": "53149921000902327621758",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x6e4b28689b8b80bbce0d569d826e81a517c44c1d9342d02741821f90f885571b",
+      "cumulative_amount": "55934339059813745736644",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x6e4b28689b8b80bbce0d569d826e81a517c44c1d9342d02741821f90f885571b",
+      "cumulative_amount": "73487687512252312853725",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x2b6ec7b74b05b61ca5d4e0d8b57145a821e6f98f5972385d88819c57f0a7d93e",
+      "cumulative_amount": "53044681156000204577392",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x2b6ec7b74b05b61ca5d4e0d8b57145a821e6f98f5972385d88819c57f0a7d93e",
+      "cumulative_amount": "47799957897759454257104",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x2b6ec7b74b05b61ca5d4e0d8b57145a821e6f98f5972385d88819c57f0a7d93e",
+      "cumulative_amount": "103367306051195651252883",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x2b6ec7b74b05b61ca5d4e0d8b57145a821e6f98f5972385d88819c57f0a7d93e",
+      "cumulative_amount": "78769224394021227131115",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x2b6ec7b74b05b61ca5d4e0d8b57145a821e6f98f5972385d88819c57f0a7d93e",
+      "cumulative_amount": "82708720468398364758752",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x2b6ec7b74b05b61ca5d4e0d8b57145a821e6f98f5972385d88819c57f0a7d93e",
+      "cumulative_amount": "101323666889103628411637",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x8046d1df9d339a0f78d871028adcb20ae5ddbf95602ea5e10f7eb04faa46036c",
+      "cumulative_amount": "77861328677783767133691",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x8046d1df9d339a0f78d871028adcb20ae5ddbf95602ea5e10f7eb04faa46036c",
+      "cumulative_amount": "71738254267944380747829",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x8046d1df9d339a0f78d871028adcb20ae5ddbf95602ea5e10f7eb04faa46036c",
+      "cumulative_amount": "128769521129901262051071",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x8046d1df9d339a0f78d871028adcb20ae5ddbf95602ea5e10f7eb04faa46036c",
+      "cumulative_amount": "103999332838658835171596",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x8046d1df9d339a0f78d871028adcb20ae5ddbf95602ea5e10f7eb04faa46036c",
+      "cumulative_amount": "108383751563773271397823",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x8046d1df9d339a0f78d871028adcb20ae5ddbf95602ea5e10f7eb04faa46036c",
+      "cumulative_amount": "128310005564503392070405",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0xa0b886872e438e06dbf343697ffb582d387f69947ce2395209d42b042e237f40",
+      "cumulative_amount": "101971126779046031024550",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0xa0b886872e438e06dbf343697ffb582d387f69947ce2395209d42b042e237f40",
+      "cumulative_amount": "95725183467872439967643",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0xa0b886872e438e06dbf343697ffb582d387f69947ce2395209d42b042e237f40",
+      "cumulative_amount": "153615265809402881913332",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0xa0b886872e438e06dbf343697ffb582d387f69947ce2395209d42b042e237f40",
+      "cumulative_amount": "128249351404367081706775",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0xa0b886872e438e06dbf343697ffb582d387f69947ce2395209d42b042e237f40",
+      "cumulative_amount": "133440043240388310631259",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0xa0b886872e438e06dbf343697ffb582d387f69947ce2395209d42b042e237f40",
+      "cumulative_amount": "154762029020751959061048",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0xf9bd9a1fc90c93361fd13b7fd6fa4ee486eb4a94c95c5b0b5f6655f153ee061b",
+      "cumulative_amount": "125800301640796908084141",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0xf9bd9a1fc90c93361fd13b7fd6fa4ee486eb4a94c95c5b0b5f6655f153ee061b",
+      "cumulative_amount": "119657689855132079981707",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0xf9bd9a1fc90c93361fd13b7fd6fa4ee486eb4a94c95c5b0b5f6655f153ee061b",
+      "cumulative_amount": "178297888892484314049190",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0xf9bd9a1fc90c93361fd13b7fd6fa4ee486eb4a94c95c5b0b5f6655f153ee061b",
+      "cumulative_amount": "151955288955483568985412",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0xf9bd9a1fc90c93361fd13b7fd6fa4ee486eb4a94c95c5b0b5f6655f153ee061b",
+      "cumulative_amount": "158184204241896668327227",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0xf9bd9a1fc90c93361fd13b7fd6fa4ee486eb4a94c95c5b0b5f6655f153ee061b",
+      "cumulative_amount": "181024859479492633277853",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x262d6f6cb87cd25f87d5f177acf30d10c9a945dbd05368ce9a74d42fed7b8376",
+      "cumulative_amount": "149639749741149174344450",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x262d6f6cb87cd25f87d5f177acf30d10c9a945dbd05368ce9a74d42fed7b8376",
+      "cumulative_amount": "143669511808413156929492",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x262d6f6cb87cd25f87d5f177acf30d10c9a945dbd05368ce9a74d42fed7b8376",
+      "cumulative_amount": "203083985262730678444498",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x262d6f6cb87cd25f87d5f177acf30d10c9a945dbd05368ce9a74d42fed7b8376",
+      "cumulative_amount": "175480250420411899856843",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x262d6f6cb87cd25f87d5f177acf30d10c9a945dbd05368ce9a74d42fed7b8376",
+      "cumulative_amount": "182754520393066123101443",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x262d6f6cb87cd25f87d5f177acf30d10c9a945dbd05368ce9a74d42fed7b8376",
+      "cumulative_amount": "207327130506471699092888",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x54e19c31d2595c169ff3e307d0f9e91c856ce8b90e4a3b549b2a26ec1a3e4f1e",
+      "cumulative_amount": "149639749741149174344450",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x54e19c31d2595c169ff3e307d0f9e91c856ce8b90e4a3b549b2a26ec1a3e4f1e",
+      "cumulative_amount": "143669511808413156929492",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x54e19c31d2595c169ff3e307d0f9e91c856ce8b90e4a3b549b2a26ec1a3e4f1e",
+      "cumulative_amount": "203083985262730678444498",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x54e19c31d2595c169ff3e307d0f9e91c856ce8b90e4a3b549b2a26ec1a3e4f1e",
+      "cumulative_amount": "175480250420411899856843",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x54e19c31d2595c169ff3e307d0f9e91c856ce8b90e4a3b549b2a26ec1a3e4f1e",
+      "cumulative_amount": "182754520393066123101443",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x54e19c31d2595c169ff3e307d0f9e91c856ce8b90e4a3b549b2a26ec1a3e4f1e",
+      "cumulative_amount": "207327130506471699092888",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x24547935b48fba33a141606e24fa771f06a87f951bf82b829c6b9c34a3eed277",
+      "cumulative_amount": "172509878288553219642081",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x24547935b48fba33a141606e24fa771f06a87f951bf82b829c6b9c34a3eed277",
+      "cumulative_amount": "166215826967068813921350",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x24547935b48fba33a141606e24fa771f06a87f951bf82b829c6b9c34a3eed277",
+      "cumulative_amount": "222023824775144508828910",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x24547935b48fba33a141606e24fa771f06a87f951bf82b829c6b9c34a3eed277",
+      "cumulative_amount": "198089043325753080704398",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x24547935b48fba33a141606e24fa771f06a87f951bf82b829c6b9c34a3eed277",
+      "cumulative_amount": "206237927250509479748522",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x24547935b48fba33a141606e24fa771f06a87f951bf82b829c6b9c34a3eed277",
+      "cumulative_amount": "231981820793321637061651",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x0b33b0fe9db7c954023aa92160d1a4117193955e09148f115ac716783917137a",
+      "cumulative_amount": "172509878288553219642081",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x0b33b0fe9db7c954023aa92160d1a4117193955e09148f115ac716783917137a",
+      "cumulative_amount": "166215826967068813921350",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x0b33b0fe9db7c954023aa92160d1a4117193955e09148f115ac716783917137a",
+      "cumulative_amount": "222023824775144508828910",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x0b33b0fe9db7c954023aa92160d1a4117193955e09148f115ac716783917137a",
+      "cumulative_amount": "198089043325753080704398",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x0b33b0fe9db7c954023aa92160d1a4117193955e09148f115ac716783917137a",
+      "cumulative_amount": "206237927250509479748522",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x0b33b0fe9db7c954023aa92160d1a4117193955e09148f115ac716783917137a",
+      "cumulative_amount": "231981820793321637061651",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0xdf595ebf37c7a5917c9296a4c04ca765f3b920ce697dbb08f9fd389eb9c103c8",
+      "cumulative_amount": "191973308471810837697641",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0xdf595ebf37c7a5917c9296a4c04ca765f3b920ce697dbb08f9fd389eb9c103c8",
+      "cumulative_amount": "185884578938238819062121",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0xdf595ebf37c7a5917c9296a4c04ca765f3b920ce697dbb08f9fd389eb9c103c8",
+      "cumulative_amount": "242209437397240319439449",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0xdf595ebf37c7a5917c9296a4c04ca765f3b920ce697dbb08f9fd389eb9c103c8",
+      "cumulative_amount": "216623672239820704603992",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0xdf595ebf37c7a5917c9296a4c04ca765f3b920ce697dbb08f9fd389eb9c103c8",
+      "cumulative_amount": "226492055828228948253607",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0xdf595ebf37c7a5917c9296a4c04ca765f3b920ce697dbb08f9fd389eb9c103c8",
+      "cumulative_amount": "253698270538757006025128",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0xd0fb4e3ff4339edf908e06ff62b0a23958190c60a5fff546aa90efca75c647ca",
+      "cumulative_amount": "211232094867280585163330",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0xd0fb4e3ff4339edf908e06ff62b0a23958190c60a5fff546aa90efca75c647ca",
+      "cumulative_amount": "205260639042624816520953",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0xd0fb4e3ff4339edf908e06ff62b0a23958190c60a5fff546aa90efca75c647ca",
+      "cumulative_amount": "262852412704953417038356",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0xd0fb4e3ff4339edf908e06ff62b0a23958190c60a5fff546aa90efca75c647ca",
+      "cumulative_amount": "234283143538949239637457",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0xd0fb4e3ff4339edf908e06ff62b0a23958190c60a5fff546aa90efca75c647ca",
+      "cumulative_amount": "246436133304927441170810",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0xd0fb4e3ff4339edf908e06ff62b0a23958190c60a5fff546aa90efca75c647ca",
+      "cumulative_amount": "272170078500785034266639",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x5fd4807092daad9a9df838622129c5eca7148f31f6e8ffdce7c6a26a83deda93",
+      "cumulative_amount": "228700673883919094384159",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x5fd4807092daad9a9df838622129c5eca7148f31f6e8ffdce7c6a26a83deda93",
+      "cumulative_amount": "223337940932148952936671",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x5fd4807092daad9a9df838622129c5eca7148f31f6e8ffdce7c6a26a83deda93",
+      "cumulative_amount": "281629969176961737517722",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x5fd4807092daad9a9df838622129c5eca7148f31f6e8ffdce7c6a26a83deda93",
+      "cumulative_amount": "250709916111851199496028",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x5fd4807092daad9a9df838622129c5eca7148f31f6e8ffdce7c6a26a83deda93",
+      "cumulative_amount": "265071405047192051503098",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x5fd4807092daad9a9df838622129c5eca7148f31f6e8ffdce7c6a26a83deda93",
+      "cumulative_amount": "294028351442285759781864",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0xf806466669f4d3464fb8b4e6edde9027c0edbc9c899c8d3371756237a7439fa8",
+      "cumulative_amount": "245699288009849749934528",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0xf806466669f4d3464fb8b4e6edde9027c0edbc9c899c8d3371756237a7439fa8",
+      "cumulative_amount": "241411425892763672189723",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0xf806466669f4d3464fb8b4e6edde9027c0edbc9c899c8d3371756237a7439fa8",
+      "cumulative_amount": "300781031194408382757604",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0xf806466669f4d3464fb8b4e6edde9027c0edbc9c899c8d3371756237a7439fa8",
+      "cumulative_amount": "266975133391493720043245",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0xf806466669f4d3464fb8b4e6edde9027c0edbc9c899c8d3371756237a7439fa8",
+      "cumulative_amount": "283712039636631780347332",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0xf806466669f4d3464fb8b4e6edde9027c0edbc9c899c8d3371756237a7439fa8",
+      "cumulative_amount": "315900837036476728392304",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+      "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+      "cumulative_amount": "245699288009849749934528",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+      "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+      "cumulative_amount": "259899180770208968103310",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+      "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+      "cumulative_amount": "320899551576339983270656",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+      "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+      "cumulative_amount": "284399916222688413652579",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+      "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+      "cumulative_amount": "303385987982539101948901",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    },
+    {
+      "address": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+      "cumulative_amount": "338338534861096301171327",
+      "kyc_amount": "0",
+      "sentinel_amount": null
+    }
+  ],
+  "latest_check": {
+    "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef",
+    "addresses": 208,
+    "sum_cumulative": "4499987774807670271201970",
+    "sum_kyc": "0",
+    "token_total": "4499987774807670271201970"
+  },
+  "splits": []
+}

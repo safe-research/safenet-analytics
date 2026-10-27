@@ -261,9 +261,11 @@ export function referencedColumns(v: VisualizationSpec): string[] {
     columns?: { name?: string }[];
     seriesOptions?: Record<string, unknown>;
   };
+  // With a `series` column (one series per value), seriesOptions are keyed by values, not columns.
+  const grouped = Object.values(o.columnMapping ?? {}).includes("series");
   return [
     ...Object.keys(o.columnMapping ?? {}),
-    ...Object.keys(o.seriesOptions ?? {}),
+    ...(grouped ? [] : Object.keys(o.seriesOptions ?? {})),
     ...(o.counterColName ? [o.counterColName] : []),
     ...(o.columns ?? []).map((c) => c.name ?? "").filter(Boolean),
   ];

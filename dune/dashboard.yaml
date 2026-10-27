@@ -144,3 +144,40 @@ widgets:
 
   - text_file: text/staking_definitions.md
     position: { row: 206, col: 0, size_x: 6, size_y: 10 }
+
+  # ---- Validators ----
+  - text_file: text/validators.md
+    position: { row: 216, col: 0, size_x: 4, size_y: 4 }
+  - visualization: validator_overview/freshness
+    position: { row: 216, col: 4, size_x: 2, size_y: 4 }
+
+  # Now
+  - visualization: validator_overview/table
+    position: { row: 220, col: 0, size_x: 6, size_y: 8 }
+  - visualization: validator_stake_status/table
+    position: { row: 228, col: 0, size_x: 6, size_y: 4 }
+
+  # Participation
+  - visualization: validator_participation_windows/table
+    position: { row: 232, col: 0, size_x: 6, size_y: 9 }
+  - visualization: validator_participation_daily/heatmap
+    position: { row: 241, col: 0, size_x: 6, size_y: 6 }
+
+  # Stake history (all time)
+  - visualization: validator_stake_daily/area
+    position: { row: 247, col: 0, size_x: 3, size_y: 8 }
+  - visualization: validator_stake_split_daily/area
+    position: { row: 247, col: 3, size_x: 3, size_y: 8 }
+
+  # Rewards and withdrawal exposure
+  - visualization: validator_rewards_periods/bars
+    position: { row: 255, col: 0, size_x: 3, size_y: 8 }
+  - visualization: validator_withdrawal_exposure/bars
+    position: { row: 255, col: 3, size_x: 3, size_y: 8 }
+  - visualization: validator_rewards_periods/table
+    position: { row: 263, col: 0, size_x: 6, size_y: 8 }
+  - visualization: validator_rewards_by_staker/table
+    position: { row: 271, col: 0, size_x: 6, size_y: 7 }
+
+  - text_file: text/validators_definitions.md
+    position: { row: 278, col: 0, size_x: 6, size_y: 11 }

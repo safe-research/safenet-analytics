@@ -1,0 +1,35 @@
+name: "Safenet: self-stake and delegated stake per day (SAFE)"
+description: >
+  Safenet active stake per UTC day split into self-stake (the validator's registered staker, Beta
+  then production Consensus), delegated stake, and stake on validators without a registered staker
+  (split unknown), all time. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  area:
+    name: Self-stake and delegated stake (SAFE, all time; production from 2026-10-07)
+    type: chart
+    description: >
+      Self-stake uses the staker registered at the end of each day; Beta registrations until
+      2026-10-07, production registrations after. Unattributed: no registered staker that day.
+    options:
+      globalSeriesType: area
+      series: { stacking: normal }
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Day (UTC) } }
+      yAxis:
+        - title: { text: SAFE }
+      columnMapping:
+        day: x
+        self_stake: y
+        delegated_stake: y
+        unattributed_stake: y
+      seriesOptions:
+        self_stake: { type: area, yAxis: 0, zIndex: 0, name: "Self-stake (registered staker)", color: "#184f95" }
+        delegated_stake: { type: area, yAxis: 0, zIndex: 1, name: Delegated stake, color: "#6da7ec" }
+        unattributed_stake: { type: area, yAxis: 0, zIndex: 2, name: "No registered staker (split unknown)", color: "#eda100" }

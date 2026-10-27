@@ -208,6 +208,40 @@ export const VALIDATOR_STAKER_SET = {
 // Gnosis Chain (PRODUCTION.consensus.deployBlock, mined at this UTC time). Staking before it backed Beta.
 export const PRODUCTION_START_TIME = "2026-10-07 13:51:55";
 
+// Validator signing on Gnosis Chain (docs/metrics/validators.md). Sources: safe-research/safenet
+// contracts/src/FROSTCoordinator.sol and interfaces/IConsensus.sol at 4ed5101.
+//
+// The FROSTCoordinator is shared by production and the Aegis testnet, so its events are attributed
+// to production only through production Consensus: groups are the genesis group (the Consensus
+// constructor argument, getEpochGroupId(0)) and each EpochStaged groupId; ceremonies are Sign
+// events initiated by production Consensus. A SignShared counts only if its selectionRoot equals the
+// ceremony's SignCompleted selectionRoot (the contract's warning on SignShared).
+export const FROST_COORDINATOR = {
+  address: "0xc6b34da4c99c043a093214d58423a8be39585b78",
+  deployBlock: 48617821, // 2026-10-06
+} as const;
+// Group of production epoch 0. Its key was generated on 2026-10-14 (KeyGen with context 0), so no
+// production ceremony was possible before then.
+export const GENESIS_GROUP_ID = "0x965f661dcdfa091ff92d5f6a81877bb714b87aa17507b3270000000000000000";
+// Beta Consensus, read only for the validator → staker history before the production start.
+export const BETA_CONSENSUS = { address: "0x223624cbf099e5a8f8cd5af22afa424a1d1acee9", deployBlock: 45210396 } as const;
+
+export const VALIDATOR_EVENTS = {
+  EpochStaged: {
+    signature: "EpochStaged(uint64,uint64,uint64,bytes32,(uint256,uint256),bytes32,((uint256,uint256),uint256))",
+    topic0: "0xd22757d0334b80219cf27dedaf82211008f84fc412a29a27e3000dc1c6160b86",
+  },
+  EpochRolledOver: { signature: "EpochRolledOver(uint64)", topic0: "0xa2b2d9304dd0889a2116f91f2f18de6604464e1f5908d758c2e4100d95b65c58" },
+  KeyGen: { signature: "KeyGen(bytes32,bytes32,uint16,uint16,bytes32)", topic0: "0xb3b10f23809cbdcdb7d4ff0d2cb4e573182d7704ca17ccf8321788a097a35ee7" },
+  KeyGenConfirmed: { signature: "KeyGenConfirmed(bytes32,address,bool)", topic0: "0x2553b3b5476eaf8b6ccc0c1656cd21552f8e85959654fd47d733f6e94bc65202" },
+  Sign: { signature: "Sign(address,bytes32,bytes32,bytes32,uint64)", topic0: "0xb48d242879f9f3df555c800db966f65cba128c7213198748fa202ed54e092691" },
+  SignShared: { signature: "SignShared(bytes32,bytes32,address,uint256)", topic0: "0x25a4d6e8d11a9fdc20ffdd826473485ae4cdd453271726c072a16836c1882e7c" },
+  SignCompleted: {
+    signature: "SignCompleted(bytes32,bytes32,((uint256,uint256),uint256))",
+    topic0: "0x7f1641fa8e46c311f05dc0cb9f69f0ac0f27dd12388a5587c7983de9e99a028d",
+  },
+} as const;
+
 // EIP-712 domain separator of the production Consensus: keccak256(abi.encode(
 // keccak256("EIP712Domain(uint256 chainId,address verifyingContract)"), 100, Consensus)).
 // Equals Consensus.domainSeparator() on chain. A SafenetGuard bound to production stores it.

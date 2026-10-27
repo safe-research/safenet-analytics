@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { columnChartHtml, hbarHtml, heatmapHtml, latestHtml, pivotByDay, RESPONSE_SERIES, sentinelSeries, stakingPages, tableHtml, timeSeriesHtml } from "../scripts/render-preview.ts";
+import { columnChartHtml, hbarHtml, heatmapHtml, latestHtml, pivotByDay, RESPONSE_SERIES, sentinelSeries, stakingPages, tableHtml, timeSeriesHtml, validatorPages } from "../scripts/render-preview.ts";
 
 const series = [
   { column: "secure_unanimous", name: "Secure (unanimous)", color: "#0ca30c" },
@@ -106,4 +106,24 @@ test("staking pages render only for queries with results, and an empty outstandi
   assert.deepEqual(pages.map((p) => p[0]), ["staking_overview", "staking_outstanding", "staking_validators"]);
   assert.match(pages[0][1], /15,000,000/);
   assert.match(pages[1][1], /No outstanding withdrawals/);
+});
+
+test("validator pages render only for queries with results; the heatmap shows n/a days blank and names ceremonies", () => {
+  assert.deepEqual(validatorPages({}, "f"), []);
+  const pages = validatorPages(
+    {
+      validator_participation_daily: [
+        { day: "2026-10-25", validator: "Gnosis", participation_pct: 100, eligible_ceremonies: 40 },
+        { day: "2026-10-26", validator: "RockawayX", participation_pct: 50, eligible_ceremonies: 2 },
+      ],
+      validator_rewards_periods: [{ period: "2026-10-13 – 2026-10-27 (production)", status: "not yet published", total_allocated: null }],
+    },
+    "f",
+  );
+  assert.deepEqual(pages.map((p) => p[0]), ["validator_heatmap", "validator_rewards_periods"]);
+  assert.match(pages[0][1], /eligible ceremonies/);
+  assert.match(pages[0][1], /<th>Validator<\/th>/);
+  assert.match(pages[0][1], /RockawayX 2026-10-25: not eligible/);
+  assert.match(pages[1][1], /not yet published/);
+  assert.match(pages[1][1], /not available/);
 });

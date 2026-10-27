@@ -1,0 +1,11 @@
+name: "Safenet: validator signing ceremonies"
+description: >
+  Safenet production FROST signing ceremonies on Gnosis Chain, one row per ceremony and member of its
+  group: completed or pending, purpose (transaction attestation or epoch rollover) and whether the
+  member's signature share counted (selection root of the completed signature). Shared model; not
+  shown on the dashboard. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

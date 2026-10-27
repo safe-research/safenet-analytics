@@ -66,6 +66,10 @@ jobs:
       - name: Check staking against the Staking contract
         if: ${{ always() && !inputs.query }}
         run: npm run verify:staking -- --out verification/staking.local.json
+      # Rebuilds validator membership and signing and checks them against contract state.
+      - name: Check validators against contract state and signing events
+        if: ${{ always() && !inputs.query }}
+        run: npm run verify:validators -- --out verification/validators.local.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

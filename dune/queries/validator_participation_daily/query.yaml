@@ -1,0 +1,26 @@
+name: "Safenet: validator participation per day"
+description: >
+  Safenet validators' observed signing participation per UTC day over the last 30 days: recognised
+  signature shares / completed production signing ceremonies of their groups. Days without eligible
+  ceremonies are blank. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  heatmap:
+    name: Observed signing participation per day, % of eligible ceremonies (last 30 days)
+    type: pivot
+    description: >
+      One row per validator. Blank: no eligible ceremony that day (not in the attestation set, or no
+      ceremonies). Pending ceremonies are not counted. Signing only counts with the completed
+      signature's selection root; an aggregate attestation alone never counts for a validator.
+    options:
+      rendererName: Table Heatmap
+      aggregatorName: Average
+      rows: [validator]
+      cols: [day]
+      vals: [participation_pct]
+      controls: { enabled: false }

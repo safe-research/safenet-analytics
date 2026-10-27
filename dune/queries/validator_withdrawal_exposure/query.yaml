@@ -1,0 +1,32 @@
+name: "Safenet: outstanding withdrawals by validator (SAFE)"
+description: >
+  Safenet withdrawal requests not yet claimed, per validator, now: waiting and claimable SAFE, with
+  the validator's attestation-set and staking status. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  bars:
+    name: Outstanding withdrawals by validator now (SAFE)
+    type: chart
+    description: >
+      Requested and not yet claimed; already left active stake. Waiting: before the earliest
+      withdrawal date; claimable: the staker can claim it now. No bars: nothing outstanding.
+    options:
+      globalSeriesType: column
+      swappedAxes: true
+      series: { stacking: normal }
+      legend: { enabled: true }
+      xAxis: { title: { text: Validator } }
+      yAxis:
+        - title: { text: SAFE }
+      columnMapping:
+        validator_label: x
+        waiting: y
+        claimable: y
+      seriesOptions:
+        waiting: { type: column, yAxis: 0, zIndex: 0, name: Waiting, color: "#6da7ec" }
+        claimable: { type: column, yAxis: 0, zIndex: 1, name: Claimable now, color: "#eb6834" }

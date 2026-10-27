@@ -1,0 +1,24 @@
+name: "Safenet: stake by validator status"
+description: >
+  Safenet active stake now, split into stake backing the live attestation set (validators both
+  registered for staking and in the active epoch's signing group), stake on registered validators
+  outside the set, and stake on deregistered validators. Adds up to all active stake in the Staking
+  contract. Managed in github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Stake by validator status now (SAFE)
+    type: table
+    options:
+      itemsPerPage: 5
+      columns:
+        - { name: status, title: Status, type: normal, alignContent: left, isHidden: false }
+        - { name: stake, title: Active stake (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: share_of_contract_stake, title: Share of contract stake, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: validators, title: Validators, type: normal, alignContent: right, isHidden: false }
+        - { name: names, title: Names, type: normal, alignContent: left, isHidden: false }
+        - { name: sort_order, title: Order, type: normal, alignContent: right, isHidden: true }

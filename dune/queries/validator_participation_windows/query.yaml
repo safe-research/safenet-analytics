@@ -1,0 +1,32 @@
+name: "Safenet: validator participation (24h, 7d, 30d, production)"
+description: >
+  Safenet validators' observed signing participation over the last 24 hours, 7 days, 30 days and all
+  of production, with the reward scripts' basis (signed attested transactions / all attested
+  transactions). Managed in github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Signing participation by window (rolling, up to the latest refresh)
+    type: table
+    description: >
+      Observed: recognised signature shares / completed ceremonies while in the attestation set.
+      Validators without an eligible ceremony in a window have no row (n/a, not 0%). Reward basis:
+      as the reward scripts count, over all attested transactions in the window; payouts use
+      settled two-week periods.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: time_window, title: Window, type: normal, alignContent: left, isHidden: false }
+        - { name: validator, title: Validator, type: normal, alignContent: left, isHidden: false }
+        - { name: signed, title: Signed, type: normal, alignContent: right, isHidden: false }
+        - { name: eligible, title: Eligible ceremonies, type: normal, alignContent: right, isHidden: false }
+        - { name: observed_participation, title: Observed participation, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: signed_transactions, title: Signed attested transactions, type: normal, alignContent: right, isHidden: false }
+        - { name: transactions, title: All attested transactions, type: normal, alignContent: right, isHidden: false }
+        - { name: reward_basis_rate, title: Reward basis rate, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
+        - { name: address, title: Address, type: normal, alignContent: left, isHidden: true }
+        - { name: sort_order, title: Order, type: normal, alignContent: right, isHidden: true }

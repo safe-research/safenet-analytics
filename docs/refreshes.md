@@ -10,7 +10,7 @@ Locally: `npm run refresh` (all daily queries) or `npm run refresh -- --query tr
 
 Each execution uses the query's `performance` tier (`medium` by default) and costs Dune credits based on the compute used. The workflow log and job summary show the state and credits of every execution. A failed execution fails the workflow, and GitHub notifies whoever last changed the schedule.
 
-After refreshing, the workflow recomputes the request metric (`verify:transaction-checks`) and the Network & revenue section with its fee accounting (`verify:network-revenue`), and the Sentinels section with its bonds and SAFE rewards (`verify:sentinels`), from Gnosis Chain logs. It also replays the Staking contract from Ethereum logs and checks it against the contract's state at the same block (`verify:staking`, with `ETHEREUM_RPC_URL` if set). It compares all of them with the fresh Dune results. If they differ, the workflow fails. The full comparison is uploaded as the `verification` artifact.
+After refreshing, the workflow recomputes the request metric (`verify:transaction-checks`) and the Network & revenue section with its fee accounting (`verify:network-revenue`), and the Sentinels section with its bonds and SAFE rewards (`verify:sentinels`), from Gnosis Chain logs. It checks validator membership and signing against contract state (`verify:validators`). It also replays the Staking contract from Ethereum logs and checks it against the contract's state at the same block (`verify:staking`, with `ETHEREUM_RPC_URL` if set). It compares all of them with the fresh Dune results. If they differ, the workflow fails. The full comparison is uploaded as the `verification` artifact.
 
 ## Why not Dune's own scheduler
 

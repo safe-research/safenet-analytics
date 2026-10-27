@@ -1,0 +1,9 @@
+name: "Safenet: validator staker history"
+description: >
+  Each Safenet validator's registered staker over time (Consensus.ValidatorStakerSet), Beta and
+  production, for the self-stake history. Shared model; not shown on the dashboard. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

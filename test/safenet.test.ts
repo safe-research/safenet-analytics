@@ -56,6 +56,10 @@ const RAW_LOG_MODELS = [
   "safenet_reward_events",
   "safenet_sentinel_texts",
   "staking_validator_stakers",
+  "validator_epochs",
+  "validator_membership",
+  "validator_ceremonies",
+  "validator_staker_history",
 ];
 
 test("only the decoding models read raw logs; other queries read them by reference", async () => {

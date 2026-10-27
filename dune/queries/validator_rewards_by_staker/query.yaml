@@ -1,0 +1,31 @@
+name: "Safenet: validator staker rewards (SAFE)"
+description: >
+  Safenet staking rewards of every address registered as a validator's staker: allocated under the
+  latest published root, withheld until KYC, claimed (distributor Claimed events) and claimable.
+  Commission and own-stake rewards are together, as published. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Validator staker rewards (SAFE, latest published root)
+    type: table
+    description: >
+      Per address, not per validator: a staker's amount includes its commission, its own-stake reward
+      and rewards on any other stake it holds. Claims are attributed by address only. Claimable is
+      blank if the latest published root is not set on chain yet.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: staker, title: Staker address, type: normal, alignContent: left, isHidden: false }
+        - { name: validators, title: Staker for, type: normal, alignContent: left, isHidden: false }
+        - { name: eras, title: Era, type: normal, alignContent: left, isHidden: false }
+        - { name: allocated, title: Allocated (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: withheld_kyc, title: Withheld until KYC, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: claimed, title: Claimed, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: claimable, title: Claimable, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: note, title: Note, type: normal, alignContent: left, isHidden: false }
+        - { name: staker_address, title: Address, type: normal, alignContent: left, isHidden: true }
