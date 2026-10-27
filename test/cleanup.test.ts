@@ -81,6 +81,21 @@ describe("preview cleanup", () => {
     assert.deepEqual(manual, []);
   });
 
+  test("a visualization Dune refuses to delete does not stop the cleanup, and a rerun completes it", async () => {
+    const vizIds = Object.values(preview.visualizations).map((t) => t.id);
+    for (const id of vizIds) fake.failingVisualizationDeletes.add(id);
+    const p = await planCleanup(settings.track, preview, production, fake.client(), options);
+    const first = await applyCleanup(p, fake.client(), quiet);
+    for (const t of Object.values(preview.queries)) assert.equal(fake.queries.get(t.id)!.is_archived, true);
+    assert.ok(first.manual.some((m) => m.startsWith(`Dune refused to delete ${vizIds.length} visualizations`)), first.manual.join("\n"));
+    // The run that failed partway (before this fix) archived the dashboard and nothing else: a
+    // rerun from the unchanged mapping must not try to configure the archived dashboard again.
+    const again = await planCleanup(settings.track, preview, production, fake.client(), options);
+    assert.deepEqual(again.blockers, []);
+    assert.ok(again.items.filter((i) => i.resource === "dashboard").every((i) => i.action === "forget"), JSON.stringify(again.items));
+    assert.ok(again.items.filter((i) => i.resource === "query").every((i) => i.action === "forget"));
+  });
+
   test("refuses while another query reads a preview query", async () => {
     const id = preview.queries.safenet_events.id;
     fake.seedQuery({ name: "Someone's analysis", query_sql: `select * from query_${id}` });

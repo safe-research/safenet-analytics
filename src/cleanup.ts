@@ -8,7 +8,7 @@
 // candidate that fails one of the conditions, stops the cleanup with nothing changed.
 
 import { snapshotProtected, sqlQueryIds, type Guard } from "./deploy.ts";
-import type { DuneClient, RemoteQuery } from "./dune.ts";
+import { DuneApiError, type DuneClient, type RemoteQuery } from "./dune.ts";
 import { assertDisjoint, isPreviewSlug, previewTrackTag, productionGuard } from "./preview.ts";
 import { emptyState, type State } from "./state.ts";
 
@@ -105,6 +105,8 @@ export async function planCleanup(
     const d = g ? null : await client.getDashboard(id);
     if (g) blockers.push(`dashboard ${key} (${id}) belongs to ${g.label}`);
     else if (!d) items.push({ resource: "dashboard", key: t.url, id, action: "forget", reason: "already gone in Dune" });
+    else if (d.name.startsWith(ARCHIVED) && !d.visualization_widgets?.length && !d.text_widgets?.length && d.is_private)
+      items.push({ resource: "dashboard", key: d.slug, id, action: "forget", reason: "already emptied and archived by an earlier cleanup" });
     else {
       const foreign = (d.visualization_widgets ?? []).map((w) => w.visualization_id).filter((v) => !vizCandidates.has(v));
       if (!d.is_private) blockers.push(`dashboard ${d.slug} (${id}) is public; previews are private, check it is the right dashboard`);
@@ -143,8 +145,15 @@ export function formatCleanup(p: CleanupPlan): string {
   ].join("\n");
 }
 
-// Applies a plan without blockers: dashboard first (so it no longer shows the visualizations),
+const ARCHIVED = "[Archived] ";
+
+// Applies a plan without blockers: dashboards first (so they no longer show the visualizations),
 // then visualizations, then queries. Returns the emptied preview state.
+//
+// Dune sometimes refuses to delete a visualization (HTTP 5xx). Such a visualization is left in
+// place: it belongs to a private preview query that is archived next, so nothing shows it, and the
+// run lists it. The queries are archived regardless, so a refused delete never leaves a track
+// half cleaned up.
 export async function applyCleanup(
   p: CleanupPlan,
   client: DuneClient,
@@ -154,7 +163,7 @@ export async function applyCleanup(
   const manual: string[] = [];
   for (const i of p.items.filter((x) => x.resource === "dashboard" && x.action === "remove")) {
     await client.updateDashboard(i.id, {
-      name: `[Archived] Safenet preview ${p.track}`,
+      name: `${ARCHIVED}Safenet preview ${p.track}`,
       is_private: true,
       visualization_widgets: [],
       text_widgets: [],
@@ -168,13 +177,25 @@ export async function applyCleanup(
       );
     }
   }
+  const kept: CleanupItem[] = [];
   for (const i of p.items.filter((x) => x.resource === "visualization" && x.action === "delete")) {
-    await client.deleteVisualization(i.id);
-    log(`deleted visualization ${i.key} (${i.id})`);
+    try {
+      await client.deleteVisualization(i.id);
+      log(`deleted visualization ${i.key} (${i.id})`);
+    } catch (e) {
+      if (!(e instanceof DuneApiError && e.status >= 500)) throw e;
+      kept.push(i);
+      log(`Dune refused to delete visualization ${i.key} (${i.id}): ${e.message}; it stays on its archived query`);
+    }
   }
   for (const i of p.items.filter((x) => x.resource === "query" && x.action === "archive")) {
     await client.archiveQuery(i.id);
     log(`archived query ${i.key} (${i.id})`);
   }
+  if (kept.length)
+    manual.push(
+      `Dune refused to delete ${kept.length} visualizations (${kept.map((i) => i.id).join(", ")}). They remain on their archived, ` +
+        "private preview queries and are shown nowhere; nothing needs to be done unless you want them gone (delete them in the Dune UI).",
+    );
   return { state: emptyState(), manual };
 }

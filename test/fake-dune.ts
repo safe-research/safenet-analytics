@@ -41,6 +41,8 @@ export class FakeDune {
   privacy: "ok" | "reject" | "ignore" = "ok";
   // Whether POST /api/v1/dashboards/{id}/archive exists.
   dashboardArchive = false;
+  // Visualization IDs whose DELETE fails with 500, as Dune sometimes does.
+  failingVisualizationDeletes = new Set<number>();
   executionCredits = 1.5;
   executionsNeverFinish = false;
   #next = 1000;
@@ -171,6 +173,7 @@ export class FakeDune {
         return json(200, { id: v.id });
       }
       if (method === "DELETE") {
+        if (this.failingVisualizationDeletes.has(v.id)) return json(500, { error: "An internal error occurred" });
         this.visualizations.delete(v.id);
         return json(200, { ok: true });
       }
