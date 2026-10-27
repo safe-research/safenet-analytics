@@ -1,8 +1,8 @@
 {
   "dashboard": {
-    "desired": "d71ab81887d91728",
+    "desired": "338e9cae940709dd",
     "id": 222526,
-    "remote": "e369eb593eea9c23",
+    "remote": "8b39c63ec4ea7b6d",
     "url": "https://dune.com/safe/safenet"
   },
   "protected": {
@@ -199,6 +199,56 @@
       "id": 9013469,
       "remote": "12561d2e62425b7f"
     },
+    "staking_by_validator": {
+      "desired": "b1a56b6096f9b595",
+      "id": 9020103,
+      "remote": "b1a56b6096f9b595"
+    },
+    "staking_daily": {
+      "desired": "36e24a260054dfb1",
+      "id": 9020104,
+      "remote": "36e24a260054dfb1"
+    },
+    "staking_events": {
+      "desired": "8663c05681efe583",
+      "id": 9020099,
+      "remote": "8663c05681efe583"
+    },
+    "staking_flow_summary": {
+      "desired": "08d765a38cb400a1",
+      "id": 9020105,
+      "remote": "08d765a38cb400a1"
+    },
+    "staking_overview": {
+      "desired": "549dea7b2bbc882b",
+      "id": 9020107,
+      "remote": "549dea7b2bbc882b"
+    },
+    "staking_positions": {
+      "desired": "6b5e85b364084d40",
+      "id": 9020101,
+      "remote": "6b5e85b364084d40"
+    },
+    "staking_validator_stakers": {
+      "desired": "27efd5e215230bf4",
+      "id": 9020100,
+      "remote": "27efd5e215230bf4"
+    },
+    "staking_validators": {
+      "desired": "5e6f4bf4cdd13d80",
+      "id": 9020102,
+      "remote": "5e6f4bf4cdd13d80"
+    },
+    "staking_withdrawals": {
+      "desired": "c7fe5444e86840e9",
+      "id": 9020106,
+      "remote": "c7fe5444e86840e9"
+    },
+    "staking_withdrawals_outstanding": {
+      "desired": "b7f0f156b20e74aa",
+      "id": 9020108,
+      "remote": "b7f0f156b20e74aa"
+    },
     "transaction_checks_daily": {
       "desired": "0be2f79aa6137f37",
       "id": 8996965,
@@ -380,6 +430,84 @@
       "id": 13057807,
       "query_id": 9013469,
       "remote": "21fdfb2b00318ac9"
+    },
+    "staking_by_validator/bars": {
+      "desired": "83f63f9902400374",
+      "id": 13064760,
+      "query_id": 9020103,
+      "remote": "83f63f9902400374"
+    },
+    "staking_by_validator/table": {
+      "desired": "0c16e14f4c14798f",
+      "id": 13064761,
+      "query_id": 9020103,
+      "remote": "0c16e14f4c14798f"
+    },
+    "staking_daily/active_stake": {
+      "desired": "c0a6e6e6c38d45f6",
+      "id": 13064762,
+      "query_id": 9020104,
+      "remote": "c0a6e6e6c38d45f6"
+    },
+    "staking_daily/flows": {
+      "desired": "4674d607ba7faa0f",
+      "id": 13064763,
+      "query_id": 9020104,
+      "remote": "4674d607ba7faa0f"
+    },
+    "staking_daily/net_flow": {
+      "desired": "e2f213a0fcb30ebe",
+      "id": 13064764,
+      "query_id": 9020104,
+      "remote": "e2f213a0fcb30ebe"
+    },
+    "staking_daily/requests": {
+      "desired": "0c345c1eb63c67e9",
+      "id": 13064765,
+      "query_id": 9020104,
+      "remote": "0c345c1eb63c67e9"
+    },
+    "staking_flow_summary/table": {
+      "desired": "c6907bea48033f68",
+      "id": 13064766,
+      "query_id": 9020105,
+      "remote": "c6907bea48033f68"
+    },
+    "staking_overview/active_stake": {
+      "desired": "8c39b3ac7ce8c01b",
+      "id": 13064767,
+      "query_id": 9020107,
+      "remote": "8c39b3ac7ce8c01b"
+    },
+    "staking_overview/claimable": {
+      "desired": "f5bc0b5300dc7e9d",
+      "id": 13064770,
+      "query_id": 9020107,
+      "remote": "f5bc0b5300dc7e9d"
+    },
+    "staking_overview/freshness": {
+      "desired": "fad2591cf6ae642a",
+      "id": 13064771,
+      "query_id": 9020107,
+      "remote": "fad2591cf6ae642a"
+    },
+    "staking_overview/outstanding": {
+      "desired": "e4e3a1971c45f040",
+      "id": 13064769,
+      "query_id": 9020107,
+      "remote": "e4e3a1971c45f040"
+    },
+    "staking_overview/stakers": {
+      "desired": "7935e14587e96c7c",
+      "id": 13064768,
+      "query_id": 9020107,
+      "remote": "7935e14587e96c7c"
+    },
+    "staking_withdrawals_outstanding/table": {
+      "desired": "7c15cad834ccc72b",
+      "id": 13064772,
+      "query_id": 9020108,
+      "remote": "7c15cad834ccc72b"
     },
     "transaction_checks_daily/daily_chart": {
       "desired": "6a5c3b7ef243d5ee",
