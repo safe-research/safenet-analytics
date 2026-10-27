@@ -1,9 +1,12 @@
 // Preview environments for pull requests. A preview is a copy of the configuration in dune/ with
-// its own private Dune resources under the same team:
+// its own Dune resources under the same team:
 //
 //   - queries named "[Preview <track>] <name>" and tagged safenet-preview, safenet-preview-<track>
-//     (the managed tag, so lookups never match production queries, which carry safenet-analytics);
-//   - the overview "Safenet — Preview" (slug safenet-preview), or "Safenet — Preview (<track>)"
+//     (the managed tag, so lookups never match production queries, which carry safenet-analytics).
+//     They are public unless preview.yaml sets private_queries: their SQL is that of the public
+//     production queries, and private queries count against the team's limit;
+//   - private dashboards:
+//     the overview "Safenet — Preview" (slug safenet-preview), or "Safenet — Preview (<track>)"
 //     (slug safenet-preview-<track>) for other tracks, and each other dashboard as
 //     "Safenet — Preview (<track>): <section>" (slug safenet-<key>-preview[-<track>], which cannot
 //     collide with another track's overview), all with a banner naming the deployed commit and
@@ -26,6 +29,7 @@ export const PREVIEW_TAG = "safenet-preview";
 
 export type PreviewSettings = {
   track: string;
+  privateQueries: boolean;
   execution: {
     performance: Performance;
     timeoutMinutes: number;
@@ -45,6 +49,7 @@ export async function loadPreviewSettings(root = DEFAULT_ROOT, track?: string): 
   const exec = (raw.execution ?? {}) as Record<string, unknown>;
   const settings: PreviewSettings = {
     track: track ?? String(raw.track ?? "default"),
+    privateQueries: raw.private_queries === true,
     execution: {
       performance: (exec.performance as Performance) ?? "medium",
       timeoutMinutes: Number(exec.timeout_minutes ?? 10),
@@ -54,7 +59,9 @@ export async function loadPreviewSettings(root = DEFAULT_ROOT, track?: string): 
   };
   const problems: string[] = [];
   if (!/^[a-z0-9][a-z0-9-]{0,30}$/.test(settings.track)) problems.push("preview.yaml: track must match [a-z0-9-]+ (max 31 chars)");
-  if (raw.private !== true) problems.push("preview.yaml: previews must be private (private: true)");
+  if (raw.private !== true) problems.push("preview.yaml: preview dashboards must be private (private: true)");
+  if (raw.private_queries !== undefined && typeof raw.private_queries !== "boolean")
+    problems.push("preview.yaml: private_queries must be true or false");
   if (!["medium", "large"].includes(settings.execution.performance)) problems.push("preview.yaml: performance must be medium or large");
   for (const [k, v] of Object.entries(settings.execution))
     if (typeof v === "number" && !(v > 0)) problems.push(`preview.yaml: execution ${k} must be positive`);
@@ -106,7 +113,7 @@ export function toPreview(config: Config, settings: PreviewSettings, meta: Previ
     ...q,
     name: previewQueryName(track, q.name),
     description: `Preview (track ${track}) of a Safenet production query; not production. ${q.description}`,
-    isPrivate: true,
+    isPrivate: settings.privateQueries,
     tags: [PREVIEW_TAG],
     refresh: "none",
   }));

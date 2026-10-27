@@ -2,14 +2,14 @@
 // (docs/preview.md#cleanup). Nothing runs automatically; `cleanup-preview` is started by hand.
 //
 // A resource is removed only if it is recorded in the track's preview state, carries the track's
-// tag (queries) or belongs to such a query (visualizations), is private, and is neither a
-// production resource nor part of a protected dashboard. Before any write, every other query the
+// tag and is private or carries the track's preview name (queries), or belongs to such a query
+// (visualizations), and is neither a production resource nor part of a protected dashboard. Before any write, every other query the
 // team owns is checked for query_<id> references to the candidates; any such dependency, or a
 // candidate that fails one of the conditions, stops the cleanup with nothing changed.
 
 import { snapshotProtected, sqlQueryIds, type Guard } from "./deploy.ts";
 import { DuneApiError, type DuneClient, type RemoteQuery } from "./dune.ts";
-import { assertDisjoint, isPreviewSlug, previewTrackTag, productionGuard } from "./preview.ts";
+import { assertDisjoint, isPreviewSlug, previewQueryName, previewTrackTag, productionGuard } from "./preview.ts";
 import { emptyState, type State } from "./state.ts";
 
 export type CleanupItem = {
@@ -62,15 +62,18 @@ export async function planCleanup(
       items.push({ resource: "query", key, id: t.id, action: "forget", reason: "already archived or gone in Dune" });
       continue;
     }
-    if (!(q.tags ?? []).includes(tag) || !q.is_private) {
-      blockers.push(`query ${key} (${t.id}) is not a private query tagged ${tag}; not a preview resource of this track`);
+    // Preview queries may be public (preview.yaml private_queries); a public one must also carry
+    // the track's preview name.
+    const prefix = previewQueryName(track, "");
+    if (!(q.tags ?? []).includes(tag) || !(q.is_private || q.name.startsWith(prefix))) {
+      blockers.push(`query ${key} (${t.id}) is not tagged ${tag} and private or named "${prefix}…"; not a preview resource of this track`);
       continue;
     }
     for (const field of ["schedule", "refresh_schedule", "schedules"])
       if ((q as Record<string, unknown>)[field])
         notes.push(`query ${key} (${t.id}) has a Dune-side ${field}; it stops with archiving, check it is gone in the Dune UI`);
     candidates.add(t.id);
-    items.push({ resource: "query", key, id: t.id, action: "archive", reason: `private, tagged ${tag}` });
+    items.push({ resource: "query", key, id: t.id, action: "archive", reason: `${q.is_private ? "private" : "preview name"}, tagged ${tag}` });
   }
 
   // Visualizations

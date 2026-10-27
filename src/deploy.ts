@@ -496,9 +496,9 @@ function checkReferences(key: string, sql: string, guards: Guard[]) {
 
 export type ApplyOptions = {
   log?: (line: string) => void;
-  // Previews: every query and the dashboard must be private and owned by the team. A resource
-  // Dune leaves public is archived (queries) or emptied (dashboard) and the deploy stops; it never
-  // continues with public resources.
+  // Previews: every dashboard, and every query requested private, must come out private. A
+  // resource Dune leaves public is archived (queries) or emptied (dashboards) and the deploy stops;
+  // it never continues with public resources that were meant to be private.
   requirePrivate?: boolean;
   guards?: Guard[];
 };
@@ -543,7 +543,7 @@ export async function apply(
       await client.setQueryPrivate(guard(protectedIds.queries, id!), q.isPrivate);
       remote = (await client.getQuery(id!))!;
     }
-    if (options.requirePrivate && !remote.is_private) {
+    if (options.requirePrivate && q.isPrivate && !remote.is_private) {
       if (step.action === "create") await client.archiveQuery(id!);
       throw new Error(
         `query ${q.key} (${id}) is public although previews must be private` +

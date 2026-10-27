@@ -111,7 +111,12 @@ describe("preview cleanup", () => {
     const p = await planCleanup(settings.track, tampered, production, fake.client(), options);
     assert.ok(p.blockers.some((b) => b.includes("protected dashboard safe/safenet-beta")), p.blockers.join("\n"));
     const otherTrack = await planCleanup("other", preview, production, fake.client(), options);
-    assert.ok(otherTrack.blockers.some((b) => b.includes("not a private query tagged safenet-preview-other")));
+    assert.ok(otherTrack.blockers.some((b) => b.includes('is not tagged safenet-preview-other and private or named "[Preview other] …"')));
+    // A public query with the track's tag but without the preview name is not a candidate either.
+    const id = preview.queries.safenet_events.id;
+    fake.queries.get(id)!.name = "Someone's query";
+    const renamed = await planCleanup(settings.track, preview, production, fake.client(), options);
+    assert.ok(renamed.blockers.some((b) => b.startsWith(`query safenet_events (${id}) is not tagged`)), renamed.blockers.join("\n"));
   });
 
   test("refuses a preview state that contains production IDs", async () => {

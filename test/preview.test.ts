@@ -54,10 +54,12 @@ describe("preview configuration", () => {
     assert.equal(p.project.managedTag, "safenet-preview-default");
     for (const q of p.queries) {
       assert.match(q.name, /^\[Preview\] Safenet: /);
-      assert.equal(q.isPrivate, true);
+      assert.equal(q.isPrivate, false); // preview.yaml: private_queries: false
       assert.equal(q.refresh, "none");
       assert.deepEqual(q.tags, ["safenet-preview"]);
     }
+    const privateQueries = toPreview(config, { ...settings, privateQueries: true }, { sha: SHA });
+    assert.ok(privateQueries.queries.every((q) => q.isPrivate));
     assert.equal(overviewOf(previewOf("staking")).slug, "safenet-preview-staking");
     assert.equal(previewOf("staking").dashboards.find((d) => d.key === "staking")!.slug, "safenet-staking-preview-staking");
     // No preview slug of one track equals one of another track, or a production slug.
@@ -85,7 +87,7 @@ describe("preview configuration", () => {
     assert.equal(JSON.stringify(config), before);
   });
 
-  test("previews must be private", async () => {
+  test("preview dashboards must be private", async () => {
     await assert.rejects(
       (async () => {
         const { mkdtemp, cp, writeFile } = await import("node:fs/promises");
@@ -97,7 +99,7 @@ describe("preview configuration", () => {
         await writeFile(join(root, "preview.yaml"), "track: default\nprivate: false\n");
         await loadPreviewSettings(root);
       })(),
-      /previews must be private/,
+      /preview dashboards must be private/,
     );
   });
 });
@@ -112,7 +114,7 @@ describe("preview deploy", () => {
     production = await deployProduction(fake);
   });
 
-  test("creates private preview resources and leaves production unchanged", async () => {
+  test("creates preview resources (private dashboards, public queries) and leaves production unchanged", async () => {
     const before = productionSnapshot(fake, production);
     const r = await deployPreview(fake, production, emptyState());
     assert.equal(productionSnapshot(fake, production), before);
@@ -121,7 +123,8 @@ describe("preview deploy", () => {
     for (const [key, t] of Object.entries(r.state.queries)) {
       assert.ok(!prodIds.queries.has(t.id), key);
       const q = fake.queries.get(t.id)!;
-      assert.equal(q.is_private, true, key);
+      assert.equal(q.is_private, false, key);
+      assert.match(q.name, /^\[Preview\] /);
       assert.ok(q.tags.includes("safenet-preview-default"));
       assert.ok(!q.tags.includes("safenet-analytics"));
       // References resolve to preview queries only.
@@ -209,17 +212,34 @@ describe("preview deploy", () => {
     await assert.rejects(deployPreview(fake, production, emptyState(), cfg), /reads query_\d+, which belongs to production/);
   });
 
-  test("never falls back to public when Dune rejects private resources", async () => {
+  test("never falls back to a public dashboard when Dune rejects private ones", async () => {
     fake.privacy = "reject";
     const before = productionSnapshot(fake, production);
-    await assert.rejects(deployPreview(fake, production, emptyState()), /402.*private queries limit/);
-    assert.ok(![...fake.queries.values()].some((q) => q.name.startsWith("[Preview")));
+    await assert.rejects(deployPreview(fake, production, emptyState()), /402.*private dashboards limit/);
+    assert.ok(![...fake.dashboards.values()].some((d) => d.name.startsWith("Safenet — Preview")));
     assert.equal(productionSnapshot(fake, production), before);
   });
 
-  test("archives a query Dune created public and stops", async () => {
+  test("with private_queries, never falls back to public queries", async () => {
+    fake.privacy = "reject";
+    const cfg = toPreview(config, { ...settings, track: "default", privateQueries: true }, { sha: SHA });
+    await assert.rejects(deployPreview(fake, production, emptyState(), cfg), /402.*private queries limit/);
+    assert.ok(![...fake.queries.values()].some((q) => q.name.startsWith("[Preview")));
+  });
+
+  test("preview queries created private earlier are made public", async () => {
+    const cfg = toPreview(config, { ...settings, track: "default", privateQueries: true }, { sha: SHA });
+    const first = await deployPreview(fake, production, emptyState(), cfg);
+    assert.ok(Object.values(first.state.queries).every((t) => fake.queries.get(t.id)!.is_private));
+    const second = await deployPreview(fake, production, first.state);
+    assert.ok(Object.values(second.state.queries).every((t) => !fake.queries.get(t.id)!.is_private));
+    assert.deepEqual(Object.values(second.state.queries).map((t) => t.id), Object.values(first.state.queries).map((t) => t.id));
+  });
+
+  test("with private_queries, archives a query Dune created public and stops", async () => {
     fake.privacy = "ignore";
-    await assert.rejects(deployPreview(fake, production, emptyState()), /is public although previews must be private/);
+    const cfg = toPreview(config, { ...settings, track: "default", privateQueries: true }, { sha: SHA });
+    await assert.rejects(deployPreview(fake, production, emptyState(), cfg), /is public although previews must be private/);
     const previews = [...fake.queries.values()].filter((q) => q.name.startsWith("[Preview"));
     assert.ok(previews.length > 0 && previews.every((q) => q.is_archived));
   });

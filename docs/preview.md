@@ -7,7 +7,7 @@ Every pull request from a branch of this repository is deployed to **private pre
 1. **Open a pull request.** The *Preview* workflow then:
    1. Runs the checks (typecheck, tests, offline validation).
    2. Prints the **production plan**: a dry run of what merging would change in production. It makes no writes.
-   3. Deploys the pull request to its preview track. Resources are created private, or updated in place.
+   3. Deploys the pull request to its preview track. Dashboards are created private, queries public (see [What keeps production safe](#what-keeps-production-safe)); existing ones are updated in place.
    4. Executes the preview queries whose SQL changed, within the cost caps. Queries whose SQL, with every referenced query inlined, equals production's on `main` are not executed (`run-preview --baseline`), so a new track runs only the section under review. Their preview panels stay empty, production shows them, and their reconciliation step is skipped. *Run workflow* with *force run* executes everything.
    5. Recounts the request metric from Gnosis Chain logs over exactly the block range of the preview result, and compares every day and column, the counter and the sum of the daily bars. The Network & revenue and Sentinels sections are recounted the same way (`verify:network-revenue`, `verify:sentinels`), with representative cases to check on the Safenet explorer. The Validators section is checked against Consensus and FROSTCoordinator state and the published rewards (`verify:validators`). The Staking section is replayed from Ethereum logs and checked against the contract's state at the same block and against transaction receipts (`verify:staking`).
    6. Renders images of the panels from the preview results, including the Sentinel and Staking panels.
@@ -37,7 +37,8 @@ Preview queries are tagged `safenet-preview` and `safenet-preview-<track>`. Prod
 - **Production IDs are guards.** A preview deploy reads `dune/state.json` from `main`. If any preview step would resolve to, write to or reference (`query_<id>`) a production query, visualization or dashboard, the deploy stops. Beta's resources are guarded the same way.
 - **References are remapped.** Queries refer to each other as `{{query:<key>}}` (see [adding-a-metric.md](adding-a-metric.md)). In a preview this renders to the preview query's ID, in production to the production ID.
 - **Production is only read.** The production plan in the comment is a dry run that fails if it makes a write request.
-- **Private or nothing.** Preview queries and dashboards are requested private and read back after every write. If Dune rejects private resources (for example because of a plan limit) or creates them public, the deploy stops and reports it. A query that came out public is archived at once. The deployer never continues with public previews.
+- **Private dashboards.** Preview dashboards are requested private and read back after every write. If Dune rejects a private dashboard (for example because of a plan limit) or creates it public, the deploy stops and reports it, and a public dashboard is emptied at once.
+- **Public queries.** Preview queries are public by default (`private_queries: false` in `dune/preview.yaml`). Their SQL is the same as that of the public production queries. Their names start with `[Preview <track>]` and their descriptions say they are not production. Private queries count against the team's private query limit, which was reached in October 2026. With `private_queries: true` they are created private again, and the deployer stops instead of continuing with one that came out public. Switching back to public makes existing preview queries public in place.
 - **Forks get nothing.** Pull requests from forks are skipped; the job runs only when the head branch is in this repository. Secrets are therefore never available to untrusted code, and `pull_request_target` is not used. A manual run checks the same for the pull request it is given. Anyone who can push a branch here can already change the workflows, so branch authors are trusted.
 - **One deployment at a time.** All preview runs share the `dune-preview` concurrency group and are never cancelled halfway. A run whose commit is no longer the pull request head stops before deploying, so a preview never mixes revisions. GitHub keeps only the newest *pending* run of a group: if several pull requests push at once, an older pending run may be superseded. Rerun it with *Actions → Preview → Run workflow* and the pull request number.
 
@@ -76,7 +77,7 @@ One-time steps, done in GitHub and Dune by someone with admin access:
 
 1. **Secret.** The workflow uses the repository secret `DUNE_API_KEY` (the `safe` team key, see [setup.md](setup.md)) through the `dune-preview` environment. GitHub creates the environment on the first run. Optionally add *required reviewers* to it under *Settings → Environments → dune-preview* to approve each preview deployment by hand.
 2. **Branch.** The workflow creates and pushes the `dune-preview-state` branch with `GITHUB_TOKEN`. If branch rules cover all branches, exempt `dune-preview-state` or allow GitHub Actions to push to it.
-3. **Private resources.** The `safe` team's Dune plan must allow private queries and dashboards. The first preview run shows whether it does: it either succeeds or stops with Dune's error.
+3. **Private dashboards.** The `safe` team's Dune plan must allow private dashboards (and private queries, if `private_queries: true`). The first preview run shows whether it does: it either succeeds or stops with Dune's error.
 4. **Folder.** The verified Dune API endpoints ([dune-api.md](dune-api.md)) cannot assign folders. After the first successful run, move the resources into the existing **Safenet** folder once. In Dune, switch to the `safe` team, open the *Safenet* folder in the library, and use *Add* or *Move* to add *Safenet — Preview* and the `[Preview] Safenet: …` queries. Later runs update the same resources, so this is needed once per track. Do the same for production's new queries after the first production deploy of this change.
 5. **Access.** Open the preview URL from the pull request comment while signed in to Dune with an account that is a member of the `safe` team. Private team resources are visible to team members only.
 
@@ -88,7 +89,7 @@ The cleanup:
 
 1. **Selects candidates.** A resource qualifies only if all of these hold:
    - it is recorded in the track's preview state;
-   - it is a private query with the track's tag, a visualization of such a query, or a private preview dashboard (a preview slug, see [Tracks](#tracks)) showing only such visualizations;
+   - it is a query with the track's tag that is private or named `[Preview <track>] …`, a visualization of such a query, or a private preview dashboard (a preview slug, see [Tracks](#tracks)) showing only such visualizations;
    - it is neither a production resource nor part of Beta.
 2. **Checks dependencies.** It reads every other query of the team. If any of them reads a candidate (`query_<id>`), it stops and changes nothing, as it does if any recorded resource fails the conditions above.
 3. **Removes, in order:**
