@@ -6,7 +6,7 @@ GitHub is the source of truth for the queries, charts, dashboard text and layout
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| **Preview** | pull requests from branches of this repository; manual | Deploys the pull request to its private preview dashboard and comments with the URL, images, reconciliation and the production dry run; see [preview.md](preview.md) |
+| **Preview** | pull requests from branches of this repository; manual | Deploys the pull request to its private preview dashboards and comments with the URLs, link check, widget diagnosis, images, reconciliation and the production dry run; see [preview.md](preview.md) |
 | **Preview cleanup** | manual | Removes a preview track's resources after its work is merged; see [preview.md](preview.md#cleanup) |
 | **Validate** | pull requests | Typecheck, tests, offline validation. With `DUNE_API_KEY`, also a dry-run plan against Dune, which fails on conflicting Dune edits. It also runs each changed query's SQL on Dune as an unsaved execution, which costs credits, and checks that the columns the charts use exist in the result. |
 | **Deploy** | push to `main` touching `dune/`, `src/` or dependencies; manual (optional *dry run*, *force*) | Deploys the current `main` (so queued runs see the previous run's `state.json`), then commits `dune/state.json` |
@@ -19,7 +19,7 @@ GitHub is the source of truth for the queries, charts, dashboard text and layout
 3. **Plan.** Each resource in `dune/` is matched to Dune by its ID in `dune/state.json`. If there is no recorded ID, the deployer looks for an existing resource before creating one:
    - queries by name with the `safenet-analytics` tag;
    - visualizations by name on their query;
-   - the dashboard by `safe/<slug>`.
+   - each dashboard by `safe/<slug>`. An existing dashboard at the slug that differs from GitHub is a conflict, so a deploy never takes over a dashboard it did not create.
 
    This is why redeploys never duplicate resources, even if `state.json` was lost.
 4. **Actions.** For each resource:
@@ -33,9 +33,24 @@ GitHub is the source of truth for the queries, charts, dashboard text and layout
    | `conflict` | Dune differs from what the last deploy left there (someone edited it in Dune), or an untracked resource with the same name or slug differs. Nothing at all is written. |
    | `delete` / `archive` | Removed from `dune/`. Visualizations are deleted after the dashboard stops showing them. Queries are archived, which can be undone in Dune. |
 
-5. **Apply** in this order: queries → visualizations → dashboard → removals. After each write the deployer reads the resource back from Dune and stores two fingerprints in `dune/state.json`: one of the GitHub configuration and one of Dune's copy. Comparing Dune's copy with the stored fingerprint is how later deploys detect direct edits. State is saved even if the deploy fails partway.
+5. **Apply** in this order: queries → visualizations → dashboards → removals. Dashboards are written in two passes; see [Dashboards and links](#dashboards-and-links). After each write the deployer reads the resource back from Dune and stores two fingerprints in `dune/state.json`: one of the GitHub configuration and one of Dune's copy. Comparing Dune's copy with the stored fingerprint is how later deploys detect direct edits. State is saved even if the deploy fails partway.
 
 Dune's API has no versioning or locking for updates, so the check and the write are separate requests. An edit made in Dune in the seconds between them is overwritten.
+
+## Dashboards and links
+
+Each file `dune/dashboards/<key>.yaml` is one dashboard. `overview` is `safe/safenet`. It is the landing page, and its section boxes link to the section dashboards. Each section dashboard has a navigation bar at the top and bottom that links back to the overview and to the other sections. The dashboards share queries and visualizations, so a panel shown on two dashboards is one Dune visualization, and its query runs once per refresh or preview run.
+
+Text links to another dashboard as `{{dashboard:<key>}}`. Each environment renders it to `https://dune.com/safe/<slug>` with its own slugs: production slugs in production, preview slugs in a preview. Validation rejects hard-coded links to managed dashboards, unknown keys, and a production dashboard that does not link to all the others.
+
+Applying dashboards:
+
+1. Every dashboard is created if it is new, and given its slug. Dune can only set a slug after creating the dashboard.
+2. Each dashboard's URL must resolve, through Dune's by-slug endpoint, to exactly the dashboard recorded for it. If Dune kept another slug (for example because the slug is taken), the deploy stops before writing any text, so no link points to a missing dashboard.
+3. Text (with links) and layout are written, and read back.
+4. After the deploy, every link is followed again through the API and must reach its dashboard. The deploy log and summary list them under *Links*.
+
+`preview_only: true` marks a dashboard that is deployed to previews but never to production. Use it for temporary diagnostics. A dashboard removed from `dune/dashboards/` is left unchanged in Dune: the plan lists it as `noop`, and it is deleted by hand, or for previews by the preview cleanup.
 
 ## Dry run
 
@@ -73,6 +88,6 @@ Queries refer to other managed queries as `{{query:<key>}}`. The deployer orders
 
 - **Queries:** name, description, SQL, parameters, tags (plus the `safenet-analytics` tag), privacy.
 - **Visualizations:** name, type, description, options. Options are Dune's chart settings as JSON; see [adding-a-metric.md](adding-a-metric.md).
-- **Dashboard:** name, slug, privacy, tags, text widgets and their positions, visualization widgets and their positions.
+- **Dashboards:** name, slug, privacy, tags, text widgets (with rendered links) and their positions, visualization widgets and their positions.
 
-Not managed: dashboard parameter widgets, query schedules set in the Dune UI, materialized views. The dashboard must not have parameter widgets; a parameter widget added in Dune shows up as a conflict.
+Not managed: dashboard parameter widgets, query schedules set in the Dune UI, materialized views, library folders. The dashboards must not have parameter widgets; a parameter widget added in Dune shows up as a conflict.

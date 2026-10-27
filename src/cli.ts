@@ -6,7 +6,8 @@ import { parseArgs } from "node:util";
 import { stringify } from "yaml";
 import { applyCleanup, formatCleanup, planCleanup } from "./cleanup.ts";
 import { DEFAULT_ROOT, inlineSql, loadConfig, referencedColumns, type Config } from "./config.ts";
-import { checkIdentity, desiredQuery, formatPlan, runDeploy, snapshotProtected } from "./deploy.ts";
+import { checkIdentity, desiredQuery, formatLinkChecks, formatPlan, runDeploy, snapshotProtected } from "./deploy.ts";
+import { diagnoseDashboard, formatDiagnosis, hasErrors } from "./diagnose.ts";
 import { DuneClient } from "./dune.ts";
 import { fingerprint } from "./hash.ts";
 import { assertDisjoint, loadPreviewSettings, productionGuard, toPreview, type PreviewSettings } from "./preview.ts";
@@ -21,7 +22,7 @@ Commands:
   validate                 Check dune/ offline (no API key needed)
   whoami                   Show the account behind DUNE_API_KEY
   deploy [--dry-run] [--force]
-                           Create or update queries, visualizations and the dashboard.
+                           Create or update queries, visualizations and the dashboards.
                            --dry-run reads Dune and prints the plan without writing.
                            --force overwrites resources edited directly in Dune.
   refresh [--schedule daily] [--query KEY ...]
@@ -32,6 +33,10 @@ Commands:
   check-decoded            Look up the production contracts in Dune's decoded contract tables
   pull                     Write the current Dune versions of managed resources to dune/.remote/
   protected                Show protected dashboards (e.g. Beta) and the IDs they use
+  diagnose [--preview] [--out FILE] [--strict]
+                           Read-only: check every widget of the deployed dashboards against its
+                           visualization and its query's latest stored result (no execution);
+                           --strict fails on errors
 
 Previews (docs/preview.md). They use --state (default dune/.preview/<track>.json) for the preview
 IDs and --production-state (default dune/state.json) for the production IDs they must not touch:
@@ -61,6 +66,7 @@ const { positionals, values } = parseArgs({
     pr: { type: "string" },
     repository: { type: "string" },
     out: { type: "string" },
+    strict: { type: "boolean", default: false },
     baseline: { type: "string" },
   },
 });
@@ -85,10 +91,16 @@ async function deploy(config: Config, state: State) {
     return;
   }
   if (!dryRun) {
-    console.log(`\nDashboard: ${result.state.dashboard?.url}`);
-    await summary(`Dashboard: ${result.state.dashboard?.url}\n`);
+    const urls = dashboardList(result.state);
+    console.log(`\nDashboards:\n${urls}`);
+    await summary(`Dashboards:\n\n${urls}\n\nLinks:\n\n\`\`\`\n${formatLinkChecks(result.links)}\n\`\`\`\n`);
   }
 }
+
+const dashboardList = (state: State) =>
+  Object.entries(state.dashboards)
+    .map(([key, d]) => `- ${key}: ${d.url} (${d.id})`)
+    .join("\n");
 
 async function checkSql(config: Config, state: State) {
   const dune = client();
@@ -147,9 +159,9 @@ async function pull(config: Config, state: State) {
       stringify({ name: remote.name, description: remote.description, private: remote.is_private, tags: remote.tags, parameters: remote.parameters, visualizations }),
     );
   }
-  if (state.dashboard) {
-    const d = await dune.getDashboard(state.dashboard.id);
-    if (d) await writeFile(join(dir, "dashboard.json"), `${JSON.stringify(d, null, 2)}\n`);
+  for (const [key, tracked] of Object.entries(state.dashboards)) {
+    const d = await dune.getDashboard(tracked.id);
+    if (d) await writeFile(join(dir, `dashboard-${key}.json`), `${JSON.stringify(d, null, 2)}\n`);
   }
   console.log(`Wrote Dune versions to ${dir}. Compare with: diff -ru dune/.remote dune/queries`);
 }
@@ -200,8 +212,14 @@ async function deployPreview(config: Config) {
           track: ctx.settings.track,
           sha,
           dry_run: dryRun,
-          url: result.state.dashboard?.url ?? null,
-          dashboard_id: result.state.dashboard?.id ?? null,
+          url: result.state.dashboards.overview?.url ?? null,
+          dashboards: previewConfig.dashboards.map((d) => ({
+            key: d.key,
+            name: d.name,
+            url: result.state.dashboards[d.key]?.url ?? null,
+            id: result.state.dashboards[d.key]?.id ?? null,
+          })),
+          links: result.links,
           queries: Object.fromEntries(Object.entries(result.state.queries).map(([k, t]) => [k, t.id])),
           visualizations: Object.fromEntries(Object.entries(result.state.visualizations).map(([k, t]) => [k, t.id])),
           creates: result.plan.steps.filter((s) => s.action === "create").length,
@@ -211,7 +229,7 @@ async function deployPreview(config: Config) {
         2,
       )}\n`,
     );
-  if (!dryRun) console.log(`\nPreview dashboard (private): ${result.state.dashboard?.url}`);
+  if (!dryRun) console.log(`\nPreview dashboards (private):\n${dashboardList(result.state)}`);
 }
 
 async function runPreview(config: Config) {
@@ -258,6 +276,31 @@ async function cleanupPreview(config: Config) {
   }
 }
 
+// Production by default (dune/state.json), or the preview track with --preview. Never writes.
+async function diagnose(config: Config, production: State) {
+  const dune = client();
+  const state = values.preview ? (await previewContext()).preview : production;
+  const managed = new Map(
+    Object.entries(state.visualizations).flatMap(([key, t]) => {
+      const spec = config.queries.flatMap((q) => q.visualizations).find((v) => v.key === key);
+      return spec ? [[t.id, spec] as const] : [];
+    }),
+  );
+  const sections = [];
+  let errors = false;
+  for (const tracked of Object.values(state.dashboards)) {
+    const d = await diagnoseDashboard(dune, tracked.id, managed);
+    errors ||= hasErrors(d.widgets);
+    sections.push(formatDiagnosis(d));
+  }
+  if (dune.writes.length) throw new Error(`diagnose made writes: ${dune.writes.join(", ")}`);
+  const text = `### Widget diagnosis (${values.preview ? "preview" : "production"}, read-only)\n\n${sections.join("\n\n")}\n`;
+  console.log(text);
+  await summary(text);
+  if (values.out) await writeFile(values.out, text);
+  if (errors && values.strict) process.exitCode = 1;
+}
+
 async function checkDecoded() {
   const dune = client();
   const byChain = Object.groupBy(DECODING_CANDIDATES, (c) => c.chain);
@@ -292,7 +335,8 @@ async function main() {
   switch (command) {
     case "validate": {
       const vizCount = config.queries.reduce((n, q) => n + q.visualizations.length, 0);
-      console.log(`OK: ${config.queries.length} queries, ${vizCount} visualizations, dashboard ${config.project.team}/${config.dashboard.slug}`);
+      const dashboards = config.dashboards.map((d) => `${config.project.team}/${d.slug}${d.previewOnly ? " (preview only)" : ""}`);
+      console.log(`OK: ${config.queries.length} queries, ${vizCount} visualizations, dashboards ${dashboards.join(", ")}`);
       const untracked = config.queries.filter((q) => !state.queries[q.key]).map((q) => q.key);
       if (untracked.length) console.log(`Not deployed yet: ${untracked.join(", ")}`);
       return;
@@ -308,6 +352,8 @@ async function main() {
       return cleanupPreview(config);
     case "check-decoded":
       return checkDecoded();
+    case "diagnose":
+      return diagnose(config, state);
     case "refresh": {
       const queries = selectQueries(config, { schedule: values.schedule, keys: values.query });
       const results = await refresh(queries, state, client());

@@ -1,0 +1,70 @@
+# Safenet — Network & revenue: https://dune.com/safe/safenet-network-revenue
+# Transaction checks, results, networks, Guard-enabled Safes, fees, fee allocation and the latest
+# requests. Linked from the overview (overview.yaml); the navigation bar at the top and bottom links
+# back to it and to the other sections.
+# Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
+name: Safenet — Network & revenue
+slug: safenet-network-revenue
+private: false
+tags: [safenet, safe]
+
+widgets:
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · **Network & revenue** · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}})"
+    position: { row: 0, col: 0, size_x: 6, size_y: 2 }
+
+  - text_file: text/network_revenue.md
+    position: { row: 2, col: 0, size_x: 4, size_y: 3 }
+  - visualization: network_summary/freshness
+    position: { row: 2, col: 4, size_x: 2, size_y: 3 }
+
+  # Headline counters (all time)
+  - visualization: transaction_checks_daily/total_requests
+    position: { row: 5, col: 0, size_x: 2, size_y: 3 }
+  - visualization: network_summary/completed_results
+    position: { row: 5, col: 2, size_x: 2, size_y: 3 }
+  - visualization: network_summary/attestations
+    position: { row: 5, col: 4, size_x: 2, size_y: 3 }
+  - visualization: network_summary/safes_checked
+    position: { row: 8, col: 0, size_x: 2, size_y: 3 }
+  - visualization: guard_adoption/counter
+    position: { row: 8, col: 2, size_x: 2, size_y: 3 }
+  - visualization: network_summary/gross_fees
+    position: { row: 8, col: 4, size_x: 2, size_y: 3 }
+  - visualization: network_summary/windows
+    position: { row: 11, col: 0, size_x: 6, size_y: 5 }
+
+  # Activity and results (last 30 days)
+  - visualization: transaction_checks_daily/daily_chart
+    position: { row: 16, col: 0, size_x: 3, size_y: 8 }
+  - visualization: results_daily/stacked
+    position: { row: 16, col: 3, size_x: 3, size_y: 8 }
+  - visualization: results_daily/table
+    position: { row: 24, col: 0, size_x: 6, size_y: 6 }
+
+  # Networks
+  - visualization: network_breakdown/bars
+    position: { row: 30, col: 0, size_x: 3, size_y: 7 }
+  - visualization: guard_adoption/table
+    position: { row: 30, col: 3, size_x: 3, size_y: 7 }
+  - visualization: network_breakdown/table
+    position: { row: 37, col: 0, size_x: 6, size_y: 5 }
+
+  # Revenue
+  - visualization: fee_revenue_daily/daily
+    position: { row: 42, col: 0, size_x: 3, size_y: 8 }
+  - visualization: fee_revenue_daily/cumulative
+    position: { row: 42, col: 3, size_x: 3, size_y: 8 }
+  - visualization: fee_allocation/table
+    position: { row: 50, col: 0, size_x: 6, size_y: 11 }
+  - visualization: fee_config/table
+    position: { row: 61, col: 0, size_x: 6, size_y: 4 }
+
+  # Latest requests
+  - visualization: latest_requests/table
+    position: { row: 65, col: 0, size_x: 6, size_y: 10 }
+
+  - text_file: text/definitions.md
+    position: { row: 75, col: 0, size_x: 6, size_y: 8 }
+
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · **Network & revenue** · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}})"
+    position: { row: 83, col: 0, size_x: 6, size_y: 2 }

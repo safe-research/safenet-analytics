@@ -11,9 +11,10 @@
 5. **Run the first deployment:** *Actions → Deploy → Run workflow* on `main`, first with *dry run*, then without. Alternatively, merging any change under `dune/` deploys.
 6. **Check the first deploy:**
    - The deploy log shows `Dune account: safe (team_…)` and records the Beta dashboard's IDs in `dune/state.json` under `protected`.
-   - `https://dune.com/safe/safenet` exists and shows the intro, the chart and the definitions.
+   - `https://dune.com/safe/safenet` and the section dashboards exist, and every link between them works (the deploy log lists them under *Links*).
    - The *Refresh* workflow ran after the deploy, and its verification step reports `"mismatches": []`.
-   - The layout looks as intended. The 6-column grid in `src/config.ts` is taken from the official CLI's examples and is not documented by Dune. If widths look wrong, adjust `GRID_COLUMNS` and the positions in `dune/dashboard.yaml`.
+   - The layout looks as intended. The 6-column grid in `src/config.ts` is taken from the official CLI's examples and is not documented by Dune. If widths look wrong, adjust `GRID_COLUMNS` and the positions in `dune/dashboards/`.
+   - Move new dashboards into the safe team's **Safenet** folder (one-time UI step; the API cannot assign folders, see [dune-api.md](dune-api.md)).
 
 ## Local use
 

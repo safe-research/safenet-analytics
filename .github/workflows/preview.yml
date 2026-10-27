@@ -121,6 +121,12 @@ jobs:
         if: steps.pr.outputs.skip != 'true' && steps.current.outputs.skip != 'true'
         run: npm run plan 2>&1 | tee "$RUNNER_TEMP/production-plan.txt"
 
+      # Read-only: what production's dashboards render, widget by widget (docs/preview.md#diagnosis).
+      - name: Diagnose production dashboards (read-only)
+        if: steps.pr.outputs.skip != 'true' && steps.current.outputs.skip != 'true'
+        continue-on-error: true
+        run: npm run dune -- diagnose --out "$RUNNER_TEMP/diagnose-production.md" > /dev/null
+
       - name: Decoded contracts on Dune
         if: steps.pr.outputs.skip != 'true' && steps.current.outputs.skip != 'true'
         continue-on-error: true
@@ -185,6 +191,13 @@ jobs:
           node scripts/render-preview.ts --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --sha "${{ steps.pr.outputs.sha }}" --track "${{ steps.state.outputs.track }}" --out "$RUNNER_TEMP/render"
 
+      - name: Diagnose preview dashboards
+        if: always() && steps.deploy.outcome == 'success'
+        continue-on-error: true
+        run: >-
+          npm run dune -- diagnose --preview --state "dune/.preview/${{ steps.state.outputs.track }}.json"
+          --out "$RUNNER_TEMP/diagnose-preview.md" > /dev/null
+
       # Also after failures, so IDs of resources created before a failure are kept.
       - name: Record preview state and images
         if: always() && steps.state.outcome == 'success' && steps.current.outputs.skip != 'true'
@@ -220,6 +233,8 @@ jobs:
             ${{ runner.temp }}/verification-staking.json
             ${{ runner.temp }}/verification-validators.json
             ${{ runner.temp }}/production-plan.txt
+            ${{ runner.temp }}/diagnose-production.md
+            ${{ runner.temp }}/diagnose-preview.md
           if-no-files-found: ignore
 
       - name: Comment on the pull request
@@ -238,8 +253,28 @@ jobs:
             if [ "$DEPLOY" = "success" ]; then
               echo "### Dune preview: track \`$TRACK\`, commit $SHA"
               echo
-              echo "Private dashboard (safe team): $(jq -r .url "$T/preview.json")"
+              echo "Private dashboards (safe team):"
               echo
+              jq -r '.dashboards[] | "- [\(.name)](\(.url))"' "$T/preview.json"
+              echo
+              echo "**Check in the browser** (signed in to Dune; CI cannot open private dashboards): open each dashboard with the browser console open, scroll to the bottom, and wait for every panel to load. Note any error, click every navigation link and check it opens the dashboard it names, and take a screenshot of each dashboard."
+              echo
+              echo "<details><summary>Navigation links (resolved through the Dune API)</summary>"
+              echo
+              echo '```'
+              jq -r '.links[] | "\(if .ok then "ok    " else "BROKEN" end) \(.from) -> \(.to): \(.url) (dashboard \(.id))"' "$T/preview.json"
+              echo '```'
+              echo "</details>"
+              echo
+              for f in diagnose-preview diagnose-production; do
+                if [ -f "$T/$f.md" ]; then
+                  echo "<details><summary>Widget diagnosis: ${f#diagnose-} (each visualization with its query's latest stored result; \"open\" shows it alone)</summary>"
+                  echo
+                  cat "$T/$f.md"
+                  echo "</details>"
+                  echo
+                fi
+              done
               echo "Images rendered from the preview's query results through the API (the dashboard is private, so CI cannot screenshot Dune):"
               echo
               for f in counter daily results fees network_summary network_breakdown guard_adoption fee_allocation fee_config latest \
@@ -323,7 +358,7 @@ jobs:
               echo "<details><summary>Preview resources</summary>"
               echo
               echo '```json'
-              jq '{dashboard_id, queries, visualizations, creates}' "$T/preview.json"
+              jq '{dashboards, queries, visualizations, creates}' "$T/preview.json"
               echo '```'
               echo '```'
               jq -r .plan "$T/preview.json"

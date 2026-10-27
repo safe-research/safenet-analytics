@@ -9,7 +9,7 @@
 
 import { snapshotProtected, sqlQueryIds, type Guard } from "./deploy.ts";
 import type { DuneClient, RemoteQuery } from "./dune.ts";
-import { assertDisjoint, previewTrackTag, productionGuard } from "./preview.ts";
+import { assertDisjoint, isPreviewSlug, previewTrackTag, productionGuard } from "./preview.ts";
 import { emptyState, type State } from "./state.ts";
 
 export type CleanupItem = {
@@ -98,18 +98,18 @@ export async function planCleanup(
     items.push({ resource: "visualization", key, id: t.id, action: "delete", reason: `on preview query ${v.query_id}` });
   }
 
-  // Dashboard
-  if (preview.dashboard) {
-    const id = preview.dashboard.id;
+  // Dashboards
+  for (const [key, t] of Object.entries(preview.dashboards)) {
+    const id = t.id;
     const g = guarded("dashboards", id);
     const d = g ? null : await client.getDashboard(id);
-    if (g) blockers.push(`dashboard ${id} belongs to ${g.label}`);
-    else if (!d) items.push({ resource: "dashboard", key: preview.dashboard.url, id, action: "forget", reason: "already gone in Dune" });
+    if (g) blockers.push(`dashboard ${key} (${id}) belongs to ${g.label}`);
+    else if (!d) items.push({ resource: "dashboard", key: t.url, id, action: "forget", reason: "already gone in Dune" });
     else {
       const foreign = (d.visualization_widgets ?? []).map((w) => w.visualization_id).filter((v) => !vizCandidates.has(v));
       if (!d.is_private) blockers.push(`dashboard ${d.slug} (${id}) is public; previews are private, check it is the right dashboard`);
       if (foreign.length) blockers.push(`dashboard ${d.slug} (${id}) shows visualizations that are not preview resources: ${foreign.join(", ")}`);
-      if (!d.slug.startsWith("safenet-preview")) blockers.push(`dashboard ${id} has slug ${d.slug}, not a preview slug`);
+      if (!isPreviewSlug(d.slug)) blockers.push(`dashboard ${id} has slug ${d.slug}, not a preview slug`);
       items.push({ resource: "dashboard", key: d.slug, id, action: "remove", reason: "preview dashboard of this track" });
     }
   }

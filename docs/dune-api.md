@@ -25,7 +25,8 @@ The deployer (`src/dune.ts`) calls these endpoints directly, because the CLI can
 - **Query schedules cannot be set via the API.** See [refreshes.md](refreshes.md).
 - **Rate limits.** On Plus: 70 write and 200 read requests per minute. A deploy makes a few dozen requests, most of them reads of the Beta dashboard for the protection check. The client retries `429` and `5xx` responses with backoff.
 
-- **No folders.** None of the endpoints above assigns a library folder, so placing resources in the *Safenet* folder is a one-time UI step ([preview.md](preview.md#setup)).
+- **No folders.** None of the endpoints above assigns a library folder, so placing resources in the *Safenet* folder is a one-time UI step per new dashboard or query ([preview.md](preview.md#setup), [setup.md](setup.md)).
+- **Slugs after creation.** A dashboard's slug can only be set by a `PATCH` after it is created, and Dune may keep another one (for example if the slug is taken). Before writing links, the deployer checks that each dashboard resolves by slug to the expected ID ([deployment.md](deployment.md#dashboards-and-links)).
 - **Private resources.** Queries and dashboards are created with `is_private`. Whether the plan allows them shows on the first preview run: [preview.md](preview.md#what-keeps-production-safe) describes how the deployer stops otherwise.
 
 ## Not verified yet (needs the team key)

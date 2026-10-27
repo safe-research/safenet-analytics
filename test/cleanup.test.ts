@@ -23,7 +23,7 @@ describe("preview cleanup", () => {
       production: [
         ...Object.values(production.queries).map((t) => fake.queries.get(t.id)),
         ...Object.values(production.visualizations).map((t) => fake.visualizations.get(t.id)),
-        fake.dashboards.get(production.dashboard!.id),
+        ...Object.values(production.dashboards).map((t) => fake.dashboards.get(t.id)),
       ],
       beta: [fake.queries.get(beta.queryId), fake.visualizations.get(beta.vizId), fake.dashboards.get(beta.dashboardId)],
     });
@@ -53,7 +53,7 @@ describe("preview cleanup", () => {
     const ids = (r: string) => p.items.filter((i) => i.resource === r).map((i) => i.id).sort();
     assert.deepEqual(ids("query"), Object.values(preview.queries).map((t) => t.id).sort());
     assert.deepEqual(ids("visualization"), Object.values(preview.visualizations).map((t) => t.id).sort());
-    assert.deepEqual(ids("dashboard"), [preview.dashboard!.id]);
+    assert.deepEqual(ids("dashboard"), Object.values(preview.dashboards).map((t) => t.id).sort());
   });
 
   test("archives queries, deletes visualizations, empties the dashboard and clears the mapping", async () => {
@@ -62,10 +62,13 @@ describe("preview cleanup", () => {
     const { state, manual } = await applyCleanup(p, fake.client(), quiet);
     for (const t of Object.values(preview.queries)) assert.equal(fake.queries.get(t.id)!.is_archived, true);
     for (const t of Object.values(preview.visualizations)) assert.equal(fake.visualizations.has(t.id), false);
-    const dash = fake.dashboards.get(preview.dashboard!.id)!;
-    assert.equal(dash.visualization_widgets.length + dash.text_widgets.length, 0);
-    assert.equal(dash.is_private, true);
-    assert.equal(manual.length, 1); // the API cannot archive dashboards in this fake
+    for (const t of Object.values(preview.dashboards)) {
+      const dash = fake.dashboards.get(t.id)!;
+      assert.equal(dash.visualization_widgets.length + dash.text_widgets.length, 0);
+      assert.equal(dash.is_private, true);
+    }
+    // The API cannot archive dashboards in this fake: one manual step per dashboard.
+    assert.equal(manual.length, Object.keys(preview.dashboards).length);
     assert.deepEqual(state, emptyState());
     assert.equal(snapshot(), before, "production and Beta are unchanged");
   });
@@ -74,7 +77,7 @@ describe("preview cleanup", () => {
     fake.dashboardArchive = true;
     const p = await planCleanup(settings.track, preview, production, fake.client(), options);
     const { manual } = await applyCleanup(p, fake.client(), quiet);
-    assert.equal(fake.dashboards.has(preview.dashboard!.id), false);
+    for (const t of Object.values(preview.dashboards)) assert.equal(fake.dashboards.has(t.id), false);
     assert.deepEqual(manual, []);
   });
 

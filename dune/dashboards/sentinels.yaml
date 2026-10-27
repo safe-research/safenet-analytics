@@ -1,0 +1,56 @@
+# Safenet — Sentinels: https://dune.com/safe/safenet-sentinels
+# Participation, verdicts, coverage, disputes and arbitration, earnings and bonds. Linked from the
+# overview (overview.yaml); the navigation bar at the top and bottom links back to it and to the
+# other sections.
+# Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
+name: Safenet — Sentinels
+slug: safenet-sentinels
+private: false
+tags: [safenet, safe]
+
+widgets:
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · **Sentinels**"
+    position: { row: 0, col: 0, size_x: 6, size_y: 2 }
+
+  - text_file: text/sentinels.md
+    position: { row: 2, col: 0, size_x: 4, size_y: 4 }
+  - visualization: sentinel_overview/freshness
+    position: { row: 2, col: 4, size_x: 2, size_y: 4 }
+  - visualization: sentinel_overview/table
+    position: { row: 6, col: 0, size_x: 6, size_y: 8 }
+  - visualization: sentinel_windows/table
+    position: { row: 14, col: 0, size_x: 6, size_y: 6 }
+
+  # Participation history (last 30 days)
+  - visualization: sentinel_participation_daily/heatmap
+    position: { row: 20, col: 0, size_x: 6, size_y: 7 }
+
+  # Verdicts and coverage
+  - visualization: sentinel_verdicts/bars
+    position: { row: 27, col: 0, size_x: 3, size_y: 8 }
+  - visualization: sentinel_coverage/bars
+    position: { row: 27, col: 3, size_x: 3, size_y: 8 }
+  - visualization: sentinel_verdicts/table
+    position: { row: 35, col: 0, size_x: 3, size_y: 6 }
+  - visualization: sentinel_coverage/table
+    position: { row: 35, col: 3, size_x: 3, size_y: 6 }
+
+  # Disputes and arbitration
+  - visualization: sentinel_disputes/table
+    position: { row: 41, col: 0, size_x: 6, size_y: 9 }
+
+  # Earnings
+  - visualization: sentinel_earnings/table
+    position: { row: 50, col: 0, size_x: 6, size_y: 6 }
+  - visualization: sentinel_earnings_daily/bars
+    position: { row: 56, col: 0, size_x: 6, size_y: 7 }
+
+  # Bonds
+  - visualization: sentinel_bonds/table
+    position: { row: 63, col: 0, size_x: 6, size_y: 6 }
+
+  - text_file: text/sentinels_definitions.md
+    position: { row: 69, col: 0, size_x: 6, size_y: 9 }
+
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · **Sentinels**"
+    position: { row: 78, col: 0, size_x: 6, size_y: 2 }

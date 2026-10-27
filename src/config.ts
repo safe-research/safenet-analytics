@@ -1,7 +1,7 @@
 // Loads and validates the Dune configuration under dune/.
 //
 //   dune/project.yaml                  team, managed tag, protected dashboards
-//   dune/dashboard.yaml                dashboard name, slug, text and layout
+//   dune/dashboards/<key>.yaml         one dashboard each: name, slug, text and layout
 //   dune/queries/<key>/query.yaml      query metadata, refresh schedule, visualizations
 //   dune/queries/<key>/query.sql       query SQL; {{query:<key>}} refers to another managed query
 //   dune/preview.yaml                  preview dashboard settings (src/preview.ts)
@@ -65,9 +65,22 @@ export type Widget =
   | { kind: "text"; text: string; position: Position }
   | { kind: "visualization"; ref: string; position: Position };
 
-export type DashboardSpec = { name: string; slug: string; isPrivate: boolean; tags: string[]; widgets: Widget[] };
+// `key` is the file name in dune/dashboards/ and the target of {{dashboard:<key>}} links.
+// `previewOnly` dashboards are deployed to previews and never to production.
+export type DashboardSpec = {
+  key: string;
+  name: string;
+  slug: string;
+  isPrivate: boolean;
+  tags: string[];
+  previewOnly: boolean;
+  widgets: Widget[];
+};
 
-export type Config = { project: Project; queries: QuerySpec[]; dashboard: DashboardSpec };
+// The overview is listed first, then the other dashboards by key.
+export type Config = { project: Project; queries: QuerySpec[]; dashboards: DashboardSpec[] };
+
+export const OVERVIEW = "overview";
 
 export class ConfigError extends Error {
   readonly problems: string[];
@@ -140,37 +153,66 @@ export async function loadConfig(root = DEFAULT_ROOT): Promise<Config> {
     queries.push(spec);
   }
 
-  const dashRaw = await readYaml(join(root, "dashboard.yaml"));
-  const widgets: Widget[] = [];
-  for (const [i, w] of ((dashRaw.widgets ?? []) as Raw[]).entries()) {
-    const where = `dashboard.yaml widgets[${i}]`;
-    const position = w.position as Position;
-    if (typeof w.text_file === "string") {
-      const path = join(root, w.text_file);
-      if (!existsSync(path)) problems.push(`${where}: text_file ${w.text_file} not found`);
-      else widgets.push({ kind: "text", text: (await readFile(path, "utf8")).trim(), position });
-    } else if (typeof w.text === "string") {
-      widgets.push({ kind: "text", text: w.text.trim(), position });
-    } else if (typeof w.visualization === "string") {
-      widgets.push({ kind: "visualization", ref: w.visualization, position });
-    } else problems.push(`${where}: needs one of text, text_file or visualization`);
+  const dashboards: DashboardSpec[] = [];
+  const dashboardsDir = join(root, "dashboards");
+  const files = existsSync(dashboardsDir) ? (await readdir(dashboardsDir)).filter((f) => f.endsWith(".yaml")).sort() : [];
+  for (const file of files) {
+    const key = file.slice(0, -".yaml".length);
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(key)) problems.push(`dashboards/${file}: file name must match [a-z0-9-]+.yaml`);
+    const dashRaw = await readYaml(join(dashboardsDir, file));
+    const widgets: Widget[] = [];
+    for (const [i, w] of ((dashRaw.widgets ?? []) as Raw[]).entries()) {
+      const where = `dashboards/${file} widgets[${i}]`;
+      const position = w.position as Position;
+      if (typeof w.text_file === "string") {
+        const path = join(root, w.text_file);
+        if (!existsSync(path)) problems.push(`${where}: text_file ${w.text_file} not found`);
+        else widgets.push({ kind: "text", text: (await readFile(path, "utf8")).trim(), position });
+      } else if (typeof w.text === "string") {
+        widgets.push({ kind: "text", text: w.text.trim(), position });
+      } else if (typeof w.visualization === "string") {
+        widgets.push({ kind: "visualization", ref: w.visualization, position });
+      } else problems.push(`${where}: needs one of text, text_file or visualization`);
+    }
+    const dashboard: DashboardSpec = {
+      key,
+      name: str(dashRaw.name),
+      slug: str(dashRaw.slug),
+      isPrivate: dashRaw.private === true,
+      tags: strList(dashRaw.tags),
+      previewOnly: dashRaw.preview_only === true,
+      widgets,
+    };
+    problems.push(...validateDashboard(dashboard, queries, project));
+    dashboards.push(dashboard);
   }
-  const dashboard: DashboardSpec = {
-    name: str(dashRaw.name),
-    slug: str(dashRaw.slug),
-    isPrivate: dashRaw.private === true,
-    tags: strList(dashRaw.tags),
-    widgets,
-  };
-  problems.push(...validateDashboard(dashboard, queries, project));
+  dashboards.sort((a, b) => Number(b.key === OVERVIEW) - Number(a.key === OVERVIEW));
+  problems.push(...validateDashboards(dashboards, queries, project));
 
   const names = queries.map((q) => q.name);
   for (const n of new Set(names.filter((n, i) => names.indexOf(n) !== i))) problems.push(`duplicate query name "${n}"`);
 
   const ordered = orderByDependencies(queries, problems);
   if (problems.length) throw new ConfigError(problems);
-  return { project, queries: ordered, dashboard };
+  return { project, queries: ordered, dashboards };
 }
+
+// {{dashboard:<key>}} in dashboard text links to another managed dashboard. It renders to that
+// dashboard's URL in the target environment: production slugs in production, preview slugs in a
+// preview. The deployer creates every dashboard and checks its URL before writing links to it.
+export const DASHBOARD_LINK = /\{\{\s*dashboard:([a-z0-9-]+)\s*\}\}/g;
+
+export const dashboardLinks = (text: string) => [...new Set([...text.matchAll(DASHBOARD_LINK)].map((m) => m[1]))].sort();
+
+export const dashboardUrl = (team: string, slug: string) => `https://dune.com/${team}/${slug}`;
+
+// Dashboard text with {{dashboard:<key>}} replaced by `url(key)`.
+export function renderLinks(text: string, url: (key: string) => string): string {
+  return text.replace(DASHBOARD_LINK, (_, key: string) => url(key));
+}
+
+// Dashboards deployed to production.
+export const productionDashboards = (config: Config) => config.dashboards.filter((d) => !d.previewOnly);
 
 // {{query:<key>}} in a query's SQL refers to another managed query. The deployer renders it as
 // query_<id> with the ID of that query in the target environment (production or a preview), so a
@@ -273,9 +315,10 @@ export function referencedColumns(v: VisualizationSpec): string[] {
 
 function validateDashboard(d: DashboardSpec, queries: QuerySpec[], project: Project): string[] {
   const problems: string[] = [];
-  const where = "dashboard.yaml";
+  const where = `dashboards/${d.key}.yaml`;
   if (!d.name) problems.push(`${where}: name is required`);
   if (!/^[a-z0-9][a-z0-9-]*$/.test(d.slug)) problems.push(`${where}: slug must match [a-z0-9-]+`);
+  if (d.slug.includes("preview")) problems.push(`${where}: slug must not contain "preview" (reserved for previews)`);
   if (project.protectedDashboards.includes(`${project.team}/${d.slug}`))
     problems.push(`${where}: slug ${d.slug} belongs to a protected dashboard`);
 
@@ -309,5 +352,37 @@ function validateDashboard(d: DashboardSpec, queries: QuerySpec[], project: Proj
         cells.set(`${r}:${c}`, i);
       }
   }
+  return problems;
+}
+
+// Checks across dashboards: unique slugs, known link targets, complete navigation, and every
+// visualization placed in production, so moving widgets between dashboards cannot drop one.
+function validateDashboards(dashboards: DashboardSpec[], queries: QuerySpec[], project: Project): string[] {
+  const problems: string[] = [];
+  const keys = new Set(dashboards.map((d) => d.key));
+  const production = dashboards.filter((d) => !d.previewOnly);
+  if (!production.some((d) => d.key === OVERVIEW)) problems.push(`dashboards/${OVERVIEW}.yaml is required (the landing page)`);
+  const slugs = dashboards.map((d) => d.slug);
+  for (const s of new Set(slugs.filter((s, i) => slugs.indexOf(s) !== i))) problems.push(`dashboards: slug ${s} is used twice`);
+
+  const managed = new Map(dashboards.map((d) => [d.slug, d.key]));
+  for (const d of dashboards) {
+    const where = `dashboards/${d.key}.yaml`;
+    const text = d.widgets.flatMap((w) => (w.kind === "text" ? [w.text] : [])).join("\n");
+    const links = dashboardLinks(text);
+    for (const k of links.filter((k) => !keys.has(k))) problems.push(`${where}: {{dashboard:${k}}} refers to an unknown dashboard`);
+    for (const k of links.filter((k) => dashboards.find((x) => x.key === k)?.previewOnly && !d.previewOnly))
+      problems.push(`${where}: links to the preview-only dashboard ${k}`);
+    // Hard-coded links would point to production from a preview; use {{dashboard:<key>}}.
+    for (const m of text.matchAll(new RegExp(`dune\\.com/${project.team}/([a-z0-9-]+)`, "g")))
+      if (managed.has(m[1])) problems.push(`${where}: links to dune.com/${project.team}/${m[1]} directly; use {{dashboard:${managed.get(m[1])}}}`);
+    if (d.previewOnly) continue;
+    const missing = production.filter((x) => x.key !== d.key && !links.includes(x.key)).map((x) => x.key);
+    if (missing.length) problems.push(`${where}: no link to ${missing.join(", ")}; every dashboard links to all the others`);
+  }
+
+  const placed = new Set(production.flatMap((d) => d.widgets.flatMap((w) => (w.kind === "visualization" ? [w.ref] : []))));
+  for (const v of queries.flatMap((q) => q.visualizations))
+    if (!placed.has(v.key)) problems.push(`visualization ${v.key} is not placed on any production dashboard`);
   return problems;
 }

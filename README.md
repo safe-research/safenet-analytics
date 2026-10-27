@@ -1,13 +1,23 @@
 # safenet-analytics
 
-Safenet production analytics on Dune, managed from GitHub. The dashboard is [dune.com/safe/safenet](https://dune.com/safe/safenet), owned by the `safe` team.
+Safenet production analytics on Dune, managed from GitHub. The overview is [dune.com/safe/safenet](https://dune.com/safe/safenet), owned by the `safe` team. Each section has its own dashboard, linked from the overview's section boxes:
 
-This repository holds the SQL, chart settings, dashboard text and layout, and the IDs of the Dune resources they map to. Every pull request is first deployed to a private preview dashboard ([docs/preview.md](docs/preview.md)). Merging to `main` deploys to production. A separate daily job refreshes the data. The Beta dashboard, [dune.com/safe/safenet-beta](https://dune.com/safe/safenet-beta), is not managed here, and deploys check that it stays unchanged.
+| Dashboard | URL | Contents |
+| --- | --- | --- |
+| Overview | [safe/safenet](https://dune.com/safe/safenet) | data freshness, headline counters (requests, completed results, attestations, Safes checked, gross fees, active stake), activity, results, fees and active stake charts |
+| Network & revenue | [safe/safenet-network-revenue](https://dune.com/safe/safenet-network-revenue) | all transaction-check and fee panels, latest requests, definitions |
+| Staking | [safe/safenet-staking](https://dune.com/safe/safenet-staking) | stake, flows, withdrawals, stake by validator, definitions |
+| Validators | [safe/safenet-validators](https://dune.com/safe/safenet-validators) | attestation set, participation, stake history, rewards, withdrawal exposure, definitions |
+| Sentinels | [safe/safenet-sentinels](https://dune.com/safe/safenet-sentinels) | participation, verdicts, coverage, disputes, earnings, bonds, definitions |
+
+The dashboards share their queries and visualizations: a panel shown on the overview and on a section dashboard is one Dune visualization, and its query is executed once per refresh.
+
+This repository holds the SQL, chart settings, the dashboards' text, links and layout, and the IDs of the Dune resources they map to. Every pull request is first deployed to a private preview dashboard ([docs/preview.md](docs/preview.md)). Merging to `main` deploys to production. A separate daily job refreshes the data. The Beta dashboard, [dune.com/safe/safenet-beta](https://dune.com/safe/safenet-beta), is not managed here, and deploys check that it stays unchanged.
 
 ```
 dune/
   project.yaml                Dune team, managed tag, protected dashboards
-  dashboard.yaml              dashboard name, slug, text and layout
+  dashboards/<key>.yaml       one dashboard each: name, slug, text, links and layout
   preview.yaml                preview track and cost caps
   data/participants.json      participant labels (npm run sync:participants)
   text/*.md                   dashboard text

@@ -26,8 +26,8 @@
        options: { ... }            # Dune visualization options, see below
    ```
 
-4. **Place it** in `dune/dashboard.yaml` as `visualization: <key>/<viz_key>` with a `position` on the 6-column grid (`row`, `col`, `size_x`, `size_y`). Text goes in `dune/text/*.md` and is referenced with `text_file`.
-5. **Check locally:** `npm test && npm run validate`. Validation catches overlapping widgets, unknown references, undeclared `{{parameters}}`, and chart columns that do not appear in the SQL.
+4. **Place it** on its section's dashboard, `dune/dashboards/<section>.yaml`, as `visualization: <key>/<viz_key>` with a `position` on the 6-column grid (`row`, `col`, `size_x`, `size_y`). Only headline numbers and key charts also go on the overview (`dune/dashboards/overview.yaml`); the same visualization may be placed on both. Text goes in `dune/text/*.md` and is referenced with `text_file`, or inline with `text`. Link to another dashboard with `{{dashboard:<key>}}`, never with a hard-coded `dune.com` URL: the link then points to the preview dashboard in a preview and to production in production.
+5. **Check locally:** `npm test && npm run validate`. Validation catches overlapping widgets, unknown references, undeclared `{{parameters}}`, chart columns that do not appear in the SQL, visualizations that are on no production dashboard, unknown or hard-coded dashboard links, and dashboards that do not link to all the others.
 6. **Open a pull request.** CI plans the production deployment, runs the new SQL on Dune and deploys a private preview ([preview.md](preview.md)); check the pull request comment. After merging, *Deploy* creates the query and chart, and *Refresh* runs the query.
 7. **Verify** the numbers against the underlying events, as `scripts/verify-transaction-checks.ts` does for the first metric. Record the result in the metric's doc.
 

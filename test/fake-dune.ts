@@ -32,6 +32,8 @@ export class FakeDune {
   visualizations = new Map<number, Viz>();
   dashboards = new Map<number, Dashboard>();
   executions = new Map<string, { query_id?: number; polls: number; sql?: string; cancelled?: boolean }>();
+  // Latest stored result per query (GET /api/v1/query/{id}/results); none means never executed.
+  results = new Map<number, { state?: string; columns: string[]; rows: Record<string, unknown>[] }>();
   requests: string[] = [];
   whoami = { customer_id: "team_1", handle: "safe", api_key_id: 1, created_by: 1 };
   // How Dune treats requests for private resources: honour them, reject them (plan limit), or
@@ -207,6 +209,15 @@ export class FakeDune {
       }
     }
 
+    if ((m = path.match(/^\/api\/v1\/query\/(\d+)\/results/)) && method === "GET") {
+      const r = this.results.get(Number(m[1]));
+      if (!r) return json(404, { error: "No execution found for the latest version of the query" });
+      return json(200, {
+        execution_id: `01RESULT${m[1]}`,
+        state: r.state ?? "QUERY_STATE_COMPLETED",
+        result: { rows: r.rows, metadata: { column_names: r.columns } },
+      });
+    }
     if ((m = path.match(/^\/api\/v1\/query\/(\d+)\/execute$/)) && method === "POST") {
       const id = `01EXEC${this.#next++}`;
       this.executions.set(id, { query_id: Number(m[1]), polls: 0 });

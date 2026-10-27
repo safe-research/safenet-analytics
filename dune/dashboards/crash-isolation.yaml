@@ -1,9 +1,12 @@
-# The Safenet dashboard: https://dune.com/safe/safenet
-# Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
-# Previews (docs/preview.md) use this layout below a banner.
-name: Safenet
-slug: safenet
-private: false
+# TEMPORARY, preview only: crash-repro.yaml without the five widgets Dune renders right after the
+# Network definitions (latest_requests/table, sentinel_overview/freshness, sentinel_overview/table,
+# sentinel_windows/table, sentinel_participation_daily/heatmap). If this page scrolls cleanly and
+# crash-repro does not, the failing visualization is among them; each is also checked on its own
+# query page (links in the preview comment). Removed once the crash is fixed and verified.
+name: Safenet (crash isolation)
+slug: safenet-crash-isolation
+private: true
+preview_only: true
 tags: [safenet, safe]
 
 widgets:
@@ -62,22 +65,12 @@ widgets:
   - text_file: text/definitions.md
     position: { row: 66, col: 0, size_x: 6, size_y: 8 }
 
-  - visualization: latest_requests/table
-    position: { row: 74, col: 0, size_x: 6, size_y: 10 }
 
   # ---- Sentinels ----
   - text_file: text/sentinels.md
     position: { row: 84, col: 0, size_x: 4, size_y: 4 }
-  - visualization: sentinel_overview/freshness
-    position: { row: 84, col: 4, size_x: 2, size_y: 4 }
-  - visualization: sentinel_overview/table
-    position: { row: 88, col: 0, size_x: 6, size_y: 8 }
-  - visualization: sentinel_windows/table
-    position: { row: 96, col: 0, size_x: 6, size_y: 6 }
 
   # Participation history (last 30 days)
-  - visualization: sentinel_participation_daily/heatmap
-    position: { row: 102, col: 0, size_x: 6, size_y: 7 }
 
   # Verdicts and coverage
   - visualization: sentinel_verdicts/bars
