@@ -27,6 +27,7 @@ const all = (cfg: Config, action: string) =>
 const overview = (cfg: Config) => cfg.dashboards.find((d) => d.key === "overview")!;
 const textCount = (cfg: Config) => overview(cfg).widgets.filter((w) => w.kind === "text").length;
 const SECTIONS = ["network-revenue", "sentinels", "staking", "validators"];
+const sectionSlug = (key: string) => (key === "staking" ? "safenet-staking-withdrawals" : `safenet-${key}`);
 
 const daily = (cfg: Config) => cfg.queries.find((q) => q.key === "transaction_checks_daily")!;
 const DAILY_CHART = "transaction_checks_daily/daily_chart";
@@ -49,7 +50,7 @@ describe("deploy", () => {
     const dash = fake.dashboards.get(r.state.dashboards.overview.id)!;
     assert.equal(dash.slug, "safenet");
     assert.equal(r.state.dashboards.overview.url, "https://dune.com/safe/safenet");
-    for (const key of SECTIONS) assert.equal(r.state.dashboards[key].url, `https://dune.com/safe/safenet-${key}`);
+    for (const key of SECTIONS) assert.equal(r.state.dashboards[key].url, `https://dune.com/safe/${sectionSlug(key)}`);
     const shown = [...fake.dashboards.values()]
       .filter((d) => d.slug !== "safenet-beta")
       .flatMap((d) => d.visualization_widgets.map((w) => w.visualization_id));
@@ -106,7 +107,7 @@ describe("deploy", () => {
     const vizId = first.state.visualizations[DAILY_CHART].id;
     const viz = fake.visualizations.get(vizId)!;
     assert.equal(viz.options.globalSeriesType, "line");
-    assert.equal(actions(r)["dashboard:safenet-staking"], "noop");
+    assert.equal(actions(r)["dashboard:safenet-staking-withdrawals"], "noop");
     const dash = fake.dashboards.get(first.state.dashboards.overview.id)!;
     assert.ok(dash.text_widgets.some((w) => w.text === "# New intro"));
     assert.equal(dash.visualization_widgets.find((w) => w.visualization_id === vizId)!.position.size_x, 3);
@@ -229,15 +230,27 @@ describe("deploy", () => {
 
 describe("several dashboards", () => {
   let fake: FakeDune;
+  let staking: number;
   beforeEach(() => {
     fake = new FakeDune();
     fake.seedDashboard({ name: "Safenet Beta", slug: "safenet-beta", vizIds: [] });
+    // Separately maintained, not managed here (docs/metrics/staking.md); it must stay untouched.
+    staking = fake.seedDashboard({ name: "Safenet Staking", slug: "safenet-staking", vizIds: [] }).dashboard_id;
+  });
+
+  test("leaves the separately maintained safe/safenet-staking alone", async () => {
+    const before = JSON.stringify(fake.dashboards.get(staking));
+    const r = await deploy(fake, config, emptyState());
+    assert.equal(r.plan.conflicts.length, 0);
+    assert.ok(!Object.values(r.state.dashboards).some((t) => t.id === staking));
+    assert.ok(!fake.writes().some((w) => w.includes(`/dashboards/${staking}`)));
+    assert.equal(JSON.stringify(fake.dashboards.get(staking)), before);
   });
 
   test("links render to each dashboard's production URL and resolve to it", async () => {
     const r = await deploy(fake, config, emptyState());
     const text = fake.dashboards.get(r.state.dashboards.overview.id)!.text_widgets.map((w) => w.text).join("\n");
-    assert.match(text, /\*\*\[View staking & withdrawals →\]\(https:\/\/dune\.com\/safe\/safenet-staking\)\*\*/);
+    assert.match(text, /\*\*\[View staking & withdrawals →\]\(https:\/\/dune\.com\/safe\/safenet-staking-withdrawals\)\*\*/);
     assert.doesNotMatch(text, /\{\{dashboard:/);
     const staking = fake.dashboards.get(r.state.dashboards.staking.id)!.text_widgets.map((w) => w.text).join("\n");
     assert.match(staking, /\[← Safenet overview\]\(https:\/\/dune\.com\/safe\/safenet\)/);
@@ -256,18 +269,18 @@ describe("several dashboards", () => {
       if (body.name === "Safenet — Staking") fake.dashboards.get(created.dashboard_id)!.slug = "safenet-staking-1";
       return created;
     };
-    client.updateDashboard = async (id, body) => update(id, body.slug === "safenet-staking" ? { ...body, slug: undefined } : body);
+    client.updateDashboard = async (id, body) => update(id, body.slug === "safenet-staking-withdrawals" ? { ...body, slug: undefined } : body);
     await assert.rejects(
       runDeploy(config, emptyState(), client, { log: quiet }),
-      /https:\/\/dune\.com\/safe\/safenet-staking does not exist, not dashboard \d+; no links to it were written/,
+      /https:\/\/dune\.com\/safe\/safenet-staking-withdrawals does not exist, not dashboard \d+; no links to it were written/,
     );
     for (const d of fake.dashboards.values()) if (d.slug !== "safenet-beta") assert.deepEqual(d.text_widgets, [], d.slug);
   });
 
   test("an untracked dashboard at a section's slug is a conflict, not taken over", async () => {
-    const other = fake.seedDashboard({ name: "Someone's staking", slug: "safenet-staking", vizIds: [] });
+    const other = fake.seedDashboard({ name: "Someone's staking", slug: "safenet-staking-withdrawals", vizIds: [] });
     const r = await deploy(fake, config, emptyState());
-    assert.equal(actions(r)["dashboard:safenet-staking"], "conflict");
+    assert.equal(actions(r)["dashboard:safenet-staking-withdrawals"], "conflict");
     assert.deepEqual(fake.writes(), []);
     assert.equal(fake.dashboards.get(other.dashboard_id)!.name, "Someone's staking");
   });
@@ -281,7 +294,7 @@ describe("several dashboards", () => {
     assert.deepEqual(Object.keys(legacy.dashboards), ["overview"]);
     const r = await deploy(fake, config, legacy);
     assert.equal(actions(r)["dashboard:safenet"], "noop"); // same content, so not rewritten
-    for (const s of SECTIONS) assert.equal(actions(r)[`dashboard:safenet-${s}`], "create");
+    for (const s of SECTIONS) assert.equal(actions(r)[`dashboard:${sectionSlug(s)}`], "create");
     assert.equal(r.state.dashboards.overview.id, old.id);
   });
 

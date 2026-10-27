@@ -37,7 +37,7 @@ test("the repository configuration is valid", async () => {
       ["overview", "safenet"],
       ["network-revenue", "safenet-network-revenue"],
       ["sentinels", "safenet-sentinels"],
-      ["staking", "safenet-staking"],
+      ["staking", "safenet-staking-withdrawals"],
       ["validators", "safenet-validators"],
     ],
   );
@@ -83,10 +83,10 @@ test("rejects a section dashboard without a link back to the overview", async ()
 test("rejects links to unknown dashboards and hard-coded links to managed dashboards", async () => {
   const p = await problems(async (root) => {
     await replaceIn(root, "dashboards/overview.yaml", "{{dashboard:validators}})\n", "{{dashboard:validator}})\n")();
-    await replaceIn(root, "text/overview_footer.md", "Definitions", "[Staking](https://dune.com/safe/safenet-staking). Definitions")();
+    await replaceIn(root, "text/overview_footer.md", "Definitions", "[Staking](https://dune.com/safe/safenet-staking-withdrawals). Definitions")();
   });
   assert.ok(p.some((x) => x.includes("{{dashboard:validator}} refers to an unknown dashboard")), p.join("\n"));
-  assert.ok(p.some((x) => x.includes("links to dune.com/safe/safenet-staking directly; use {{dashboard:staking}}")), p.join("\n"));
+  assert.ok(p.some((x) => x.includes("links to dune.com/safe/safenet-staking-withdrawals directly; use {{dashboard:staking}}")), p.join("\n"));
 });
 
 test("rejects a visualization that is on no production dashboard", async () => {
@@ -97,7 +97,7 @@ test("rejects a visualization that is on no production dashboard", async () => {
 });
 
 test("rejects duplicate slugs", async () => {
-  const p = await problems((root) => replaceIn(root, "dashboards/staking.yaml", "slug: safenet-staking", "slug: safenet-validators")());
+  const p = await problems((root) => replaceIn(root, "dashboards/staking.yaml", "slug: safenet-staking-withdrawals", "slug: safenet-validators")());
   assert.ok(p.some((x) => x.includes("slug safenet-validators is used twice")), p.join("\n"));
 });
 

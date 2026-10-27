@@ -6,7 +6,7 @@ Safenet production analytics on Dune, managed from GitHub. The overview is [dune
 | --- | --- | --- |
 | Overview | [safe/safenet](https://dune.com/safe/safenet) | data freshness, headline counters (requests, completed results, attestations, Safes checked, gross fees, active stake), activity, results, fees and active stake charts |
 | Network & revenue | [safe/safenet-network-revenue](https://dune.com/safe/safenet-network-revenue) | all transaction-check and fee panels, latest requests, definitions |
-| Staking | [safe/safenet-staking](https://dune.com/safe/safenet-staking) | stake, flows, withdrawals, stake by validator, definitions |
+| Staking | [safe/safenet-staking-withdrawals](https://dune.com/safe/safenet-staking-withdrawals) | stake, flows, withdrawals, stake by validator, definitions |
 | Validators | [safe/safenet-validators](https://dune.com/safe/safenet-validators) | attestation set, participation, stake history, rewards, withdrawal exposure, definitions |
 | Sentinels | [safe/safenet-sentinels](https://dune.com/safe/safenet-sentinels) | participation, verdicts, coverage, disputes, earnings, bonds, definitions |
 

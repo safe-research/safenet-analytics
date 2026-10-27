@@ -1,9 +1,10 @@
-# Safenet — Staking: https://dune.com/safe/safenet-staking
+# Safenet — Staking: https://dune.com/safe/safenet-staking-withdrawals
+# (safe/safenet-staking is a separately maintained dashboard, see docs/metrics/staking.md.)
 # Active stake, flows, withdrawals and stake by validator. Linked from the overview (overview.yaml);
 # the navigation bar at the top and bottom links back to it and to the other sections.
 # Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
 name: Safenet — Staking
-slug: safenet-staking
+slug: safenet-staking-withdrawals
 private: false
 tags: [safenet, safe]
 
