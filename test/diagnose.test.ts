@@ -64,11 +64,40 @@ describe("diagnose", () => {
     const messages = w.findings.map((f) => f.message);
     assert.ok(messages.includes("options in Dune differ from GitHub"));
     assert.ok(messages.includes("latest execution is QUERY_STATE_FAILED"));
-    assert.ok(messages.includes("pivot options.rows is missing or not a list"));
+    assert.ok(messages.includes("pivot options.rows must be a non-empty list of { column_name }"));
     assert.ok(messages.includes("empty result (0 rows)"));
     assert.ok(hasErrors(d.widgets));
     assert.equal(fake.writes().length, writes);
     assert.match(formatDiagnosis(d), /\| sentinel_participation_daily\/heatmap \(\d+\) \| pivot \| failed, 0 rows \| \*\*error\*\*/);
+  });
+
+  test("reports a pivot stored in the PivotTable.js format that crashed Dune's renderer", async () => {
+    fake.visualizations.get(state.visualizations[HEATMAP].id)!.options = {
+      rendererName: "Table Heatmap",
+      aggregatorName: "Average",
+      rows: ["sentinel"],
+      cols: ["day"],
+      vals: ["participation_pct"],
+      controls: { enabled: false },
+    };
+    fake.results.set(state.queries.sentinel_participation_daily.id, {
+      columns: ["day", "sentinel", "participation_pct"],
+      rows: [{ day: "2026-10-20", sentinel: "A", participation_pct: 100 }],
+    });
+    const { w } = await widget("sentinels", HEATMAP);
+    const errors = w.findings.filter((f) => f.level === "error").map((f) => f.message);
+    assert.ok(errors.some((m) => m.startsWith("pivot options cols, vals, rendererName, aggregatorName, controls are PivotTable.js settings")), errors.join("\n"));
+    assert.ok(errors.includes("pivot options.columns must be a non-empty list of { column_name }"));
+    assert.ok(errors.includes("pivot options.values must be a non-empty list of { column_name }"));
+  });
+
+  test("a pivot in Dune's format with matching columns has no findings", async () => {
+    fake.results.set(state.queries.sentinel_participation_daily.id, {
+      columns: ["day", "sentinel", "participation_pct"],
+      rows: [{ day: "2026-10-20", sentinel: "A", participation_pct: 100 }],
+    });
+    const { w } = await widget("sentinels", HEATMAP);
+    assert.deepEqual(w.findings, []);
   });
 
   test("lists stored options of pivot widgets and of visualizations made in the Dune UI", async () => {

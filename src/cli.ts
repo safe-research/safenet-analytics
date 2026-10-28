@@ -236,7 +236,8 @@ async function runPreview(config: Config) {
   const ctx = await previewContext();
   const previewConfig = toPreview(config, ctx.settings, { sha: values.sha ?? "unknown" });
   try {
-    const baseline = values.baseline ? await loadConfig(values.baseline) : undefined;
+    // Only main's queries are compared; its visualizations may predate current rules.
+    const baseline = values.baseline ? await loadConfig(values.baseline, { strict: false }) : undefined;
     const runs = await runPreviewQueries(previewConfig, ctx.preview, client(), ctx.settings, { force: values.force, baseline });
     await summary(
       `### Preview executions\n\n${runs.map((r) => `- ${r.key} (${r.query_id}): ${r.action}${r.credits === undefined ? "" : `, ${r.credits} credits`}`).join("\n")}\n`,

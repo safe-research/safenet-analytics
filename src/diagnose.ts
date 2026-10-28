@@ -7,7 +7,7 @@
 // It starts from the dashboard's widgets in Dune, not from dune/, so it also reports widgets that
 // were added or changed in the Dune UI.
 
-import { referencedColumns, type VisualizationSpec } from "./config.ts";
+import { pivotProblems, referencedColumns, type VisualizationSpec } from "./config.ts";
 import { contains, remoteVisualization } from "./deploy.ts";
 import type { DuneClient, Position } from "./dune.ts";
 
@@ -31,24 +31,10 @@ const RESULT_ROWS = 1000;
 // Columns a visualization needs from the result, by kind, as Dune stores its options.
 function requiredColumns(type: string, options: Record<string, unknown>): { columns: string[]; findings: Finding[] } {
   const findings: Finding[] = [];
-  const list = (field: string) => {
-    const v = options[field];
-    if (v === undefined) return [];
-    if (!Array.isArray(v)) {
-      findings.push({ level: "error", message: `options.${field} is not a list` });
-      return [];
-    }
-    return v.map(String);
-  };
-  if (type === "pivot") {
-    for (const f of ["rows", "cols", "vals"])
-      if (!Array.isArray(options[f])) findings.push({ level: "error", message: `pivot options.${f} is missing or not a list` });
-    return { columns: [...list("rows"), ...list("cols"), ...list("vals")], findings };
-  }
+  if (type === "pivot") for (const message of pivotProblems(options)) findings.push({ level: "error", message });
   if (type === "table" && options.columns !== undefined && !Array.isArray(options.columns))
     findings.push({ level: "error", message: "table options.columns is not a list" });
-  const spec = { options } as VisualizationSpec;
-  return { columns: referencedColumns(spec), findings };
+  return { columns: referencedColumns({ type, options } as VisualizationSpec), findings };
 }
 
 export async function diagnoseDashboard(
@@ -161,7 +147,9 @@ export async function storedOptions(
   for (const w of widgets) if (w.type === "pivot") await add(w.visualization_id);
   for (const queryId of [...new Set(widgets.flatMap((w) => (w.query_id === undefined ? [] : [w.query_id])))])
     for (const v of await client.listVisualizations(queryId)) if (!managedIds.has(v.id)) await add(v.id);
-  return out.sort((a, b) => a.query_id - b.query_id || a.visualization_id - b.visualization_id);
+  // Dune gives every query a default results table without options; it tells nothing.
+  return out
+    .filter((v) => v.managed || v.type !== "table" || Object.keys(v.options as object).length).sort((a, b) => a.query_id - b.query_id || a.visualization_id - b.visualization_id);
 }
 
 export function formatStoredOptions(list: StoredOptions[]): string {

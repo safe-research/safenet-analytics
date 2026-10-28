@@ -53,4 +53,14 @@ The Dune API takes the same options JSON as the Dune UI, but Dune does not publi
 - **Counter:** `type: counter`, options `{ counterColName: requests, rowNumber: 1, stringDecimal: 0, counterLabel: Requests }`.
 - **Table:** `type: table`, options `{ itemsPerPage: 25, columns: [{ name: day, title: Day, type: normal, alignContent: left, isHidden: false }] }`.
 
-To copy settings from a chart built in the Dune UI, run `npm run dune -- pull` for a managed query and copy the options from `dune/.remote/<key>/query.yaml`.
+- **Pivot table:** `type: pivot`, options in Dune's own format:
+
+  ```yaml
+  rows: [{ column_name: sentinel }]
+  columns: [{ column_name: day }]
+  values: [{ column_name: participation_pct, agg_type: AVG, numberFormat: "0.0" }]
+  ```
+
+  Dune's CLI documents no pivot format. This is what Dune's pivot editor stores, read back from a pivot made in the UI. Do **not** use the PivotTable.js settings (`cols`, `vals`, `rendererName`, `aggregatorName`, `controls`). Dune ignores them and its renderer then fails on the missing `columns` and `values`. Every page showing the widget crashed with `Cannot read properties of undefined (reading 'map')`, as dune.com/safe/safenet did in October 2026. Validation rejects that format. Dune's pivot has no heatmap colouring.
+
+To copy settings from a chart built in the Dune UI, run `npm run dune -- pull` for a managed query and copy the options from `dune/.remote/<key>/query.yaml`. For a visualization that is not managed yet, `npm run dune -- diagnose` (or the preview comment) lists the stored options of every visualization on the dashboards' queries that GitHub does not manage.

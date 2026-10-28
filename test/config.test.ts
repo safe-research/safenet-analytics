@@ -114,6 +114,48 @@ test("rejects duplicate slugs", async () => {
   assert.ok(p.some((x) => x.includes("slug safenet-validators is used twice")), p.join("\n"));
 });
 
+test("pivots use Dune's format: rows, columns and values of { column_name }", async () => {
+  const config = await loadConfig();
+  const pivots = config.queries.flatMap((q) => q.visualizations).filter((v) => v.type === "pivot");
+  assert.deepEqual(pivots.map((v) => v.key).sort(), ["sentinel_participation_daily/heatmap", "validator_participation_daily/heatmap"]);
+  for (const v of pivots) assert.deepEqual(Object.keys(v.options).sort(), ["columns", "rows", "values"], v.key);
+});
+
+test("a preview baseline with the old pivot format still loads its queries when not strict", async () => {
+  const { cp, mkdtemp, readFile, writeFile } = await import("node:fs/promises");
+  const root = await mkdtemp(join(tmpdir(), "dune-baseline-"));
+  await cp(DEFAULT_ROOT, root, { recursive: true });
+  const path = join(root, "queries/sentinel_participation_daily/query.yaml");
+  await writeFile(path, (await readFile(path, "utf8")).replace(/    options:\n      rows: .*\n      columns: .*\n      values: .*\n/, "    options:\n      rows: [sentinel]\n      cols: [day]\n      vals: [participation_pct]\n"));
+  await assert.rejects(loadConfig(root), /PivotTable\.js settings/);
+  const baseline = await loadConfig(root, { strict: false });
+  assert.equal(baseline.queries.length, (await loadConfig()).queries.length);
+});
+
+test("rejects the PivotTable.js pivot format that crashed the dashboard", async () => {
+  const p = await problems((root) =>
+    replaceIn(
+      root,
+      "queries/sentinel_participation_daily/query.yaml",
+      /    options:\n      rows: .*\n      columns: .*\n      values: .*\n/,
+      "    options:\n      rendererName: Table Heatmap\n      aggregatorName: Average\n      rows: [sentinel]\n      cols: [day]\n      vals: [participation_pct]\n",
+    )(),
+  );
+  const pivot = p.filter((x) => x.includes("sentinel_participation_daily/heatmap"));
+  assert.ok(pivot.some((x) => x.includes("cols, vals, rendererName, aggregatorName are PivotTable.js settings")), p.join("\n"));
+  assert.ok(pivot.some((x) => x.includes("options.columns must be a non-empty list")), p.join("\n"));
+  assert.ok(pivot.some((x) => x.includes("options.rows[0] needs a column_name")), p.join("\n"));
+});
+
+test("rejects pivot columns that the SQL does not produce, and values without an aggregation", async () => {
+  const p = await problems(async (root) => {
+    await replaceIn(root, "queries/validator_participation_daily/query.yaml", "column_name: validator }", "column_name: validatr }")();
+    await replaceIn(root, "queries/validator_participation_daily/query.yaml", "agg_type: AVG, ", "")();
+  });
+  assert.ok(p.some((x) => x.includes('column "validatr"')), p.join("\n"));
+  assert.ok(p.some((x) => x.includes("options.values[0] needs an agg_type")), p.join("\n"));
+});
+
 test("rejects chart columns that the SQL does not produce", async () => {
   const p = await problems((root) =>
     replaceIn(root, "queries/transaction_checks_daily/query.yaml", "completed_checks: y", "completed_chekcs: y")(),

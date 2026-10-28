@@ -101,7 +101,10 @@ async function readYaml(path: string): Promise<Raw> {
 const str = (v: unknown, fallback = "") => (typeof v === "string" ? v : fallback);
 const strList = (v: unknown) => (Array.isArray(v) ? v.map(String) : []);
 
-export async function loadConfig(root = DEFAULT_ROOT): Promise<Config> {
+// `strict: false` loads a configuration despite validation problems, for reading another
+// commit's queries only: the preview baseline (main's dune/), whose visualizations may break rules
+// added since. Deploys and `validate` always load strictly.
+export async function loadConfig(root = DEFAULT_ROOT, options: { strict?: boolean } = {}): Promise<Config> {
   const problems: string[] = [];
   const projectRaw = await readYaml(join(root, "project.yaml"));
   const project: Project = {
@@ -201,7 +204,7 @@ export async function loadConfig(root = DEFAULT_ROOT): Promise<Config> {
   for (const n of new Set(names.filter((n, i) => names.indexOf(n) !== i))) problems.push(`duplicate query name "${n}"`);
 
   const ordered = orderByDependencies(queries, problems);
-  if (problems.length) throw new ConfigError(problems);
+  if (problems.length && options.strict !== false) throw new ConfigError(problems);
   return { project, queries: ordered, dashboards };
 }
 
@@ -296,9 +299,39 @@ function validateQuery(q: QuerySpec, where: string): string[] {
     if (vizNames.has(v.name)) problems.push(`${vw}: duplicate visualization name "${v.name}"`);
     vizNames.add(v.name);
     if (!VIZ_TYPES.includes(v.type)) problems.push(`${vw}: type must be one of ${VIZ_TYPES.join(", ")}`);
+    if (v.type === "pivot") for (const p of pivotProblems(v.options)) problems.push(`${vw}: ${p}`);
     for (const col of referencedColumns(v))
       if (!new RegExp(`\\b${col.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(q.sql))
         problems.push(`${vw}: column "${col}" does not appear in query.sql`);
+  }
+  return problems;
+}
+
+// Dune's pivot format, as its own editor stores it: rows, columns and values are lists of
+// { column_name }, and values also have an aggregation (agg_type). Options in the format of
+// PivotTable.js (cols, vals, rendererName, aggregatorName) are not read by Dune: its renderer then
+// maps over options.columns and options.values, which are missing, and the page crashes with
+// "Cannot read properties of undefined (reading 'map')" (dune.com/safe/safenet, October 2026).
+export const PIVOT_LISTS = ["rows", "columns", "values"] as const;
+const PIVOTTABLE_JS_KEYS = ["cols", "vals", "rendererName", "aggregatorName", "controls"];
+
+export function pivotProblems(options: Record<string, unknown>): string[] {
+  const problems: string[] = [];
+  const legacy = PIVOTTABLE_JS_KEYS.filter((k) => k in options);
+  if (legacy.length)
+    problems.push(`pivot options ${legacy.join(", ")} are PivotTable.js settings that Dune does not read; use rows, columns and values`);
+  for (const list of PIVOT_LISTS) {
+    const v = options[list];
+    if (!Array.isArray(v) || !v.length) {
+      problems.push(`pivot options.${list} must be a non-empty list of { column_name }`);
+      continue;
+    }
+    for (const [i, e] of v.entries()) {
+      if (!e || typeof e !== "object" || typeof (e as { column_name?: unknown }).column_name !== "string")
+        problems.push(`pivot options.${list}[${i}] needs a column_name`);
+      else if (list === "values" && typeof (e as { agg_type?: unknown }).agg_type !== "string")
+        problems.push(`pivot options.values[${i}] needs an agg_type (e.g. AVG)`);
+    }
   }
   return problems;
 }
@@ -308,9 +341,16 @@ export function referencedColumns(v: VisualizationSpec): string[] {
   const o = v.options as {
     columnMapping?: Record<string, string>;
     counterColName?: string;
-    columns?: { name?: string }[];
+    columns?: { name?: string; column_name?: string }[];
     seriesOptions?: Record<string, unknown>;
+    rows?: unknown;
+    values?: unknown;
   };
+  if (v.type === "pivot")
+    return PIVOT_LISTS.flatMap((list) => {
+      const entries = (o as Record<string, unknown>)[list];
+      return Array.isArray(entries) ? entries.flatMap((e) => (typeof e?.column_name === "string" ? [e.column_name as string] : [])) : [];
+    });
   // With a `series` column (one series per value), seriesOptions are keyed by values, not columns.
   const grouped = Object.values(o.columnMapping ?? {}).includes("series");
   return [
