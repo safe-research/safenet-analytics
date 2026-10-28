@@ -1,0 +1,60 @@
+name: Preview auto-cleanup
+
+# When a pull request from this repository is closed, merged or not, removes its preview track
+# (docs/preview.md#cleanup): it starts Preview cleanup on main for the track, unless another open
+# pull request uses the same track (shared with `track:` in dune/preview.yaml) or the track has no
+# preview state. The cleanup itself checks every resource and stops without changes on any doubt.
+# This job runs no code of the pull request and has no Dune key.
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: write # starts the Preview cleanup workflow
+
+jobs:
+  auto-cleanup:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Start the cleanup of the pull request's track
+        run: |
+          # Track of a pull request: track from its dune/preview.yaml at its head, or pr-<number>.
+          track_of() {
+            local file
+            file=$(mktemp)
+            gh api "repos/$GITHUB_REPOSITORY/contents/dune/preview.yaml?ref=$2" --jq .content 2>/dev/null | base64 -d > "$file" || true
+            [ -s "$file" ] || echo "{}" > "$file"
+            PR="$1" node src/cli.ts preview-track --file "$file"
+          }
+          TRACK=$(track_of "$PR" "$HEAD_SHA")
+          echo "Pull request #$PR used preview track $TRACK."
+          while read -r number sha repo; do
+            if [ "$repo" != "$GITHUB_REPOSITORY" ] || [ "$number" = "$PR" ]; then continue; fi
+            if [ "$(track_of "$number" "$sha")" = "$TRACK" ]; then
+              echo "::notice::Track $TRACK is still used by open pull request #$number; not cleaned up."
+              echo "Track \`$TRACK\` kept: still used by open pull request #$number." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          done < <(gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" --paginate --jq '.[] | "\(.number) \(.head.sha) \(.head.repo.full_name)"')
+          if ! gh api "repos/$GITHUB_REPOSITORY/contents/previews/$TRACK.json?ref=dune-preview-state" --silent 2>/dev/null; then
+            echo "::notice::Track $TRACK has no preview state on dune-preview-state; nothing to clean up."
+            exit 0
+          fi
+          gh workflow run preview-cleanup.yml --ref main -f track="$TRACK" -f dry_run=false
+          echo "Started *Preview cleanup* for track \`$TRACK\` (pull request #$PR closed)." >> "$GITHUB_STEP_SUMMARY"

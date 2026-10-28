@@ -1,7 +1,8 @@
 name: Preview cleanup
 
 # Removes a preview track's Dune resources once its work is merged to main and verified in
-# production (docs/preview.md#cleanup). Manual only; a dry run is the default. Production and
+# production (docs/preview.md#cleanup). Started by Preview auto-cleanup when a pull request is
+# closed, or by hand (a dry run is the default). Production and
 # protected (Beta) resources are never candidates, and the cleanup stops without changing
 # anything if any other query still reads a preview query.
 
@@ -17,8 +18,11 @@ on:
         type: boolean
         default: true
 
+# Its own group: GitHub keeps only the newest pending run of a group, so sharing dune-preview with
+# the Preview workflow would let an automatic cleanup cancel a pending preview. A track is only
+# cleaned up when no open pull request uses it, so the two never work on the same resources.
 concurrency:
-  group: dune-preview
+  group: dune-preview-cleanup
   cancel-in-progress: false
 
 permissions:
@@ -66,4 +70,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Clean up preview track $TRACK"
-          git push origin dune-preview-state
+          # Other tracks may have pushed meanwhile (different files): rebase and retry.
+          for attempt in 1 2 3 4 5; do
+            git push origin dune-preview-state && exit 0
+            git pull --rebase --quiet origin dune-preview-state || exit 1
+          done
+          exit 1

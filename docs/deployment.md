@@ -7,7 +7,8 @@ GitHub is the source of truth for the queries, charts, dashboard text and layout
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
 | **Preview** | pull requests from branches of this repository; manual | Deploys the pull request to its private preview dashboards and comments with the URLs, link check, widget diagnosis, images, reconciliation and the production dry run; see [preview.md](preview.md) |
-| **Preview cleanup** | manual | Removes a preview track's resources after its work is merged; see [preview.md](preview.md#cleanup) |
+| **Preview auto-cleanup** | pull request closed | Starts *Preview cleanup* for the pull request's track, unless another open pull request uses it; see [preview.md](preview.md#cleanup) |
+| **Preview cleanup** | started by *Preview auto-cleanup*; manual | Removes a preview track's resources; see [preview.md](preview.md#cleanup) |
 | **Validate** | pull requests | Typecheck, tests, offline validation. With `DUNE_API_KEY`, also a dry-run plan against Dune, which fails on conflicting Dune edits. It also runs each changed query's SQL on Dune as an unsaved execution, which costs credits, and checks that the columns the charts use exist in the result. |
 | **Deploy** | push to `main` touching `dune/`, `src/` or dependencies; manual (optional *dry run*, *force*) | Deploys the current `main` (so queued runs see the previous run's `state.json`), then commits `dune/state.json` |
 | **Refresh** | daily 05:17 UTC; after a successful deploy; manual | Executes the queries, then checks the first metric against on-chain events |
@@ -76,7 +77,7 @@ Resources deleted or archived in Dune also show up as conflicts. With *force*, t
 1. The pull request's preview comment shows the **production plan**: the dry run of exactly what the merge will do. For example, `update` keeps an ID, `create` adds a resource, and `archive`/`delete` remove one. Check that no unexpected production resource is touched.
 2. Merge. *Deploy* applies the plan to the stable production IDs, and the dashboard URL stays the same. A conflicting Dune edit made since the last deploy stops it; see below.
 3. *Refresh* executes the production queries and runs the on-chain verification. Its summary is the production evidence.
-4. Clean up the preview track when its work is done ([preview.md](preview.md#cleanup)).
+4. The preview track is cleaned up automatically when the pull request is closed ([preview.md](preview.md#cleanup)).
 
 To roll back, revert the merge ([restoring.md](restoring.md)).
 
