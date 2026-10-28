@@ -7,7 +7,7 @@ import { stringify } from "yaml";
 import { applyCleanup, formatCleanup, planCleanup } from "./cleanup.ts";
 import { DEFAULT_ROOT, inlineSql, loadConfig, referencedColumns, type Config } from "./config.ts";
 import { checkIdentity, desiredQuery, formatLinkChecks, formatPlan, runDeploy, snapshotProtected } from "./deploy.ts";
-import { diagnoseDashboard, formatDiagnosis, hasErrors } from "./diagnose.ts";
+import { diagnoseDashboard, formatDiagnosis, formatStoredOptions, hasErrors, storedOptions, type WidgetDiagnosis } from "./diagnose.ts";
 import { DuneClient } from "./dune.ts";
 import { fingerprint } from "./hash.ts";
 import { assertDisjoint, loadPreviewSettings, productionGuard, toPreview, type PreviewSettings } from "./preview.ts";
@@ -287,12 +287,16 @@ async function diagnose(config: Config, production: State) {
     }),
   );
   const sections = [];
+  const widgets: WidgetDiagnosis[] = [];
   let errors = false;
   for (const tracked of Object.values(state.dashboards)) {
     const d = await diagnoseDashboard(dune, tracked.id, managed);
     errors ||= hasErrors(d.widgets);
+    widgets.push(...d.widgets);
     sections.push(formatDiagnosis(d));
   }
+  const stored = formatStoredOptions(await storedOptions(dune, widgets, new Set(managed.keys())));
+  if (stored) sections.push(stored);
   if (dune.writes.length) throw new Error(`diagnose made writes: ${dune.writes.join(", ")}`);
   const text = `### Widget diagnosis (${values.preview ? "preview" : "production"}, read-only)\n\n${sections.join("\n\n")}\n`;
   console.log(text);

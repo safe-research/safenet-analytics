@@ -139,3 +139,42 @@ export function formatDiagnosis(d: { slug: string; url?: string; widgets: Widget
   }
   return lines.join("\n");
 }
+
+// Options as Dune stores them, for comparing with a visualization made in Dune's own editor: every
+// pivot widget, and every visualization on the diagnosed queries that GitHub does not manage (for
+// example one created in the Dune UI as a reference).
+export type StoredOptions = { visualization_id: number; query_id: number; name: string; type: string; managed: boolean; options: unknown };
+
+export async function storedOptions(
+  client: DuneClient,
+  widgets: WidgetDiagnosis[],
+  managedIds: ReadonlySet<number>,
+): Promise<StoredOptions[]> {
+  const out: StoredOptions[] = [];
+  const seen = new Set<number>();
+  const add = async (id: number) => {
+    if (seen.has(id)) return;
+    seen.add(id);
+    const v = await client.getVisualization(id);
+    if (v) out.push({ visualization_id: v.id, query_id: v.query_id, name: v.name, type: v.type, managed: managedIds.has(v.id), options: v.options ?? {} });
+  };
+  for (const w of widgets) if (w.type === "pivot") await add(w.visualization_id);
+  for (const queryId of [...new Set(widgets.flatMap((w) => (w.query_id === undefined ? [] : [w.query_id])))])
+    for (const v of await client.listVisualizations(queryId)) if (!managedIds.has(v.id)) await add(v.id);
+  return out.sort((a, b) => a.query_id - b.query_id || a.visualization_id - b.visualization_id);
+}
+
+export function formatStoredOptions(list: StoredOptions[]): string {
+  if (!list.length) return "";
+  return [
+    "#### Stored options: pivot widgets and visualizations not managed in GitHub",
+    "",
+    ...list.flatMap((v) => [
+      `- ${v.managed ? "managed" : "**not managed**"} ${v.type} "${v.name}" (${v.visualization_id}) on [query ${v.query_id}](https://dune.com/queries/${v.query_id}/${v.visualization_id})`,
+      "",
+      "  ```json",
+      ...JSON.stringify(v.options, null, 2).split("\n").map((l) => `  ${l}`),
+      "  ```",
+    ]),
+  ].join("\n");
+}

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import { loadConfig } from "../src/config.ts";
 import { runDeploy } from "../src/deploy.ts";
-import { diagnoseDashboard, formatDiagnosis, hasErrors } from "../src/diagnose.ts";
+import { diagnoseDashboard, formatDiagnosis, formatStoredOptions, hasErrors, storedOptions } from "../src/diagnose.ts";
 import type { State } from "../src/state.ts";
 import { emptyState } from "../src/state.ts";
 import { FakeDune } from "./fake-dune.ts";
@@ -69,5 +69,22 @@ describe("diagnose", () => {
     assert.ok(hasErrors(d.widgets));
     assert.equal(fake.writes().length, writes);
     assert.match(formatDiagnosis(d), /\| sentinel_participation_daily\/heatmap \(\d+\) \| pivot \| failed, 0 rows \| \*\*error\*\*/);
+  });
+
+  test("lists stored options of pivot widgets and of visualizations made in the Dune UI", async () => {
+    const queryId = state.queries.sentinel_participation_daily.id;
+    const ui = fake.seedVisualization({ query_id: queryId, name: "UI pivot", description: "", type: "pivot", options: { rendererName: "Table Heatmap", inclusions: {} } });
+    const { d } = await widget("sentinels", HEATMAP);
+    const writes = fake.writes().length;
+    const list = await storedOptions(fake.client(), d.widgets, new Set(managed().keys()));
+    assert.deepEqual(
+      list.map((v) => [v.visualization_id, v.managed, v.type]),
+      [
+        [state.visualizations[HEATMAP].id, true, "pivot"],
+        [ui.id, false, "pivot"],
+      ],
+    );
+    assert.equal(fake.writes().length, writes);
+    assert.match(formatStoredOptions(list), /\*\*not managed\*\* pivot "UI pivot"[\s\S]*"inclusions": \{\}/);
   });
 });
