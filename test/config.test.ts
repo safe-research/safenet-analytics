@@ -45,6 +45,19 @@ test("the repository configuration is valid", async () => {
   assert.equal(config.queries.find((q) => q.key === "safenet_events")!.refresh, "none");
 });
 
+test("reads a configuration from before dune/dashboards/ (single dashboard.yaml) as the overview", async () => {
+  // main's configuration until this change, used as the preview baseline, and older commits that
+  // docs/restoring.md checks out. crash-repro.yaml is that layout verbatim.
+  const legacy = await withConfig(async (root) => {
+    const { readFile, rm, writeFile } = await import("node:fs/promises");
+    const repro = await readFile(join(root, "dashboards", "crash-repro.yaml"), "utf8");
+    await rm(join(root, "dashboards"), { recursive: true });
+    await writeFile(join(root, "dashboard.yaml"), repro.replace("slug: safenet-crash-repro", "slug: safenet").replace("preview_only: true\n", ""));
+  });
+  assert.deepEqual(legacy.dashboards.map((d) => [d.key, d.slug, d.previewOnly]), [["overview", "safenet", false]]);
+  assert.equal(legacy.queries.length, (await loadConfig()).queries.length);
+});
+
 test("rejects overlapping widgets", async () => {
   const p = await problems((root) =>
     replaceIn(root, "dashboards/overview.yaml", "{ row: 16, col: 3, size_x: 3, size_y: 8 }", "{ row: 16, col: 2, size_x: 3, size_y: 8 }")(),

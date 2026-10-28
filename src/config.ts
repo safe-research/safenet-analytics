@@ -155,14 +155,22 @@ export async function loadConfig(root = DEFAULT_ROOT): Promise<Config> {
 
   const dashboards: DashboardSpec[] = [];
   const dashboardsDir = join(root, "dashboards");
-  const files = existsSync(dashboardsDir) ? (await readdir(dashboardsDir)).filter((f) => f.endsWith(".yaml")).sort() : [];
-  for (const file of files) {
-    const key = file.slice(0, -".yaml".length);
-    if (!/^[a-z0-9][a-z0-9-]*$/.test(key)) problems.push(`dashboards/${file}: file name must match [a-z0-9-]+.yaml`);
-    const dashRaw = await readYaml(join(dashboardsDir, file));
+  // Configurations from before dune/dashboards/ (for example main's, read as a preview baseline,
+  // or an older commit being restored) have a single dune/dashboard.yaml: the overview.
+  const files: { key: string; file: string; path: string }[] = existsSync(dashboardsDir)
+    ? (await readdir(dashboardsDir))
+        .filter((f) => f.endsWith(".yaml"))
+        .sort()
+        .map((f) => ({ key: f.slice(0, -".yaml".length), file: `dashboards/${f}`, path: join(dashboardsDir, f) }))
+    : existsSync(join(root, "dashboard.yaml"))
+      ? [{ key: OVERVIEW, file: "dashboard.yaml", path: join(root, "dashboard.yaml") }]
+      : [];
+  for (const { key, file, path: dashPath } of files) {
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(key)) problems.push(`${file}: file name must match [a-z0-9-]+.yaml`);
+    const dashRaw = await readYaml(dashPath);
     const widgets: Widget[] = [];
     for (const [i, w] of ((dashRaw.widgets ?? []) as Raw[]).entries()) {
-      const where = `dashboards/${file} widgets[${i}]`;
+      const where = `${file} widgets[${i}]`;
       const position = w.position as Position;
       if (typeof w.text_file === "string") {
         const path = join(root, w.text_file);
