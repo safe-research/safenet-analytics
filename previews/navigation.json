@@ -1,48 +1,49 @@
 {
   "dashboards": {
     "crash-isolation": {
-      "desired": "6404ef357e74a069",
+      "desired": "e2aa7b0d13a321cc",
       "id": 222623,
-      "remote": "c2c08732851e0530",
+      "remote": "e97ade922cd93cf9",
       "url": "https://dune.com/safe/safenet-crash-isolation-preview-navigation"
     },
     "crash-repro": {
-      "desired": "dbfe95676f94c0e4",
+      "desired": "6370e6497d707161",
       "id": 222624,
-      "remote": "66b469d30d0dfbaf",
+      "remote": "11429e728bd29c29",
       "url": "https://dune.com/safe/safenet-crash-repro-preview-navigation"
     },
     "network-revenue": {
-      "desired": "aebd81cb511b6703",
+      "desired": "d3120c4a162815b8",
       "id": 222625,
-      "remote": "3c4c2637dcd38ce3",
+      "remote": "f8adefeecac6cd62",
       "url": "https://dune.com/safe/safenet-network-revenue-preview-navigation"
     },
     "overview": {
-      "desired": "bfb6fe21593e9958",
+      "desired": "ade184e57b6ad220",
       "id": 222622,
-      "remote": "ecea838257065d11",
+      "remote": "6318c4d5631be49a",
       "url": "https://dune.com/safe/safenet-preview-navigation"
     },
     "sentinels": {
-      "desired": "6f245fca935815ca",
+      "desired": "9a307a81c08fb374",
       "id": 222626,
-      "remote": "18210b29af3414ba",
+      "remote": "718b84791818a5c3",
       "url": "https://dune.com/safe/safenet-sentinels-preview-navigation"
     },
     "staking": {
-      "desired": "8a75821b17e9cef7",
+      "desired": "0d37108d5014a38a",
       "id": 222627,
-      "remote": "2d73c08406c8a8c8",
+      "remote": "7f92adc8ddb4f32d",
       "url": "https://dune.com/safe/safenet-staking-preview-navigation"
     },
     "validators": {
-      "desired": "c8a25c99c7aba666",
+      "desired": "68e3e88a7cf1d6a7",
       "id": 222628,
-      "remote": "7086b9f0e37edbc6",
+      "remote": "55f569b4eee03c83",
       "url": "https://dune.com/safe/safenet-validators-preview-navigation"
     }
   },
+  "executions": {},
   "protected": {
     "safe/safenet-beta": {
       "checked_at": "2026-10-27T17:05:16.823Z",
