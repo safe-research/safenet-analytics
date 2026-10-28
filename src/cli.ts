@@ -1,16 +1,16 @@
 // Command line entry point. Run `node src/cli.ts help` for usage.
 
-import { appendFile, mkdir, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
-import { stringify } from "yaml";
+import { parse as parseYaml, stringify } from "yaml";
 import { applyCleanup, formatCleanup, planCleanup } from "./cleanup.ts";
 import { DEFAULT_ROOT, inlineSql, loadConfig, referencedColumns, type Config } from "./config.ts";
 import { checkIdentity, desiredQuery, formatLinkChecks, formatPlan, runDeploy, snapshotProtected } from "./deploy.ts";
 import { diagnoseDashboard, formatDiagnosis, formatStoredOptions, hasErrors, storedOptions, type WidgetDiagnosis } from "./diagnose.ts";
 import { DuneClient } from "./dune.ts";
 import { fingerprint } from "./hash.ts";
-import { assertDisjoint, loadPreviewSettings, productionGuard, toPreview, type PreviewSettings } from "./preview.ts";
+import { assertDisjoint, loadPreviewSettings, previewTrack, productionGuard, toPreview, type PreviewSettings } from "./preview.ts";
 import { runPreviewQueries } from "./preview-run.ts";
 import { refresh, selectQueries, succeeded } from "./refresh.ts";
 import { DECODING_CANDIDATES } from "./safenet.ts";
@@ -47,6 +47,8 @@ IDs and --production-state (default dune/state.json) for the production IDs they
                            with --baseline (main's dune/ directory), skip queries whose SQL equals it
   cleanup-preview [--track T] [--dry-run]
                            Archive or delete a track's preview resources after checking dependencies
+  preview-track [--pr N] [--file preview.yaml]
+                           Print the track of a pull request (preview.yaml track, or pr-<N>)
 `;
 
 const { positionals, values } = parseArgs({
@@ -67,6 +69,7 @@ const { positionals, values } = parseArgs({
     repository: { type: "string" },
     out: { type: "string" },
     strict: { type: "boolean", default: false },
+    file: { type: "string" },
     baseline: { type: "string" },
   },
 });
@@ -172,7 +175,9 @@ async function pull(config: Config, state: State) {
 type PreviewContext = { settings: PreviewSettings; statePath: string; preview: State; production: State };
 
 async function previewContext(): Promise<PreviewContext> {
-  const settings = await loadPreviewSettings(DEFAULT_ROOT, values.track);
+  // The pull request (--pr, or PR as set by the Preview workflow) selects its track pr-<number>
+  // unless preview.yaml sets one.
+  const settings = await loadPreviewSettings(DEFAULT_ROOT, values.track, values.pr ?? process.env.PR);
   const statePath = values.state ?? join(DEFAULT_ROOT, ".preview", `${settings.track}.json`);
   const preview = await loadState(statePath);
   const production = await loadState(values["production-state"] ?? STATE_PATH);
@@ -357,6 +362,11 @@ async function main() {
       return cleanupPreview(config);
     case "check-decoded":
       return checkDecoded();
+    case "preview-track": {
+      const raw = (parseYaml(await readFile(values.file ?? join(DEFAULT_ROOT, "preview.yaml"), "utf8")) ?? {}) as Record<string, unknown>;
+      console.log(previewTrack(raw, values.pr ?? process.env.PR));
+      return;
+    }
     case "diagnose":
       return diagnose(config, state);
     case "refresh": {

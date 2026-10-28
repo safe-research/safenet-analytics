@@ -14,20 +14,20 @@ Every pull request from a branch of this repository is deployed to **private pre
    7. Posts or updates one comment on the pull request with the private URL, the deployed commit, the images, the reconciliation, the preview resource IDs and the production plan.
 2. **Review.** Open the preview URL while signed in to Dune with access to the `safe` team. Each push to the pull request redeploys the same preview resources. The banner at the top names the pull request and commit.
 3. **Merge.** *Deploy* updates production in place (same IDs and URL), and *Refresh* executes the production queries and checks the metric against on-chain events. See [deployment.md](deployment.md).
-4. **Verify production**, then **clean up** the preview track when its work is finished, not after every pull request. See [Cleanup](#cleanup).
+4. **Cleanup** is automatic. When the pull request is closed, merged or not, *Preview auto-cleanup* removes its track, unless another open pull request still uses it. See [Cleanup](#cleanup). Verify production in Dune; the preview is not needed for that, and any pull request can recreate one.
 
 ## Tracks
 
-A track is a set of preview resources. `dune/preview.yaml` on the branch names its track:
+A track is a set of preview resources. By default each pull request has its own, `pr-<number>`. A branch can set `track: <name>` in `dune/preview.yaml` so that several pull requests of one work package share a preview. Runs outside a pull request use `default`.
 
 | Track | Overview | Other dashboards (`<key>`) | Queries |
 | --- | --- | --- | --- |
 | `default` | *Safenet — Preview*, `safe/safenet-preview` | *Safenet — Preview: `<section>`*, `safe/safenet-<key>-preview` | `[Preview] Safenet: …` |
-| `<name>`, e.g. `navigation`, `beta-replacement` | *Safenet — Preview (`<name>`)*, `safe/safenet-preview-<name>` | *Safenet — Preview (`<name>`): `<section>`*, `safe/safenet-<key>-preview-<name>` | `[Preview <name>] Safenet: …` |
+| `pr-<number>` (default for pull requests), or `<name>` such as `beta-replacement` | *Safenet — Preview (`<name>`)*, `safe/safenet-preview-<name>` | *Safenet — Preview (`<name>`): `<section>`*, `safe/safenet-<key>-preview-<name>` | `[Preview <name>] Safenet: …` |
 
 Section slugs put the key before `preview`, so no slug of one track can equal a slug of another track. Production slugs never contain `preview`; validation enforces this. Links between dashboards (`{{dashboard:<key>}}`) render to the track's own preview dashboards. Only the banner links to production.
 
-Pull requests on the same track share its resources, and the last deployment wins. Work packages that run in parallel set their own track on their branch, so they never overwrite each other. The eventual replacement of the Beta dashboard is previewed on its own track (`beta-replacement`). Beta itself, [safe/safenet-beta](https://dune.com/safe/safenet-beta), stays protected: no deploy or cleanup writes to it.
+Pull requests on a shared track share its resources, and the last deployment wins. The eventual replacement of the Beta dashboard is previewed on its own track (`beta-replacement`). Beta itself, [safe/safenet-beta](https://dune.com/safe/safenet-beta), stays protected: no deploy or cleanup writes to it.
 
 Preview queries are tagged `safenet-preview` and `safenet-preview-<track>`. Production queries carry `safenet-analytics` instead, so lookups by name and tag can never confuse the two.
 
@@ -83,7 +83,15 @@ One-time steps, done in GitHub and Dune by someone with admin access:
 
 ## Cleanup
 
-Clean up a track after its last pull request is merged and the result is verified in production. Run *Actions → Preview cleanup → Run workflow* on `main` with the track, first with *dry run* (the default), then without. Locally: `npm run dune -- cleanup-preview --track <track> [--dry-run]`, with the track's state file at `dune/.preview/<track>.json`.
+**Automatic.** When a pull request from this repository is closed, merged or not, *Preview auto-cleanup*:
+
+1. reads the pull request's track (`track` in its `dune/preview.yaml`, or `pr-<number>`);
+2. skips the cleanup if another open pull request uses the same track, or if the track has no state on `dune-preview-state`;
+3. otherwise starts *Preview cleanup* on `main` for the track, not as a dry run.
+
+It runs no code of the pull request and has no Dune key. A shared track is cleaned up when its last open pull request closes. *Preview cleanup* has its own concurrency group (`dune-preview-cleanup`), so it never cancels a pending preview run. Both workflows rebase and retry when they push to `dune-preview-state`. If the `dune-preview` environment requires reviewers, each automatic cleanup waits for approval like a preview deploy.
+
+**By hand**, for tracks from before the automation or a cleanup that stopped on a blocker: run *Actions → Preview cleanup → Run workflow* on `main` with the track, first with *dry run* (the default), then without. Locally: `npm run dune -- cleanup-preview --track <track> [--dry-run]`, with the track's state file at `dune/.preview/<track>.json`.
 
 The cleanup:
 

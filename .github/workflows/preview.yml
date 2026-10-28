@@ -94,7 +94,8 @@ jobs:
           git show origin/main:dune/state.json > dune/state.json
           # main's configuration: preview queries whose SQL equals production's are not executed.
           git worktree add --detach "$RUNNER_TEMP/main" origin/main
-          TRACK=$(node --input-type=module -e 'import("./src/preview.ts").then(async (m) => console.log((await m.loadPreviewSettings()).track))')
+          # pr-<number>, unless the pull request's dune/preview.yaml sets a track (PR is set above).
+          TRACK=$(node src/cli.ts preview-track)
           echo "track=$TRACK" >> "$GITHUB_OUTPUT"
           STATE_DIR="$RUNNER_TEMP/preview-state"
           if git fetch origin dune-preview-state 2>/dev/null; then
@@ -218,7 +219,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Preview $TRACK: #$PR at ${SHA::7}"
-          git push origin dune-preview-state
+          # Other tracks may have pushed meanwhile (different files): rebase and retry.
+          for attempt in 1 2 3 4 5; do
+            git push origin dune-preview-state && exit 0
+            git pull --rebase --quiet origin dune-preview-state || exit 1
+          done
+          exit 1
 
       - uses: actions/upload-artifact@v4
         if: always() && steps.current.outputs.skip != 'true'

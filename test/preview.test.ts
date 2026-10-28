@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import { loadConfig, type Config } from "../src/config.ts";
 import { runDeploy, sqlQueryIds } from "../src/deploy.ts";
-import { isPreviewSlug, loadPreviewSettings, previewSlug, productionGuard, toPreview, type PreviewSettings } from "../src/preview.ts";
+import { isPreviewSlug, loadPreviewSettings, previewSlug, previewTrack, productionGuard, toPreview, type PreviewSettings } from "../src/preview.ts";
 import { runPreviewQueries } from "../src/preview-run.ts";
 import { emptyState, type State } from "../src/state.ts";
 import { FakeDune } from "./fake-dune.ts";
@@ -79,6 +79,22 @@ describe("preview configuration", () => {
       assert.equal(pd.widgets.length, d.widgets.length + 1);
       for (const [i, w] of d.widgets.entries()) assert.equal(pd.widgets[i + 1].position.row, w.position.row + 2);
     }
+  });
+
+  test("each pull request has its own track unless preview.yaml names one", async () => {
+    assert.equal(previewTrack({}, 7), "pr-7");
+    assert.equal(previewTrack({}, "12"), "pr-12");
+    assert.equal(previewTrack({}), "default");
+    assert.equal(previewTrack({ track: "beta-replacement" }, 7), "beta-replacement");
+    // The repository's preview.yaml names no track.
+    assert.equal((await loadPreviewSettings(undefined, undefined, 7)).track, "pr-7");
+    assert.equal((await loadPreviewSettings(undefined, "staking", 7)).track, "staking");
+    assert.equal((await loadPreviewSettings()).track, "default");
+    const p = toPreview(config, { ...settings, track: "pr-7" }, { sha: SHA });
+    assert.equal(overviewOf(p).slug, "safenet-preview-pr-7");
+    assert.equal(p.dashboards.find((d) => d.key === "staking")!.slug, "safenet-staking-preview-pr-7");
+    assert.ok(p.dashboards.every((d) => isPreviewSlug(d.slug)));
+    assert.match(p.queries[0].name, /^\[Preview pr-7\] /);
   });
 
   test("production configuration is unchanged by building a preview", () => {

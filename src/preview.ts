@@ -44,11 +44,19 @@ export type PreviewMeta = {
   repository?: string; // owner/name, for links in the banner
 };
 
-export async function loadPreviewSettings(root = DEFAULT_ROOT, track?: string): Promise<PreviewSettings> {
+// The track of a pull request: `track` from preview.yaml if set (pull requests of one work package
+// can share it), otherwise pr-<number>, so each pull request has its own preview and the preview
+// cleanup can remove it when the pull request is closed. "default" outside pull requests.
+export function previewTrack(raw: Record<string, unknown>, pr?: number | string): string {
+  if (raw.track !== undefined && raw.track !== null && raw.track !== "") return String(raw.track);
+  return pr !== undefined && pr !== "" ? `pr-${pr}` : "default";
+}
+
+export async function loadPreviewSettings(root = DEFAULT_ROOT, track?: string, pr?: number | string): Promise<PreviewSettings> {
   const raw = (parse(await readFile(join(root, "preview.yaml"), "utf8")) ?? {}) as Record<string, unknown>;
   const exec = (raw.execution ?? {}) as Record<string, unknown>;
   const settings: PreviewSettings = {
-    track: track ?? String(raw.track ?? "default"),
+    track: track ?? previewTrack(raw, pr),
     privateQueries: raw.private_queries === true,
     execution: {
       performance: (exec.performance as Performance) ?? "medium",
