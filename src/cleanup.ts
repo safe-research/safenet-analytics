@@ -108,13 +108,17 @@ export async function planCleanup(
     const d = g ? null : await client.getDashboard(id);
     if (g) blockers.push(`dashboard ${key} (${id}) belongs to ${g.label}`);
     else if (!d) items.push({ resource: "dashboard", key: t.url, id, action: "forget", reason: "already gone in Dune" });
-    else if (d.name.startsWith(ARCHIVED) && !d.visualization_widgets?.length && !d.text_widgets?.length && d.is_private)
+    else if (
+      d.is_private &&
+      !d.visualization_widgets?.length &&
+      (isArchivedPreviewSlug(d.slug) || (d.name.startsWith(ARCHIVED) && !d.text_widgets?.length))
+    )
       items.push({ resource: "dashboard", key: d.slug, id, action: "forget", reason: "already emptied and archived by an earlier cleanup" });
     else {
       const foreign = (d.visualization_widgets ?? []).map((w) => w.visualization_id).filter((v) => !vizCandidates.has(v));
       if (!d.is_private) blockers.push(`dashboard ${d.slug} (${id}) is public; previews are private, check it is the right dashboard`);
       if (foreign.length) blockers.push(`dashboard ${d.slug} (${id}) shows visualizations that are not preview resources: ${foreign.join(", ")}`);
-      if (!isPreviewSlug(d.slug)) blockers.push(`dashboard ${id} has slug ${d.slug}, not a preview slug`);
+      if (!isPreviewSlug(d.slug) && !isArchivedPreviewSlug(d.slug)) blockers.push(`dashboard ${id} has slug ${d.slug}, not a preview slug`);
       items.push({ resource: "dashboard", key: d.slug, id, action: "remove", reason: "preview dashboard of this track" });
     }
   }
@@ -149,6 +153,10 @@ export function formatCleanup(p: CleanupPlan): string {
 }
 
 const ARCHIVED = "[Archived] ";
+
+// Dune's archive endpoint renames a dashboard's slug to archived-<slug> (seen on
+// safenet-preview-sentinels in October 2026).
+const isArchivedPreviewSlug = (slug: string) => slug.startsWith("archived-") && isPreviewSlug(slug.slice("archived-".length));
 
 // Applies a plan without blockers: dashboards first (so they no longer show the visualizations),
 // then visualizations, then queries. Returns the emptied preview state.

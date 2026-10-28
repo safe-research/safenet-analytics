@@ -93,7 +93,7 @@ The cleanup:
    - it is neither a production resource nor part of Beta.
 2. **Checks dependencies.** It reads every other query of the team. If any of them reads a candidate (`query_<id>`), it stops and changes nothing, as it does if any recorded resource fails the conditions above.
 3. **Removes, in order:**
-   1. Empties each dashboard, renames it `[Archived] …` and archives it. The archive endpoint is unverified; if the API has none, the dashboard stays private and empty, and the run lists the UI step to delete it.
+   1. Empties each dashboard, renames it `[Archived] …` and archives it. Dune's archive changes the slug to `archived-<slug>`. A rerun treats such a private dashboard without visualizations as done and leaves it alone. The archive endpoint is unverified; if the API has none, the dashboard stays private and empty, and the run lists the UI step to delete it.
    2. Deletes the preview visualizations.
    3. Archives the preview queries. Archiving can be undone in Dune.
 4. **Reports schedules.** Preview queries never get schedules from this repository. If Dune reports a schedule set in its UI, the run names it so it can be checked.
