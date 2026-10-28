@@ -41,27 +41,27 @@ widgets:
 
   # Headline counters (all time)
   - visualization: transaction_checks_daily/total_requests
-    position: { row: 10, col: 0, size_x: 2, size_y: 3 }
+    position: { row: 10, col: 0, size_x: 2, size_y: 4 }
   - visualization: network_summary/completed_results
-    position: { row: 10, col: 2, size_x: 2, size_y: 3 }
+    position: { row: 10, col: 2, size_x: 2, size_y: 4 }
   - visualization: network_summary/attestations
-    position: { row: 10, col: 4, size_x: 2, size_y: 3 }
+    position: { row: 10, col: 4, size_x: 2, size_y: 4 }
   - visualization: network_summary/safes_checked
-    position: { row: 13, col: 0, size_x: 2, size_y: 3 }
+    position: { row: 14, col: 0, size_x: 2, size_y: 4 }
   - visualization: network_summary/gross_fees
-    position: { row: 13, col: 2, size_x: 2, size_y: 3 }
+    position: { row: 14, col: 2, size_x: 2, size_y: 4 }
   - visualization: staking_overview/active_stake
-    position: { row: 13, col: 4, size_x: 2, size_y: 3 }
+    position: { row: 14, col: 4, size_x: 2, size_y: 4 }
 
   # Key charts
   - visualization: transaction_checks_daily/daily_chart
-    position: { row: 16, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 18, col: 0, size_x: 3, size_y: 8 }
   - visualization: results_daily/stacked
-    position: { row: 16, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 18, col: 3, size_x: 3, size_y: 8 }
   - visualization: fee_revenue_daily/daily
-    position: { row: 24, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 26, col: 0, size_x: 3, size_y: 8 }
   - visualization: staking_daily/active_stake
-    position: { row: 24, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 26, col: 3, size_x: 3, size_y: 8 }
 
   - text_file: text/overview_footer.md
-    position: { row: 32, col: 0, size_x: 6, size_y: 2 }
+    position: { row: 34, col: 0, size_x: 6, size_y: 2 }

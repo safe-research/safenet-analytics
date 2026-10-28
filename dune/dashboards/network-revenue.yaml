@@ -19,52 +19,52 @@ widgets:
 
   # Headline counters (all time)
   - visualization: transaction_checks_daily/total_requests
-    position: { row: 6, col: 0, size_x: 2, size_y: 3 }
+    position: { row: 6, col: 0, size_x: 2, size_y: 4 }
   - visualization: network_summary/completed_results
-    position: { row: 6, col: 2, size_x: 2, size_y: 3 }
+    position: { row: 6, col: 2, size_x: 2, size_y: 4 }
   - visualization: network_summary/attestations
-    position: { row: 6, col: 4, size_x: 2, size_y: 3 }
+    position: { row: 6, col: 4, size_x: 2, size_y: 4 }
   - visualization: network_summary/safes_checked
-    position: { row: 9, col: 0, size_x: 2, size_y: 3 }
+    position: { row: 10, col: 0, size_x: 2, size_y: 4 }
   - visualization: guard_adoption/counter
-    position: { row: 9, col: 2, size_x: 2, size_y: 3 }
+    position: { row: 10, col: 2, size_x: 2, size_y: 4 }
   - visualization: network_summary/gross_fees
-    position: { row: 9, col: 4, size_x: 2, size_y: 3 }
+    position: { row: 10, col: 4, size_x: 2, size_y: 4 }
   - visualization: network_summary/windows
-    position: { row: 12, col: 0, size_x: 6, size_y: 5 }
+    position: { row: 14, col: 0, size_x: 6, size_y: 5 }
 
   # Activity and results (last 30 days)
   - visualization: transaction_checks_daily/daily_chart
-    position: { row: 17, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 19, col: 0, size_x: 3, size_y: 8 }
   - visualization: results_daily/stacked
-    position: { row: 17, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 19, col: 3, size_x: 3, size_y: 8 }
   - visualization: results_daily/table
-    position: { row: 25, col: 0, size_x: 6, size_y: 6 }
+    position: { row: 27, col: 0, size_x: 6, size_y: 6 }
 
   # Networks
   - visualization: network_breakdown/bars
-    position: { row: 31, col: 0, size_x: 3, size_y: 7 }
+    position: { row: 33, col: 0, size_x: 3, size_y: 7 }
   - visualization: guard_adoption/table
-    position: { row: 31, col: 3, size_x: 3, size_y: 7 }
+    position: { row: 33, col: 3, size_x: 3, size_y: 7 }
   - visualization: network_breakdown/table
-    position: { row: 38, col: 0, size_x: 6, size_y: 5 }
+    position: { row: 40, col: 0, size_x: 6, size_y: 5 }
 
   # Revenue
   - visualization: fee_revenue_daily/daily
-    position: { row: 43, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 45, col: 0, size_x: 3, size_y: 8 }
   - visualization: fee_revenue_daily/cumulative
-    position: { row: 43, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 45, col: 3, size_x: 3, size_y: 8 }
   - visualization: fee_allocation/table
-    position: { row: 51, col: 0, size_x: 6, size_y: 11 }
+    position: { row: 53, col: 0, size_x: 6, size_y: 11 }
   - visualization: fee_config/table
-    position: { row: 62, col: 0, size_x: 6, size_y: 4 }
+    position: { row: 64, col: 0, size_x: 6, size_y: 4 }
 
   # Latest requests
   - visualization: latest_requests/table
-    position: { row: 66, col: 0, size_x: 6, size_y: 10 }
+    position: { row: 68, col: 0, size_x: 6, size_y: 10 }
 
   - text_file: text/definitions.md
-    position: { row: 76, col: 0, size_x: 6, size_y: 8 }
+    position: { row: 78, col: 0, size_x: 6, size_y: 8 }
 
   - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · **Network & revenue** · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}})"
-    position: { row: 84, col: 0, size_x: 6, size_y: 2 }
+    position: { row: 86, col: 0, size_x: 6, size_y: 2 }
