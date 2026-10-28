@@ -1,45 +1,45 @@
 {
   "dashboards": {
     "crash-isolation": {
-      "desired": "5f9b3e3162dbee02",
+      "desired": "01d586245ac9c6c8",
       "id": 222623,
-      "remote": "13192fa4ab2b76c4",
+      "remote": "25e9ca38da127165",
       "url": "https://dune.com/safe/safenet-crash-isolation-preview-navigation"
     },
     "crash-repro": {
-      "desired": "5e9b4112ba419e3d",
+      "desired": "6d73fbf339583098",
       "id": 222624,
-      "remote": "accffbef0d6fe980",
+      "remote": "c8b8029ba8b085d0",
       "url": "https://dune.com/safe/safenet-crash-repro-preview-navigation"
     },
     "network-revenue": {
-      "desired": "5e8d995b7598b436",
+      "desired": "90c7e2df7c66e41a",
       "id": 222625,
-      "remote": "7d49340c8791ebd8",
+      "remote": "c0736e81d5882559",
       "url": "https://dune.com/safe/safenet-network-revenue-preview-navigation"
     },
     "overview": {
-      "desired": "d8bd61ac70bc6a47",
+      "desired": "9b909fc947acd810",
       "id": 222622,
-      "remote": "1f8b4af9df0789a6",
+      "remote": "ff7c4e58a6bce200",
       "url": "https://dune.com/safe/safenet-preview-navigation"
     },
     "sentinels": {
-      "desired": "0b8928c3c0033634",
+      "desired": "75c3700fa0cb7e5d",
       "id": 222626,
-      "remote": "a20463f2423a14cb",
+      "remote": "a032bb4f75c3dde0",
       "url": "https://dune.com/safe/safenet-sentinels-preview-navigation"
     },
     "staking": {
-      "desired": "1389b6d33516656b",
+      "desired": "3669264ec8e78cc0",
       "id": 222627,
-      "remote": "d36d57af72f99e25",
+      "remote": "10abefeec4ea31a5",
       "url": "https://dune.com/safe/safenet-staking-preview-navigation"
     },
     "validators": {
-      "desired": "77b650bf30a4db3d",
+      "desired": "11833696c9f26c7a",
       "id": 222628,
-      "remote": "88d5139080655c2c",
+      "remote": "4a5647e7bc07095c",
       "url": "https://dune.com/safe/safenet-validators-preview-navigation"
     }
   },
@@ -742,10 +742,10 @@
       "remote": "00ef1702af1743fe"
     },
     "sentinel_participation_daily/heatmap": {
-      "desired": "df8a0170f0858862",
+      "desired": "59e9326316a640d2",
       "id": 13067925,
       "query_id": 9022787,
-      "remote": "df8a0170f0858862"
+      "remote": "59e9326316a640d2"
     },
     "sentinel_verdicts/bars": {
       "desired": "501bb38792de4010",
@@ -868,10 +868,10 @@
       "remote": "4cddc37e5cbf2709"
     },
     "validator_participation_daily/heatmap": {
-      "desired": "07ab0ec26c793a66",
+      "desired": "cfeb3a63772515ae",
       "id": 13067946,
       "query_id": 9022805,
-      "remote": "07ab0ec26c793a66"
+      "remote": "cfeb3a63772515ae"
     },
     "validator_participation_windows/table": {
       "desired": "89c7fef3fd8fb0f8",
