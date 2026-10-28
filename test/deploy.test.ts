@@ -306,6 +306,25 @@ describe("several dashboards", () => {
     assert.equal(r.state.dashboards.diagnostic, undefined);
   });
 
+  test("a new visualization updates only the dashboards that show it", async () => {
+    const first = await deploy(fake, config, emptyState());
+    const changed = structuredClone(config);
+    const q = changed.queries.find((x) => x.key === "sentinel_disputes")!;
+    q.visualizations.push({ ...structuredClone(q.visualizations[0]), key: "sentinel_disputes/extra", name: "Extra" });
+    changed.dashboards.find((d) => d.key === "sentinels")!.widgets.push({
+      kind: "visualization",
+      ref: "sentinel_disputes/extra",
+      position: { row: 500, col: 0, size_x: 6, size_y: 4 },
+    });
+    const r = await deploy(fake, changed, first.state);
+    assert.equal(actions(r)["visualization:sentinel_disputes/extra"], "create");
+    assert.equal(actions(r)["dashboard:safenet-sentinels"], "update");
+    for (const slug of ["safenet", "safenet-network-revenue", "safenet-staking-withdrawals", "safenet-validators"])
+      assert.equal(actions(r)[`dashboard:${slug}`], "noop", slug);
+    const shown = fake.dashboards.get(r.state.dashboards.sentinels.id)!.visualization_widgets.map((w) => w.visualization_id);
+    assert.ok(shown.includes(r.state.visualizations["sentinel_disputes/extra"].id));
+  });
+
   test("a visualization on several dashboards is one Dune visualization, its query refreshed once", async () => {
     const r = await deploy(fake, config, emptyState());
     const vizId = r.state.visualizations[DAILY_CHART].id;

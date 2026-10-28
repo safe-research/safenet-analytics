@@ -1,0 +1,49 @@
+name: "Safenet: arbitration rate by time window"
+description: >
+  Safenet production (Aegis): requests on the Charter's chains proposed in the last 24 hours, 7
+  days, 30 days and since production start, how many entered arbitration (DisputeTriggered) and
+  their current state. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Arbitration rate by request cohort
+    type: table
+    description: >
+      Requests proposed in each window (Charter chains, as in Network & revenue), each counted once
+      in its latest state. Rate = requests that entered arbitration ÷ requests. Requests still being
+      voted on can still be disputed, so recent rates can rise.
+    options:
+      itemsPerPage: 4
+      columns:
+        - { name: time_window, title: "Requests proposed in", type: normal, alignContent: left, isHidden: false }
+        - { name: requests, title: "Requests", type: normal, alignContent: right, isHidden: false }
+        - { name: arbitrated, title: "Entered arbitration", type: normal, alignContent: right, isHidden: false }
+        - { name: arbitration_rate, title: "arbitration_rate", type: normal, alignContent: right, isHidden: true }
+        - { name: arbitration_pct, title: "arbitration_pct", type: normal, alignContent: right, isHidden: true }
+        - { name: arbitration_rate_label, title: "Arbitration rate", type: normal, alignContent: right, isHidden: false }
+        - { name: awaiting, title: "Awaiting outcome", type: normal, alignContent: right, isHidden: false }
+        - { name: ruled_secure, title: "Ruled secure", type: normal, alignContent: right, isHidden: false }
+        - { name: ruled_insecure, title: "Ruled insecure", type: normal, alignContent: right, isHidden: false }
+        - { name: out_of_scope, title: "Out of scope (no ruling)", type: normal, alignContent: right, isHidden: false }
+        - { name: timed_out, title: "Arbitration timed out (no ruling)", type: normal, alignContent: right, isHidden: false }
+        - { name: still_voting, title: "Still being voted on", type: normal, alignContent: right, isHidden: false }
+        - { name: cohort_start, title: "cohort_start", type: normal, alignContent: left, isHidden: true }
+        - { name: computed_at, title: "Computed (UTC)", type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: "through_block", type: normal, alignContent: left, isHidden: true }
+  rate_30d:
+    name: Arbitration rate (requests proposed in the last 30 days)
+    type: counter
+    description: >
+      Share of requests on the Charter's chains proposed in the last 30 days that entered
+      arbitration. Recent requests can still be disputed. Blank: no requests in the window.
+    options:
+      counterColName: arbitration_pct
+      rowNumber: 3
+      stringDecimal: 2
+      stringSuffix: "%"
+      counterLabel: Arbitration rate, last 30 days

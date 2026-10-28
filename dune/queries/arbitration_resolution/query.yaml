@@ -1,0 +1,58 @@
+name: "Safenet: arbitration resolution time"
+description: >
+  Safenet production (Aegis): median and p90 time from the dispute (DisputeTriggered, the freeze)
+  to the arbitrator's secure or insecure ruling (DisputeResolved), by ruling time, with out-of-scope
+  outcomes and arbitration timeouts counted separately; open arbitrations and the oldest one's age.
+  Managed in github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  table:
+    name: Time from dispute (freeze) to ruling
+    type: table
+    description: >
+      Ruled cases only (secure or insecure), selected by ruling time. Unresolved cases are
+      excluded; out-of-scope outcomes and arbitration timeouts end without a ruling and are not
+      counted as resolved. Median and p90 interpolate between the closest cases.
+    options:
+      itemsPerPage: 2
+      columns:
+        - { name: time_window, title: "Ruled cases", type: normal, alignContent: left, isHidden: false }
+        - { name: ruled_cases, title: "Cases in sample", type: normal, alignContent: right, isHidden: false }
+        - { name: median_hours, title: "median_hours", type: normal, alignContent: right, isHidden: true }
+        - { name: p90_hours, title: "p90_hours", type: normal, alignContent: right, isHidden: true }
+        - { name: median_label, title: "Median", type: normal, alignContent: right, isHidden: false }
+        - { name: p90_label, title: "p90", type: normal, alignContent: right, isHidden: false }
+        - { name: out_of_scope, title: "Out of scope in window (no ruling)", type: normal, alignContent: right, isHidden: false }
+        - { name: timed_out, title: "Arbitration timed out in window (no ruling)", type: normal, alignContent: right, isHidden: false }
+        - { name: open_arbitrations, title: "open_arbitrations", type: normal, alignContent: right, isHidden: true }
+        - { name: oldest_open_hours, title: "oldest_open_hours", type: normal, alignContent: right, isHidden: true }
+        - { name: oldest_open_label, title: "oldest_open_label", type: normal, alignContent: right, isHidden: true }
+        - { name: computed_at, title: "computed_at", type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: "through_block", type: normal, alignContent: left, isHidden: true }
+  open:
+    name: Open arbitrations (now)
+    type: counter
+    description: >
+      Requests frozen in arbitration (DisputeTriggered) without an outcome yet, as of the latest
+      execution. Out-of-scope and timed-out cases have ended and are not open.
+    options:
+      counterColName: open_arbitrations
+      rowNumber: 1
+      stringDecimal: 0
+      counterLabel: Open arbitrations
+  oldest_open:
+    name: Oldest open arbitration (hours since the freeze)
+    type: counter
+    description: >
+      Age of the oldest arbitration still awaiting an outcome, as of the latest execution. Blank:
+      none open.
+    options:
+      counterColName: oldest_open_hours
+      rowNumber: 1
+      stringDecimal: 1
+      stringSuffix: " h"
+      counterLabel: Oldest open arbitration

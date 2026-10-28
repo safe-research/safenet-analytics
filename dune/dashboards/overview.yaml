@@ -53,15 +53,25 @@ widgets:
   - visualization: staking_overview/active_stake
     position: { row: 14, col: 4, size_x: 2, size_y: 4 }
 
+  # Arbitration (details on the Sentinels dashboard)
+  - visualization: arbitration_windows/rate_30d
+    position: { row: 18, col: 0, size_x: 2, size_y: 4 }
+  - text: |
+      ### [Arbitration]({{dashboard:sentinels}})
+      Share of requests proposed in the last 30 days (Charter chains) that went to arbitration because Sentinels disagreed. Recent requests can still be disputed.
+
+      **[View arbitration rates & resolution times →]({{dashboard:sentinels}})**
+    position: { row: 18, col: 2, size_x: 4, size_y: 4 }
+
   # Key charts
   - visualization: transaction_checks_daily/daily_chart
-    position: { row: 18, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 22, col: 0, size_x: 3, size_y: 8 }
   - visualization: results_daily/stacked
-    position: { row: 18, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 22, col: 3, size_x: 3, size_y: 8 }
   - visualization: fee_revenue_daily/daily
-    position: { row: 26, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 30, col: 0, size_x: 3, size_y: 8 }
   - visualization: staking_daily/active_stake
-    position: { row: 26, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 30, col: 3, size_x: 3, size_y: 8 }
 
   - text_file: text/overview_footer.md
-    position: { row: 34, col: 0, size_x: 6, size_y: 2 }
+    position: { row: 38, col: 0, size_x: 6, size_y: 2 }

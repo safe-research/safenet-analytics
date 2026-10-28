@@ -1,0 +1,38 @@
+name: "Safenet: arbitration rate per proposal day"
+description: >
+  Safenet production (Aegis): per UTC proposal day, requests on the Charter's chains, how many
+  entered arbitration (DisputeTriggered) and how many are still being voted on. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  chart:
+    name: Arbitration rate per proposal day (production)
+    type: chart
+    description: >
+      Requests by the day they were proposed, in their latest state. Columns: requests and those that
+      entered arbitration (left axis). Line: arbitration rate (right axis), no point on days without
+      requests. Requests still being voted on can still be disputed, so recent days can rise.
+    options:
+      globalSeriesType: column
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: "Proposal day (UTC)" } }
+      yAxis:
+        - title: { text: Requests }
+        - title: { text: "Arbitration rate (%)" }
+          opposite: true
+      columnMapping:
+        day: x
+        requests: y
+        arbitrated: y
+        still_voting: y
+        arbitration_pct: y
+      seriesOptions:
+        requests: { type: column, yAxis: 0, zIndex: 0, name: Requests, color: "#2a78d6" }
+        arbitrated: { type: column, yAxis: 0, zIndex: 1, name: Entered arbitration, color: "#eda100" }
+        still_voting: { type: column, yAxis: 0, zIndex: 2, name: Still being voted on, color: "#b5b3ab" }
+        arbitration_pct: { type: line, yAxis: 1, zIndex: 3, name: "Arbitration rate (%)", color: "#d03b3b" }

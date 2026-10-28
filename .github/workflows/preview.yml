@@ -165,8 +165,11 @@ jobs:
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --out "$RUNNER_TEMP/verification-network-revenue.json"
 
-      - name: Reconcile Sentinels against on-chain events, balances and SAFE rewards
-        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' sentinel_overview ')
+      - name: Reconcile Sentinels and arbitration against on-chain events, balances and SAFE rewards
+        if: >-
+          always() && steps.run.outcome == 'success' && (contains(steps.run.outputs.previewed, ' sentinel_overview ')
+          || contains(steps.run.outputs.previewed, ' sentinel_disputes ') || contains(steps.run.outputs.previewed, ' arbitration_windows ')
+          || contains(steps.run.outputs.previewed, ' arbitration_daily ') || contains(steps.run.outputs.previewed, ' arbitration_resolution '))
         run: >-
           npm run verify:sentinels --
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
@@ -309,7 +312,7 @@ jobs:
               echo "<details><summary>Sentinels: reconciliation with on-chain events, balances and SAFE rewards</summary>"
               echo
               echo '```json'
-              if [ -f "$T/verification-sentinels.json" ]; then jq '{finalized_block, requests, open_response_windows, coverage, safe_rewards, issues, dune}' "$T/verification-sentinels.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
+              if [ -f "$T/verification-sentinels.json" ]; then jq '{finalized_block, requests, open_response_windows, coverage, safe_rewards, arbitration: (.arbitration | del(.cases)), issues, dune}' "$T/verification-sentinels.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
               echo '```'
               echo "</details>"
               echo
@@ -319,6 +322,15 @@ jobs:
                 echo "| Case | Sentinel | State | Request | Safe transaction | Request tx | Outcome tx | Votes |"
                 echo "| --- | --- | --- | --- | --- | --- | --- | --- |"
                 jq -r '.representative[] | "| \(.case) | \(.sentinel) | \(.state) | \(.request_status.status)\(if .request_status.ruling then " (" + .request_status.ruling + ")" else "" end) | [explorer](\(.safe_tx)) | [tx](\(.proposal_tx)) | \(if .outcome_tx then "[tx](" + .outcome_tx + ")" else "" end) | \(.votes | join(", ")) |"' "$T/verification-sentinels.json"
+                echo "</details>"
+                echo
+              fi
+              if [ -f "$T/verification-sentinels.json" ]; then
+                echo "<details><summary>Representative arbitration cases: proposal, freeze (DisputeTriggered), outcome and durations</summary>"
+                echo
+                echo "| State | Safe transaction | Proposed (UTC) | Frozen (UTC) | Deadline block | Outcome | Outcome (UTC) | Hours to ruling | Open for (h) |"
+                echo "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"
+                jq -r '.arbitration.cases[] | if .case then "| \(.state) | \(.case) | | | | | | | |" else "| \(.state) | [explorer](\(.safe_tx)) | [\(.proposed_at)](\(.proposal_tx)) | [\(.disputed_at)](\(.dispute_tx)) | \(.arbitration_deadline_block) | \(.outcome // "awaiting") | \(if .outcome_tx then "[" + .outcome_at + "](" + .outcome_tx + ")" else "" end) | \(.hours_to_ruling // "") | \(.open_hours // "") |" end' "$T/verification-sentinels.json"
                 echo "</details>"
                 echo
               fi

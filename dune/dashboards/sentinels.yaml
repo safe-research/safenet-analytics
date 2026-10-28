@@ -16,41 +16,56 @@ widgets:
     position: { row: 2, col: 0, size_x: 4, size_y: 4 }
   - visualization: sentinel_overview/freshness
     position: { row: 2, col: 4, size_x: 2, size_y: 4 }
+  # Arbitration: rates, resolution time, open cases and every dispute (linked from the overview)
+  - text_file: text/arbitration.md
+    position: { row: 6, col: 0, size_x: 4, size_y: 6 }
+  - visualization: arbitration_resolution/open
+    position: { row: 6, col: 4, size_x: 2, size_y: 3 }
+  - visualization: arbitration_resolution/oldest_open
+    position: { row: 9, col: 4, size_x: 2, size_y: 3 }
+  - visualization: arbitration_windows/table
+    position: { row: 12, col: 0, size_x: 6, size_y: 5 }
+  - visualization: arbitration_daily/chart
+    position: { row: 17, col: 0, size_x: 3, size_y: 8 }
+  - visualization: sentinel_disputes/durations
+    position: { row: 17, col: 3, size_x: 3, size_y: 8 }
+  - visualization: arbitration_resolution/table
+    position: { row: 25, col: 0, size_x: 6, size_y: 4 }
+  - visualization: sentinel_disputes/table
+    position: { row: 29, col: 0, size_x: 6, size_y: 10 }
+
   - visualization: sentinel_overview/table
-    position: { row: 6, col: 0, size_x: 6, size_y: 8 }
+    position: { row: 39, col: 0, size_x: 6, size_y: 8 }
   - visualization: sentinel_windows/table
-    position: { row: 14, col: 0, size_x: 6, size_y: 6 }
+    position: { row: 47, col: 0, size_x: 6, size_y: 6 }
 
   # Participation history (last 30 days)
   - visualization: sentinel_participation_daily/heatmap
-    position: { row: 20, col: 0, size_x: 6, size_y: 7 }
+    position: { row: 53, col: 0, size_x: 6, size_y: 7 }
 
   # Verdicts and coverage
   - visualization: sentinel_verdicts/bars
-    position: { row: 27, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 60, col: 0, size_x: 3, size_y: 8 }
   - visualization: sentinel_coverage/bars
-    position: { row: 27, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 60, col: 3, size_x: 3, size_y: 8 }
   - visualization: sentinel_verdicts/table
-    position: { row: 35, col: 0, size_x: 3, size_y: 6 }
+    position: { row: 68, col: 0, size_x: 3, size_y: 6 }
   - visualization: sentinel_coverage/table
-    position: { row: 35, col: 3, size_x: 3, size_y: 6 }
+    position: { row: 68, col: 3, size_x: 3, size_y: 6 }
 
-  # Disputes and arbitration
-  - visualization: sentinel_disputes/table
-    position: { row: 41, col: 0, size_x: 6, size_y: 9 }
 
   # Earnings
   - visualization: sentinel_earnings/table
-    position: { row: 50, col: 0, size_x: 6, size_y: 6 }
+    position: { row: 74, col: 0, size_x: 6, size_y: 6 }
   - visualization: sentinel_earnings_daily/bars
-    position: { row: 56, col: 0, size_x: 6, size_y: 7 }
+    position: { row: 80, col: 0, size_x: 6, size_y: 7 }
 
   # Bonds
   - visualization: sentinel_bonds/table
-    position: { row: 63, col: 0, size_x: 6, size_y: 6 }
+    position: { row: 87, col: 0, size_x: 6, size_y: 6 }
 
   - text_file: text/sentinels_definitions.md
-    position: { row: 69, col: 0, size_x: 6, size_y: 9 }
+    position: { row: 93, col: 0, size_x: 6, size_y: 9 }
 
   - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · **Sentinels**"
-    position: { row: 78, col: 0, size_x: 6, size_y: 2 }
+    position: { row: 102, col: 0, size_x: 6, size_y: 2 }

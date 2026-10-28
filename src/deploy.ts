@@ -360,7 +360,9 @@ export async function plan(
   }
 
   // Dashboards
-  const vizCreated = steps.some((s) => s.resource === "visualization" && s.action === "create");
+  // A dashboard showing a visualization that is created gets the new ID, so it changes too.
+  const created = new Set(steps.filter((s) => s.resource === "visualization" && s.action === "create").map((s) => s.key));
+  const showsCreated = (d: DashboardSpec) => d.widgets.some((w) => w.kind === "visualization" && created.has(w.ref));
   const url = dashboardUrls(config);
   const dashboards = deployedDashboards(config);
   for (const d of dashboards) {
@@ -392,7 +394,7 @@ export async function plan(
       dashboardFingerprint(remoteDashboard(remoteDash)),
       sameDashboard(remoteDash, desired),
     );
-    const action = decision.action === "noop" && vizCreated ? "update" : decision.action;
+    const action = decision.action === "noop" && showsCreated(d) ? "update" : decision.action;
     steps.push({ resource: "dashboard", key: d.slug, id: remoteDash.dashboard_id, ...decision, action });
   }
   // Dashboards removed from the configuration (or preview-only ones in production) are left as
