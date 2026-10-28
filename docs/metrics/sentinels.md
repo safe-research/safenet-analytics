@@ -28,7 +28,7 @@ The verification checks both sections against the same chain data.
 | Sentinels data as of | `sentinel_overview` | Latest Gnosis Chain block Dune has ingested, and computation time |
 | Sentinel overview | `sentinel_overview` | Status: **now**. Counts: all time |
 | Participation by time window | `sentinel_windows` | Requests proposed in the last 24 hours, 7 days, 30 days, all time |
-| Participation per day (heatmap) | `sentinel_participation_daily` | Last 30 UTC days, by proposal day |
+| Participation per day (pivot table, Sentinel × day) | `sentinel_participation_daily` | Last 30 UTC days, by proposal day |
 | Sentinel responses by kind (bars and table) | `sentinel_verdicts` | Bars: requests proposed in the last 30 days. Table: also all time |
 | Requests by number of valid responses (bars and table) | `sentinel_coverage` | Bars: last 30 days. Table: also all time, by proposal time |
 | Disputes and arbitration | `sentinel_disputes` | All disputes, newest first |
@@ -90,7 +90,7 @@ Each (request, Sentinel) row has exactly one state. It is judged against `as_of_
 
 | Measure | Numerator | Denominator |
 | --- | --- | --- |
-| **Participation rate** (overview, windows, heatmap) | valid reveals on eligible requests | eligible requests with a closed response window, Charter chains |
+| **Participation rate** (overview, windows, per-day pivot) | valid reveals on eligible requests | eligible requests with a closed response window, Charter chains |
 | Eligible requests (overview) | | eligible requests with a closed response window |
 | Response kinds (verdict breakdown) | each state | all closed (request, Sentinel) rows. secure + insecure + missing + reverted + no commit = eligible requests |
 | Coverage | requests by number of valid responses | requests whose response window has closed (a verdict, a dispute, a timeout, or the reveal deadline passed) |
@@ -202,7 +202,7 @@ There is no slash after a total timeout (nobody revealed), an out-of-scope dispu
 - **Units.** USDC.e for fees and bonds (6 decimals) and SAFE for subsidies (18 decimals), always in the column title. No USD values, APY or profitability.
 - **Freshness.** *Sentinels data as of* is the latest Gnosis Chain block time in Dune when the query ran. The section is as fresh as the daily refresh (05:17 UTC) plus Dune's ingestion delay, and the current UTC day is partial.
 - **Empty states.**
-  - Days without eligible requests are blank in the heatmap.
+  - Days without eligible requests are blank in the per-day pivot table.
   - A window without eligible requests has no rate, not 0%.
   - The disputes table is empty when there was no dispute.
   - The SAFE columns say *No allocation published* or *not available* instead of 0.
@@ -223,7 +223,7 @@ There is no slash after a total timeout (nobody revealed), an out-of-scope dispu
 
 [`scripts/verify-sentinels.ts`](../../scripts/verify-sentinels.ts) (`npm run verify:sentinels`) recounts the section from Gnosis Chain RPC logs with the same rules in TypeScript ([`scripts/lib/sentinels.ts`](../../scripts/lib/sentinels.ts), unit-tested in `test/sentinels.test.ts`).
 - **Comparison with Dune.** With `DUNE_API_KEY`, it compares every Dune result at that result's `through_block`, judging open windows at Dune's `as_of_block`:
-  - the overview, windows, heatmap, verdicts, coverage, disputes, earnings and bonds;
+  - the overview, windows, per-day pivot, verdicts, coverage, disputes, earnings and bonds;
   - the panels with each other over the same population (overview = verdict breakdown, overview = windows);
   - the per-Sentinel fee rewards with the Network & revenue fee allocation.
 - **Independent checks:**

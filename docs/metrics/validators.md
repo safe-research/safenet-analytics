@@ -18,7 +18,7 @@ Stake and withdrawals reuse the [Staking](staking.md) models and definitions unc
 | Validator overview | `validator_overview/table` | now |
 | Stake by validator status | `validator_stake_status/table` | now |
 | Signing participation by window | `validator_participation_windows/table` | rolling 24 h, 7 d, 30 d, production |
-| Participation history | `validator_participation_daily/heatmap` (pivot) | last 30 days |
+| Participation history | `validator_participation_daily/heatmap` (pivot table, validator × day) | last 30 days |
 | Stake distribution history | `validator_stake_daily/area` (stacked by validator), `validator_stake_split_daily/area` (self / delegated / unattributed) | all time, Beta then production |
 | Reward history | `validator_rewards_periods/bars` and `/table` | published periods |
 | Validator staker rewards | `validator_rewards_by_staker/table` | latest published root |
@@ -91,7 +91,7 @@ Observed signing participation = recognised signature shares ÷ completed produc
 
 - Ceremonies are counted by completion time.
 - Pending ceremonies (no `SignCompleted`) are no opportunity.
-- With no eligible ceremony (not a member, or none happened) the rate is *n/a*: blank in the heatmap, "n/a" in the overview, no row in the windows table. It is never 0%.
+- With no eligible ceremony (not a member, or none happened) the rate is *n/a*: blank in the per-day pivot table, "n/a" in the overview, no row in the windows table. It is never 0%.
 - **Last signature share** is the time and transaction of the last recognised share. It never reflects staking activity.
 
 Production all time, at block 48971624:
@@ -201,7 +201,7 @@ Generated. `kind_row` is `root` or `entry`:
 
   | Case | Shown as |
   | --- | --- |
-  | no eligible ceremonies | n/a, or blank in the heatmap |
+  | no eligible ceremonies | n/a, or blank in the per-day pivot table |
   | unpublished periods | *not yet published*, no amounts |
   | no outstanding withdrawals | no bars |
   | no registered staker | *none registered*; self-stake blank |

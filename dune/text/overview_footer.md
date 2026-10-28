@@ -1,0 +1,1 @@
+Definitions, sources and limitations are on each section dashboard and in [safe-research/safenet-analytics](https://github.com/safe-research/safenet-analytics), where these dashboards are managed; changes made here in Dune are overwritten. The earlier Beta network has its own dashboard: [safenet-beta](https://dune.com/safe/safenet-beta).

@@ -51,3 +51,4 @@ visualizations:
         - { name: insecure_unanimous, title: Insecure (unanimous), type: normal, alignContent: right, isHidden: false }
         - { name: timed_out, title: Timed out (final), type: normal, alignContent: right, isHidden: false }
         - { name: pending, title: Pending, type: normal, alignContent: right, isHidden: false }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }

@@ -16,7 +16,7 @@ The merge deploys the reverted configuration. If someone edited the dashboard in
 ```sh
 git switch -c restore-<date> origin/main
 git rm -rq dune/queries dune/text   # drops queries and text added after <good-commit>
-git checkout <good-commit> -- dune/queries dune/dashboard.yaml dune/text dune/project.yaml
+git checkout <good-commit> -- dune/queries dune/dashboards dune/text dune/project.yaml
 git commit -m "Restore Dune configuration from <good-commit>"
 ```
 

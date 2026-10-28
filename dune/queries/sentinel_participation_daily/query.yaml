@@ -16,10 +16,10 @@ visualizations:
     description: >
       One row per Sentinel. Blank: the Sentinel was not eligible for any request that day (not a
       member, or no requests). Response window open: not counted yet.
+    # Dune's pivot format, as its editor stores it. PivotTable.js-style options (cols, vals,
+    # rendererName, ...) crash Dune's renderer; see docs/adding-a-metric.md#visualization-options.
+    # Dune's pivot has no heatmap colouring; the key stays `heatmap` to keep the visualization ID.
     options:
-      rendererName: Table Heatmap
-      aggregatorName: Average
-      rows: [sentinel]
-      cols: [day]
-      vals: [participation_pct]
-      controls: { enabled: false }
+      rows: [{ column_name: sentinel }]
+      columns: [{ column_name: day }]
+      values: [{ column_name: participation_pct, agg_type: AVG, numberFormat: "0.0" }]

@@ -39,6 +39,12 @@ visualizations:
         - { name: last_signature_share, title: Last signature share (UTC), type: normal, alignContent: left, isHidden: false }
         - { name: last_signature_share_tx, title: Share tx, type: normal, alignContent: left, isHidden: false }
         - { name: validator_address, title: Validator address, type: normal, alignContent: left, isHidden: true }
+        - { name: name, title: name, type: normal, alignContent: left, isHidden: true }
+        - { name: contract_stake, title: contract_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: live_set_stake, title: live_set_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: as_of_time, title: as_of_time, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }
+        - { name: computed_at, title: computed_at, type: normal, alignContent: left, isHidden: true }
   freshness:
     name: Validators data as of
     type: table
@@ -48,3 +54,21 @@ visualizations:
         - { name: as_of_time, title: Gnosis Chain data as of (UTC), type: normal, alignContent: left, isHidden: false }
         - { name: through_block, title: Block, type: normal, alignContent: left, isHidden: false }
         - { name: computed_at, title: Computed (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: validator, title: validator, type: normal, alignContent: left, isHidden: true }
+        - { name: name, title: name, type: normal, alignContent: left, isHidden: true }
+        - { name: attestation_set, title: attestation_set, type: normal, alignContent: left, isHidden: true }
+        - { name: staking_registration, title: staking_registration, type: normal, alignContent: left, isHidden: true }
+        - { name: registered_staker, title: registered_staker, type: normal, alignContent: left, isHidden: true }
+        - { name: self_stake, title: self_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: delegated_stake, title: delegated_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: total_stake, title: total_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: share_of_contract_stake, title: share_of_contract_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: share_of_live_set_stake, title: share_of_live_set_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: observed_participation_30d, title: observed_participation_30d, type: normal, alignContent: left, isHidden: true }
+        - { name: observed_signed_30d, title: observed_signed_30d, type: normal, alignContent: left, isHidden: true }
+        - { name: reward_participation_period, title: reward_participation_period, type: normal, alignContent: left, isHidden: true }
+        - { name: last_signature_share, title: last_signature_share, type: normal, alignContent: left, isHidden: true }
+        - { name: last_signature_share_tx, title: last_signature_share_tx, type: normal, alignContent: left, isHidden: true }
+        - { name: validator_address, title: validator_address, type: normal, alignContent: left, isHidden: true }
+        - { name: contract_stake, title: contract_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: live_set_stake, title: live_set_stake, type: normal, alignContent: left, isHidden: true }

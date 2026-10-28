@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import { loadConfig, type Config } from "../src/config.ts";
 import { runDeploy, sqlQueryIds } from "../src/deploy.ts";
-import { loadPreviewSettings, previewSlug, productionGuard, toPreview, type PreviewSettings } from "../src/preview.ts";
+import { isPreviewSlug, loadPreviewSettings, previewSlug, productionGuard, toPreview, type PreviewSettings } from "../src/preview.ts";
 import { runPreviewQueries } from "../src/preview-run.ts";
 import { emptyState, type State } from "../src/state.ts";
 import { FakeDune } from "./fake-dune.ts";
@@ -33,35 +33,52 @@ function productionSnapshot(fake: FakeDune, production: State) {
   return JSON.stringify({
     queries: Object.values(production.queries).map((t) => fake.queries.get(t.id)),
     visualizations: Object.values(production.visualizations).map((t) => fake.visualizations.get(t.id)),
-    dashboard: fake.dashboards.get(production.dashboard!.id),
+    dashboards: Object.values(production.dashboards).map((t) => fake.dashboards.get(t.id)),
   });
 }
+
+const overviewOf = (cfg: Config) => cfg.dashboards.find((d) => d.key === "overview")!;
 
 describe("preview configuration", () => {
   test("uses preview names, tags, privacy and slug, and no schedules", () => {
     const p = previewOf();
-    assert.equal(p.dashboard.name, "Safenet — Preview");
-    assert.equal(p.dashboard.slug, "safenet-preview");
-    assert.equal(p.dashboard.isPrivate, true);
+    assert.equal(overviewOf(p).name, "Safenet — Preview");
+    assert.equal(overviewOf(p).slug, "safenet-preview");
+    for (const d of p.dashboards) {
+      assert.equal(d.isPrivate, true, d.key);
+      assert.equal(d.previewOnly, false, d.key); // all deployed in the preview
+      assert.ok(isPreviewSlug(d.slug), d.slug);
+    }
+    assert.equal(p.dashboards.find((d) => d.key === "staking")!.slug, "safenet-staking-preview");
+    assert.equal(p.dashboards.find((d) => d.key === "staking")!.name, "Safenet — Preview: Staking");
     assert.equal(p.project.managedTag, "safenet-preview-default");
     for (const q of p.queries) {
       assert.match(q.name, /^\[Preview\] Safenet: /);
-      assert.equal(q.isPrivate, true);
+      assert.equal(q.isPrivate, false); // preview.yaml: private_queries: false
       assert.equal(q.refresh, "none");
       assert.deepEqual(q.tags, ["safenet-preview"]);
     }
-    assert.equal(previewOf("staking").dashboard.slug, "safenet-preview-staking");
+    const privateQueries = toPreview(config, { ...settings, privateQueries: true }, { sha: SHA });
+    assert.ok(privateQueries.queries.every((q) => q.isPrivate));
+    assert.equal(overviewOf(previewOf("staking")).slug, "safenet-preview-staking");
+    assert.equal(previewOf("staking").dashboards.find((d) => d.key === "staking")!.slug, "safenet-staking-preview-staking");
+    // No preview slug of one track equals one of another track, or a production slug.
+    const slugs = ["default", "staking", "navigation"].flatMap((t) => previewOf(t).dashboards.map((d) => d.slug));
+    assert.equal(new Set(slugs).size, slugs.length);
+    for (const d of config.dashboards) assert.ok(!isPreviewSlug(d.slug), d.slug);
     assert.match(previewOf("staking").queries[0].name, /^\[Preview staking\] /);
   });
 
-  test("puts a banner with PR and commit above the production layout", () => {
+  test("puts a banner with PR and commit above the production layout of every dashboard", () => {
     const p = previewOf();
-    const banner = p.dashboard.widgets[0];
-    assert.equal(banner.kind, "text");
-    assert.match(banner.kind === "text" ? banner.text : "", /PR #7.*0123456/);
-    assert.equal(p.dashboard.widgets.length, config.dashboard.widgets.length + 1);
-    for (const [i, w] of config.dashboard.widgets.entries())
-      assert.equal(p.dashboard.widgets[i + 1].position.row, w.position.row + 2);
+    for (const d of config.dashboards) {
+      const pd = p.dashboards.find((x) => x.key === d.key)!;
+      const banner = pd.widgets[0];
+      assert.equal(banner.kind, "text");
+      assert.match(banner.kind === "text" ? banner.text : "", /PR #7.*0123456/);
+      assert.equal(pd.widgets.length, d.widgets.length + 1);
+      for (const [i, w] of d.widgets.entries()) assert.equal(pd.widgets[i + 1].position.row, w.position.row + 2);
+    }
   });
 
   test("production configuration is unchanged by building a preview", () => {
@@ -70,7 +87,7 @@ describe("preview configuration", () => {
     assert.equal(JSON.stringify(config), before);
   });
 
-  test("previews must be private", async () => {
+  test("preview dashboards must be private", async () => {
     await assert.rejects(
       (async () => {
         const { mkdtemp, cp, writeFile } = await import("node:fs/promises");
@@ -82,7 +99,7 @@ describe("preview configuration", () => {
         await writeFile(join(root, "preview.yaml"), "track: default\nprivate: false\n");
         await loadPreviewSettings(root);
       })(),
-      /previews must be private/,
+      /preview dashboards must be private/,
     );
   });
 });
@@ -97,7 +114,7 @@ describe("preview deploy", () => {
     production = await deployProduction(fake);
   });
 
-  test("creates private preview resources and leaves production unchanged", async () => {
+  test("creates preview resources (private dashboards, public queries) and leaves production unchanged", async () => {
     const before = productionSnapshot(fake, production);
     const r = await deployPreview(fake, production, emptyState());
     assert.equal(productionSnapshot(fake, production), before);
@@ -106,7 +123,8 @@ describe("preview deploy", () => {
     for (const [key, t] of Object.entries(r.state.queries)) {
       assert.ok(!prodIds.queries.has(t.id), key);
       const q = fake.queries.get(t.id)!;
-      assert.equal(q.is_private, true, key);
+      assert.equal(q.is_private, false, key);
+      assert.match(q.name, /^\[Preview\] /);
       assert.ok(q.tags.includes("safenet-preview-default"));
       assert.ok(!q.tags.includes("safenet-analytics"));
       // References resolve to preview queries only.
@@ -116,10 +134,48 @@ describe("preview deploy", () => {
       }
     }
     for (const t of Object.values(r.state.visualizations)) assert.ok(!prodIds.visualizations.has(t.id));
-    const dash = fake.dashboards.get(r.state.dashboard!.id)!;
+    const dash = fake.dashboards.get(r.state.dashboards.overview.id)!;
     assert.equal(dash.slug, previewSlug("default"));
-    assert.equal(dash.is_private, true);
-    assert.notEqual(r.state.dashboard!.id, production.dashboard!.id);
+    const prodDashboards = new Set(Object.values(production.dashboards).map((t) => t.id));
+    assert.deepEqual(Object.keys(r.state.dashboards).sort(), previewOf().dashboards.map((d) => d.key).sort());
+    for (const t of Object.values(r.state.dashboards)) {
+      assert.equal(fake.dashboards.get(t.id)!.is_private, true);
+      assert.ok(!prodDashboards.has(t.id));
+    }
+  });
+
+  test("links between preview dashboards stay in the preview", async () => {
+    const r = await deployPreview(fake, production, emptyState());
+    const text = Object.values(r.state.dashboards).flatMap((t) => fake.dashboards.get(t.id)!.text_widgets.map((w) => w.text)).join("\n");
+    assert.match(text, /\[View staking & withdrawals →\]\(https:\/\/dune\.com\/safe\/safenet-staking-preview\)/);
+    assert.match(text, /\[← Safenet overview\]\(https:\/\/dune\.com\/safe\/safenet-preview\)/);
+    // Production dashboards are linked only from the banner.
+    const linked = [...text.matchAll(/https:\/\/dune\.com\/safe\/(safenet[a-z-]*)\)/g)].map((m) => m[1]).filter((s) => !isPreviewSlug(s));
+    assert.deepEqual([...new Set(linked)].sort(), ["safenet", "safenet-beta"]);
+    assert.ok(r.links.length > 0 && r.links.every((l) => l.ok && isPreviewSlug(l.url.split("/").pop()!)));
+  });
+
+  test("deploys preview-only dashboards in the preview", async () => {
+    const withDiagnostic = structuredClone(config);
+    const base = withDiagnostic.dashboards.find((d) => d.key === "overview")!;
+    withDiagnostic.dashboards.push({ ...structuredClone(base), key: "diagnostic", slug: "safenet-diagnostic", previewOnly: true });
+    const cfg = toPreview(withDiagnostic, { ...settings, track: "default" }, { sha: SHA });
+    const r = await deployPreview(fake, production, emptyState(), cfg);
+    assert.equal(fake.dashboards.get(r.state.dashboards.diagnostic.id)!.slug, "safenet-diagnostic-preview");
+  });
+
+  test("a dashboard removed from the configuration is left unchanged for the cleanup", async () => {
+    // As the crash-repro and crash-isolation dashboards were removed once the crash was fixed.
+    const withDiagnostic = structuredClone(config);
+    const base = withDiagnostic.dashboards.find((d) => d.key === "overview")!;
+    withDiagnostic.dashboards.push({ ...structuredClone(base), key: "diagnostic", slug: "safenet-diagnostic", previewOnly: true });
+    const first = await deployPreview(fake, production, emptyState(), toPreview(withDiagnostic, { ...settings, track: "default" }, { sha: SHA }));
+    const id = first.state.dashboards.diagnostic.id;
+    const writes = fake.writes().length;
+    const r = await deployPreview(fake, production, first.state, previewOf());
+    assert.equal(r.plan.steps.find((s) => s.resource === "dashboard" && s.key === "diagnostic")!.action, "noop");
+    assert.equal(r.state.dashboards.diagnostic.id, id);
+    assert.ok(!fake.writes().slice(writes).some((w) => w.includes(`/dashboards/${id}`)));
   });
 
   test("production queries read production queries", () => {
@@ -135,10 +191,10 @@ describe("preview deploy", () => {
     assert.equal(second.plan.steps.filter((s) => s.action === "create").length, 0);
     assert.deepEqual([fake.queries.size, fake.visualizations.size, fake.dashboards.size], counts);
     assert.deepEqual(second.state.queries, first.state.queries);
-    // Only the banner (new commit) changed.
+    // Only the banners (new commit) changed.
     assert.deepEqual(
       second.plan.steps.filter((s) => s.action !== "noop").map((s) => `${s.resource}:${s.action}`),
-      ["dashboard:update"],
+      previewOf().dashboards.map(() => "dashboard:update"),
     );
     // A lost preview state is recovered by lookup, without duplicates.
     const lost = await deployPreview(fake, production, emptyState());
@@ -151,8 +207,9 @@ describe("preview deploy", () => {
     const b = await deployPreview(fake, production, emptyState(), previewOf("staking"));
     const ids = (s: State) => new Set([...Object.values(s.queries), ...Object.values(s.visualizations)].map((t) => t.id));
     assert.equal([...ids(a.state)].filter((id) => ids(b.state).has(id)).length, 0);
-    assert.notEqual(a.state.dashboard!.id, b.state.dashboard!.id);
-    assert.equal(fake.dashboards.get(b.state.dashboard!.id)!.slug, "safenet-preview-staking");
+    assert.notEqual(a.state.dashboards.overview.id, b.state.dashboards.overview.id);
+    assert.equal(fake.dashboards.get(b.state.dashboards.overview.id)!.slug, "safenet-preview-staking");
+    assert.equal(fake.dashboards.get(b.state.dashboards.staking.id)!.slug, "safenet-staking-preview-staking");
   });
 
   test("stops if a lookup resolves to a production resource", async () => {
@@ -173,17 +230,34 @@ describe("preview deploy", () => {
     await assert.rejects(deployPreview(fake, production, emptyState(), cfg), /reads query_\d+, which belongs to production/);
   });
 
-  test("never falls back to public when Dune rejects private resources", async () => {
+  test("never falls back to a public dashboard when Dune rejects private ones", async () => {
     fake.privacy = "reject";
     const before = productionSnapshot(fake, production);
-    await assert.rejects(deployPreview(fake, production, emptyState()), /402.*private queries limit/);
-    assert.ok(![...fake.queries.values()].some((q) => q.name.startsWith("[Preview")));
+    await assert.rejects(deployPreview(fake, production, emptyState()), /402.*private dashboards limit/);
+    assert.ok(![...fake.dashboards.values()].some((d) => d.name.startsWith("Safenet — Preview")));
     assert.equal(productionSnapshot(fake, production), before);
   });
 
-  test("archives a query Dune created public and stops", async () => {
+  test("with private_queries, never falls back to public queries", async () => {
+    fake.privacy = "reject";
+    const cfg = toPreview(config, { ...settings, track: "default", privateQueries: true }, { sha: SHA });
+    await assert.rejects(deployPreview(fake, production, emptyState(), cfg), /402.*private queries limit/);
+    assert.ok(![...fake.queries.values()].some((q) => q.name.startsWith("[Preview")));
+  });
+
+  test("preview queries created private earlier are made public", async () => {
+    const cfg = toPreview(config, { ...settings, track: "default", privateQueries: true }, { sha: SHA });
+    const first = await deployPreview(fake, production, emptyState(), cfg);
+    assert.ok(Object.values(first.state.queries).every((t) => fake.queries.get(t.id)!.is_private));
+    const second = await deployPreview(fake, production, first.state);
+    assert.ok(Object.values(second.state.queries).every((t) => !fake.queries.get(t.id)!.is_private));
+    assert.deepEqual(Object.values(second.state.queries).map((t) => t.id), Object.values(first.state.queries).map((t) => t.id));
+  });
+
+  test("with private_queries, archives a query Dune created public and stops", async () => {
     fake.privacy = "ignore";
-    await assert.rejects(deployPreview(fake, production, emptyState()), /is public although previews must be private/);
+    const cfg = toPreview(config, { ...settings, track: "default", privateQueries: true }, { sha: SHA });
+    await assert.rejects(deployPreview(fake, production, emptyState(), cfg), /is public although previews must be private/);
     const previews = [...fake.queries.values()].filter((q) => q.name.startsWith("[Preview"));
     assert.ok(previews.length > 0 && previews.every((q) => q.is_archived));
   });
@@ -203,9 +277,15 @@ describe("preview executions", () => {
     preview = (await deployPreview(fake, production, emptyState())).state;
   });
 
-  test("runs only dashboard queries, and only when their SQL changed", async () => {
+  test("runs only dashboard queries, each once, and only when their SQL changed", async () => {
     const first = await run();
-    const shown = new Set(cfg.dashboard.widgets.flatMap((w) => (w.kind === "visualization" ? [w.ref.split("/")[0]] : [])));
+    const shown = new Set(
+      cfg.dashboards.flatMap((d) => d.widgets.flatMap((w) => (w.kind === "visualization" ? [w.ref.split("/")[0]] : []))),
+    );
+    // transaction_checks_daily is on the overview and on Network & revenue, and runs once.
+    assert.equal(first.filter((r) => r.key === "transaction_checks_daily").length, 1);
+    const executes = fake.requests.filter((x) => x.endsWith("/execute"));
+    assert.equal(executes.length, new Set(executes).size);
     assert.deepEqual(
       first.map((r) => [r.key, r.action]),
       cfg.queries.filter((q) => shown.has(q.key)).map((q) => [q.key, "executed"]),

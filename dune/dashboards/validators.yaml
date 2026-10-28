@@ -1,0 +1,52 @@
+# Safenet — Validators: https://dune.com/safe/safenet-validators
+# Attestation set, signing participation, stake history, rewards and withdrawal exposure. Linked
+# from the overview (overview.yaml); the navigation bar at the top and bottom links back to it and
+# to the other sections.
+# Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
+name: Safenet — Validators
+slug: safenet-validators
+private: false
+tags: [safenet, safe]
+
+widgets:
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · [Staking]({{dashboard:staking}}) · **Validators** · [Sentinels]({{dashboard:sentinels}})"
+    position: { row: 0, col: 0, size_x: 6, size_y: 2 }
+
+  - text_file: text/validators.md
+    position: { row: 2, col: 0, size_x: 4, size_y: 4 }
+  - visualization: validator_overview/freshness
+    position: { row: 2, col: 4, size_x: 2, size_y: 4 }
+
+  # Now
+  - visualization: validator_overview/table
+    position: { row: 6, col: 0, size_x: 6, size_y: 8 }
+  - visualization: validator_stake_status/table
+    position: { row: 14, col: 0, size_x: 6, size_y: 4 }
+
+  # Participation
+  - visualization: validator_participation_windows/table
+    position: { row: 18, col: 0, size_x: 6, size_y: 9 }
+  - visualization: validator_participation_daily/heatmap
+    position: { row: 27, col: 0, size_x: 6, size_y: 6 }
+
+  # Stake history (all time)
+  - visualization: validator_stake_daily/area
+    position: { row: 33, col: 0, size_x: 3, size_y: 8 }
+  - visualization: validator_stake_split_daily/area
+    position: { row: 33, col: 3, size_x: 3, size_y: 8 }
+
+  # Rewards and withdrawal exposure
+  - visualization: validator_rewards_periods/bars
+    position: { row: 41, col: 0, size_x: 3, size_y: 8 }
+  - visualization: validator_withdrawal_exposure/bars
+    position: { row: 41, col: 3, size_x: 3, size_y: 8 }
+  - visualization: validator_rewards_periods/table
+    position: { row: 49, col: 0, size_x: 6, size_y: 8 }
+  - visualization: validator_rewards_by_staker/table
+    position: { row: 57, col: 0, size_x: 6, size_y: 7 }
+
+  - text_file: text/validators_definitions.md
+    position: { row: 64, col: 0, size_x: 6, size_y: 11 }
+
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · [Staking]({{dashboard:staking}}) · **Validators** · [Sentinels]({{dashboard:sentinels}})"
+    position: { row: 75, col: 0, size_x: 6, size_y: 2 }

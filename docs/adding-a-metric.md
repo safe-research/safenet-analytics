@@ -26,8 +26,8 @@
        options: { ... }            # Dune visualization options, see below
    ```
 
-4. **Place it** in `dune/dashboard.yaml` as `visualization: <key>/<viz_key>` with a `position` on the 6-column grid (`row`, `col`, `size_x`, `size_y`). Text goes in `dune/text/*.md` and is referenced with `text_file`.
-5. **Check locally:** `npm test && npm run validate`. Validation catches overlapping widgets, unknown references, undeclared `{{parameters}}`, and chart columns that do not appear in the SQL.
+4. **Place it** on its section's dashboard, `dune/dashboards/<section>.yaml`, as `visualization: <key>/<viz_key>` with a `position` on the 6-column grid (`row`, `col`, `size_x`, `size_y`). Only headline numbers and key charts also go on the overview (`dune/dashboards/overview.yaml`); the same visualization may be placed on both. Text goes in `dune/text/*.md` and is referenced with `text_file`, or inline with `text`. Link to another dashboard with `{{dashboard:<key>}}`, never with a hard-coded `dune.com` URL: the link then points to the preview dashboard in a preview and to production in production.
+5. **Check locally:** `npm test && npm run validate`. Validation catches overlapping widgets, unknown references, undeclared `{{parameters}}`, chart columns that do not appear in the SQL, visualizations that are on no production dashboard, unknown or hard-coded dashboard links, and dashboards that do not link to all the others.
 6. **Open a pull request.** CI plans the production deployment, runs the new SQL on Dune and deploys a private preview ([preview.md](preview.md)); check the pull request comment. After merging, *Deploy* creates the query and chart, and *Refresh* runs the query.
 7. **Verify** the numbers against the underlying events, as `scripts/verify-transaction-checks.ts` does for the first metric. Record the result in the metric's doc.
 
@@ -51,6 +51,16 @@ The Dune API takes the same options JSON as the Dune UI, but Dune does not publi
   ```
 
 - **Counter:** `type: counter`, options `{ counterColName: requests, rowNumber: 1, stringDecimal: 0, counterLabel: Requests }`.
-- **Table:** `type: table`, options `{ itemsPerPage: 25, columns: [{ name: day, title: Day, type: normal, alignContent: left, isHidden: false }] }`.
+- **Table:** `type: table`, options `{ itemsPerPage: 25, columns: [{ name: day, title: Day, type: normal, alignContent: left, isHidden: false }] }`. List **every** result column. Dune shows all result columns in result order, and `columns` only titles, formats or hides them. Helper columns (`through_block`, `address`, `computed_at`, …) need an entry with `isHidden: true`, or they appear in the table. `npm run dune -- diagnose` reports unlisted columns as errors.
 
-To copy settings from a chart built in the Dune UI, run `npm run dune -- pull` for a managed query and copy the options from `dune/.remote/<key>/query.yaml`.
+- **Pivot table:** `type: pivot`, options in Dune's own format:
+
+  ```yaml
+  rows: [{ column_name: sentinel }]
+  columns: [{ column_name: day }]
+  values: [{ column_name: participation_pct, agg_type: AVG, numberFormat: "0.0" }]
+  ```
+
+  Dune's CLI documents no pivot format. This is what Dune's pivot editor stores, read back from a pivot made in the UI. Do **not** use the PivotTable.js settings (`cols`, `vals`, `rendererName`, `aggregatorName`, `controls`). Dune ignores them and its renderer then fails on the missing `columns` and `values`. Every page showing the widget crashed with `Cannot read properties of undefined (reading 'map')`, as dune.com/safe/safenet did in October 2026. Validation rejects that format. Dune's pivot has no heatmap colouring.
+
+To copy settings from a chart built in the Dune UI, run `npm run dune -- pull` for a managed query and copy the options from `dune/.remote/<key>/query.yaml`. For a visualization that is not managed yet, `npm run dune -- diagnose` (or the preview comment) lists the stored options of every visualization on the dashboards' queries that GitHub does not manage.

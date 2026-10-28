@@ -1,16 +1,21 @@
 # Preview dashboards for pull requests (docs/preview.md). Each work track has its own private
-# dashboard and queries under the `safe` team; pull requests on the same track reuse them.
+# dashboards and queries under the `safe` team; pull requests on the same track reuse them.
 #
-#   track "default" -> "Safenet — Preview",         safe/safenet-preview
-#   track "<name>"  -> "Safenet — Preview (<name>)", safe/safenet-preview-<name>
+#   track "default" -> "Safenet — Preview",         safe/safenet-preview,        safe/safenet-<key>-preview
+#   track "<name>"  -> "Safenet — Preview (<name>)", safe/safenet-preview-<name>, safe/safenet-<key>-preview-<name>
 #
 # Set `track` on a branch to give a parallel work package its own preview, for example
-# `track: staking-validators` (Staking and Validators packages) or `track: beta-replacement`.
+# `track: navigation` (overview and section dashboards) or `track: beta-replacement`.
 # Clean previews up after the final merge.
-track: staking-validators
+track: navigation
 
-# Previews must be private. The deployer stops instead of creating public resources.
+# Preview dashboards must be private. The deployer stops instead of creating public dashboards.
 private: true
+
+# Preview queries are public: their SQL is that of the public production queries, their names start
+# with [Preview <track>], and private queries count against the team's limit (reached in October
+# 2026). Set to true to create them private; the deployer then stops if one comes out public.
+private_queries: false
 
 # Cost caps for executing preview queries after a deploy. Only queries whose SQL changed since
 # their last preview execution, and that differ from production (run-preview --baseline), run. An

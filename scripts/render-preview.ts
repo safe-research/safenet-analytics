@@ -919,7 +919,12 @@ async function main() {
       results[q] = r.rows;
       ended.push(String(r.execution_ended_at ?? "?").slice(0, 16));
     }
-    if (!Object.keys(results).length) throw new Error("the preview has no query results");
+    // A pull request that changes no SQL (for example a layout change) executes nothing unless the
+    // Preview workflow runs with force_run; there is nothing to draw then, which is not an error.
+    if (!Object.keys(results).length) {
+      console.log("No preview query results: every query has the same SQL as production and was not executed. Rerun the Preview workflow with force_run for images.");
+      return;
+    }
     source = `the preview's query results (latest ${ended.sort().at(-1)} UTC)`;
   }
   const footer = `Rendered from ${esc(source)} for track ${esc(args.track)}, commit ${esc(args.sha!.slice(0, 7))}. Not a screenshot of Dune.`;

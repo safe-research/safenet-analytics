@@ -1,5 +1,5 @@
 // Executes preview queries after a preview deploy, within the cost caps of dune/preview.yaml.
-// Only queries shown on the dashboard run, and only if their SQL (with every referenced query
+// Only queries shown on a dashboard run (each once, however many dashboards show it), and only if their SQL (with every referenced query
 // inlined) changed since their last preview execution. With a baseline (the production
 // configuration on main), queries whose inlined SQL equals production's are not run either: a new
 // track would otherwise execute every section of the dashboard, not just the one under review.
@@ -28,7 +28,10 @@ export async function runPreviewQueries(
 ): Promise<PreviewRun[]> {
   const log = options.log ?? console.log;
   const { performance, timeoutMinutes, maxCreditsPerExecution, maxCreditsPerRun } = settings.execution;
-  const shown = new Set(config.dashboard.widgets.flatMap((w) => (w.kind === "visualization" ? [w.ref.split("/")[0]] : [])));
+  // Each query once, however many dashboards show it.
+  const shown = new Set(
+    config.dashboards.flatMap((d) => d.widgets.flatMap((w) => (w.kind === "visualization" ? [w.ref.split("/")[0]] : []))),
+  );
   state.executions ??= {};
   const runs: PreviewRun[] = [];
   let spent = 0;

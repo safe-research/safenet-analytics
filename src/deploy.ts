@@ -7,7 +7,10 @@
 // has been edited in Dune: the plan reports a conflict and nothing is written unless --force.
 
 import {
+  dashboardLinks,
+  dashboardUrl,
   normalizeSql,
+  renderLinks,
   renderSql,
   type Config,
   type DashboardSpec,
@@ -24,6 +27,7 @@ import type {
   VisualizationWrite,
 } from "./dune.ts";
 import { canonicalJson, fingerprint } from "./hash.ts";
+
 import type { ProtectedRecord, State } from "./state.ts";
 
 export type Action = "create" | "update" | "noop" | "adopt" | "conflict" | "archive" | "delete";
@@ -95,7 +99,8 @@ export function remoteVisualization(r: RemoteVisualization) {
   return { name: r.name, type: r.type, description: (r.description ?? "").trim(), options: r.options ?? {} };
 }
 
-export function desiredDashboard(d: DashboardSpec, vizIds: Map<string, number | string>) {
+// `url` maps a dashboard key to its URL in the target environment, for {{dashboard:<key>}} links.
+export function desiredDashboard(d: DashboardSpec, vizIds: Map<string, number | string>, url: (key: string) => string) {
   return {
     name: d.name,
     slug: d.slug,
@@ -104,7 +109,24 @@ export function desiredDashboard(d: DashboardSpec, vizIds: Map<string, number | 
     visualization_widgets: d.widgets
       .filter((w) => w.kind === "visualization")
       .map((w) => ({ visualization_id: vizIds.get(w.ref) ?? `new:${w.ref}`, position: w.position })),
-    text_widgets: d.widgets.filter((w) => w.kind === "text").map((w) => ({ text: w.text, position: w.position })),
+    text_widgets: d.widgets
+      .filter((w) => w.kind === "text")
+      .map((w) => ({ text: renderLinks(w.text, url), position: w.position })),
+  };
+}
+
+// The dashboards a deploy manages: all of them in a preview (toPreview clears previewOnly), and
+// the production ones otherwise.
+export const deployedDashboards = (config: Config) => config.dashboards.filter((d) => !d.previewOnly);
+
+// URL of each deployed dashboard by key, from its configured slug. Apply checks that Dune serves
+// every dashboard at exactly this URL before writing any link to it.
+export function dashboardUrls(config: Config): (key: string) => string {
+  const byKey = new Map(deployedDashboards(config).map((d) => [d.key, dashboardUrl(config.project.team, d.slug)]));
+  return (key) => {
+    const url = byKey.get(key);
+    if (!url) throw new Error(`{{dashboard:${key}}} refers to a dashboard that is not deployed here`);
+    return url;
   };
 }
 
@@ -158,9 +180,9 @@ export function contains(actual: unknown, expected: unknown): boolean {
   return actual === expected;
 }
 
-const sameDashboard = (r: RemoteDashboard, d: DashboardSpec, vizIds: Map<string, number | string>) => {
+const sameDashboard = (r: RemoteDashboard, desired: ReturnType<typeof desiredDashboard>) => {
   const { param_widgets, ...remote } = remoteDashboard(r);
-  return param_widgets.length === 0 && dashboardFingerprint(remote) === dashboardFingerprint(desiredDashboard(d, vizIds));
+  return param_widgets.length === 0 && dashboardFingerprint(remote) === dashboardFingerprint(desired);
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -337,33 +359,48 @@ export async function plan(
     steps.push({ resource: "visualization", key: v.key, id: remote.id, ...decision });
   }
 
-  // Dashboard
-  const d = config.dashboard;
+  // Dashboards
   const vizCreated = steps.some((s) => s.resource === "visualization" && s.action === "create");
-  const desiredHash = dashboardFingerprint(desiredDashboard(d, resolved.visualizations));
-  let remoteDash: RemoteDashboard | null = null;
-  if (state.dashboard) {
-    remoteDash = await client.getDashboard(state.dashboard.id);
-    if (!remoteDash)
-      steps.push(
-        force
-          ? { resource: "dashboard", key: d.slug, action: "create", reason: `dashboard ${state.dashboard.id} is missing; creating (--force)` }
-          : { resource: "dashboard", key: d.slug, action: "conflict", id: state.dashboard.id, reason: "missing or archived in Dune" },
-      );
-  } else {
-    remoteDash = await client.getDashboardBySlug(config.project.team, d.slug);
-    if (!remoteDash) steps.push({ resource: "dashboard", key: d.slug, action: "create" });
-  }
-  if (remoteDash) {
+  const url = dashboardUrls(config);
+  const dashboards = deployedDashboards(config);
+  for (const d of dashboards) {
+    const tracked = state.dashboards[d.key];
+    const desired = desiredDashboard(d, resolved.visualizations, url);
+    let remoteDash: RemoteDashboard | null = null;
+    if (tracked) {
+      remoteDash = await client.getDashboard(tracked.id);
+      if (!remoteDash) {
+        steps.push(
+          force
+            ? { resource: "dashboard", key: d.slug, action: "create", reason: `dashboard ${tracked.id} is missing; creating (--force)` }
+            : { resource: "dashboard", key: d.slug, action: "conflict", id: tracked.id, reason: "missing or archived in Dune" },
+        );
+        continue;
+      }
+    } else {
+      // An untracked dashboard at this slug is adopted only if it already matches; otherwise it is
+      // a conflict, so a deploy never takes over someone else's dashboard.
+      remoteDash = await client.getDashboardBySlug(config.project.team, d.slug);
+      if (!remoteDash) {
+        steps.push({ resource: "dashboard", key: d.slug, action: "create" });
+        continue;
+      }
+    }
     const decision = decide(
-      state.dashboard ?? undefined,
-      desiredHash,
+      tracked,
+      dashboardFingerprint(desired),
       dashboardFingerprint(remoteDashboard(remoteDash)),
-      sameDashboard(remoteDash, d, resolved.visualizations),
+      sameDashboard(remoteDash, desired),
     );
     const action = decision.action === "noop" && vizCreated ? "update" : decision.action;
     steps.push({ resource: "dashboard", key: d.slug, id: remoteDash.dashboard_id, ...decision, action });
   }
+  // Dashboards removed from the configuration (or preview-only ones in production) are left as
+  // they are: deleting a dashboard cannot be undone through the API. Previews remove theirs with
+  // the preview cleanup.
+  for (const [key, tracked] of Object.entries(state.dashboards))
+    if (!dashboards.some((d) => d.key === key))
+      steps.push({ resource: "dashboard", key, id: tracked.id, action: "noop", reason: "not in dune/dashboards; left unchanged" });
 
   // Resources removed from the configuration. Visualizations are deleted (they are fully defined
   // in GitHub history); queries are archived, which Dune can undo.
@@ -412,6 +449,41 @@ export async function plan(
   return { steps, conflicts: steps.filter((s) => s.action === "conflict"), protectedIds, resolved };
 }
 
+// Dune must serve the dashboard at dune.com/<team>/<slug>, the URL its links use.
+async function checkDashboardUrl(client: DuneClient, team: string, slug: string, id: number) {
+  const found = await client.getDashboardBySlug(team, slug);
+  if (found?.dashboard_id !== id)
+    throw new Error(
+      `${dashboardUrl(team, slug)} ${found ? `is dashboard ${found.dashboard_id}` : "does not exist"}, not dashboard ${id}; ` +
+        "no links to it were written. Dune may have refused the slug (already taken?).",
+    );
+}
+
+export type LinkCheck = { from: string; to: string; url: string; id: number; ok: boolean };
+
+// Follows every {{dashboard:<key>}} link of the deployed dashboards: its URL must resolve to the
+// dashboard recorded for the key, and the dashboard's text in Dune must contain it.
+export async function checkLinks(config: Config, state: State, client: DuneClient): Promise<LinkCheck[]> {
+  const url = dashboardUrls(config);
+  const checks: LinkCheck[] = [];
+  const resolved = new Map<string, number | undefined>();
+  for (const d of deployedDashboards(config)) {
+    const own = state.dashboards[d.key] && (await client.getDashboard(state.dashboards[d.key].id));
+    const text = (own?.text_widgets ?? []).map((w) => w.text).join("\n");
+    const targets = [...new Set(d.widgets.flatMap((w) => (w.kind === "text" ? dashboardLinks(w.text) : [])))];
+    for (const to of targets) {
+      const target = deployedDashboards(config).find((x) => x.key === to)!;
+      if (!resolved.has(to)) resolved.set(to, (await client.getDashboardBySlug(config.project.team, target.slug))?.dashboard_id);
+      const id = state.dashboards[to]?.id;
+      checks.push({ from: d.key, to, url: url(to), id, ok: id !== undefined && resolved.get(to) === id && text.includes(`(${url(to)})`) });
+    }
+  }
+  return checks;
+}
+
+export const formatLinkChecks = (checks: LinkCheck[]) =>
+  checks.map((c) => `${c.ok ? "ok    " : "BROKEN"} ${c.from} -> ${c.to}: ${c.url} (dashboard ${c.id ?? "?"})`).join("\n");
+
 function checkReferences(key: string, sql: string, guards: Guard[]) {
   for (const id of sqlQueryIds(sql)) {
     const guard = guards.find((g) => g.ids.queries.has(id));
@@ -424,9 +496,9 @@ function checkReferences(key: string, sql: string, guards: Guard[]) {
 
 export type ApplyOptions = {
   log?: (line: string) => void;
-  // Previews: every query and the dashboard must be private and owned by the team. A resource
-  // Dune leaves public is archived (queries) or emptied (dashboard) and the deploy stops; it never
-  // continues with public resources.
+  // Previews: every dashboard, and every query requested private, must come out private. A
+  // resource Dune leaves public is archived (queries) or emptied (dashboards) and the deploy stops;
+  // it never continues with public resources that were meant to be private.
   requirePrivate?: boolean;
   guards?: Guard[];
 };
@@ -471,7 +543,7 @@ export async function apply(
       await client.setQueryPrivate(guard(protectedIds.queries, id!), q.isPrivate);
       remote = (await client.getQuery(id!))!;
     }
-    if (options.requirePrivate && !remote.is_private) {
+    if (options.requirePrivate && q.isPrivate && !remote.is_private) {
       if (step.action === "create") await client.archiveQuery(id!);
       throw new Error(
         `query ${q.key} (${id}) is public although previews must be private` +
@@ -513,47 +585,66 @@ export async function apply(
     };
   }
 
-  // Dashboard: created with its name only, then given its slug, text and layout.
-  const d = config.dashboard;
-  const dStep = stepFor("dashboard", d.slug)!;
-  const desired = desiredDashboard(d, vizIds);
-  let dashboard: RemoteDashboard | null;
-  let dashId = dStep.id;
-  if (dStep.action === "create") {
-    const created = await client.createDashboard({ name: d.name, is_private: d.isPrivate });
-    dashId = created.dashboard_id;
-    // Record it before configuring it, so a failure below does not lose the ID.
-    next.dashboard = { id: dashId, url: created.dashboard_url, desired: "", remote: dashboardFingerprint(remoteDashboard(created)) };
-    log(`created dashboard ${d.slug} -> ${dashId}`);
-    // A new dashboard has no widgets yet; check privacy before adding any.
-    if (options.requirePrivate) {
-      const readBack = (await client.getDashboard(dashId)) ?? created;
-      if (!readBack.is_private)
-        throw new Error(
-          `dashboard ${d.slug} (${dashId}) was created public although it was requested private; ` +
-            "previews must be private. It has no widgets. Check the Dune plan's private dashboard limit.",
-        );
+  // Dashboards, in two passes. First every dashboard is created if needed and given its slug, and
+  // Dune must serve it at exactly the URL its links will use. Only then are text (with those links)
+  // and layout written, so no link ever points to a dashboard that does not exist.
+  const url = dashboardUrls(config);
+  const dashboards = deployedDashboards(config);
+  const dashIds = new Map<string, number>();
+  for (const d of dashboards) {
+    const step = stepFor("dashboard", d.slug)!;
+    let id = step.id;
+    if (step.action === "create") {
+      const created = await client.createDashboard({ name: d.name, is_private: d.isPrivate });
+      id = created.dashboard_id;
+      // Record it before configuring it, so a failure below does not lose the ID.
+      next.dashboards[d.key] = { id, url: created.dashboard_url, desired: "", remote: dashboardFingerprint(remoteDashboard(created)) };
+      log(`created dashboard ${d.slug} -> ${id}`);
+      // A new dashboard has no widgets yet; check privacy before adding any.
+      if (options.requirePrivate) {
+        const readBack = (await client.getDashboard(id)) ?? created;
+        if (!readBack.is_private)
+          throw new Error(
+            `dashboard ${d.slug} (${id}) was created public although it was requested private; ` +
+              "previews must be private. It has no widgets. Check the Dune plan's private dashboard limit.",
+          );
+      }
     }
+    if (step.action === "create" || step.action === "update") {
+      const current = await client.getDashboard(id!);
+      if (current?.slug !== d.slug) {
+        await client.updateDashboard(guard(protectedIds.dashboards, id!), { name: d.name, slug: d.slug, is_private: d.isPrivate });
+        log(`set the slug of dashboard ${id} to ${d.slug}`);
+      }
+    }
+    dashIds.set(d.key, id!);
   }
-  if (dStep.action === "create" || dStep.action === "update") {
-    const body: DashboardWrite = { ...desired, visualization_widgets: desired.visualization_widgets as DashboardWrite["visualization_widgets"] };
-    dashboard = await client.updateDashboard(guard(protectedIds.dashboards, dashId!), body);
-    dashboard = (await client.getDashboard(dashId!)) ?? dashboard;
-    log(`updated dashboard ${d.slug} (${dashId})`);
-  } else dashboard = await client.getDashboard(dashId!);
-  if (!dashboard) throw new Error(`dashboard ${dashId} not readable`);
-  if (options.requirePrivate && !dashboard.is_private) {
-    await client.updateDashboard(dashId!, { visualization_widgets: [], text_widgets: [] });
-    throw new Error(`dashboard ${d.slug} (${dashId}) is public; previews must be private. Its widgets were removed.`);
+  for (const d of dashboards) await checkDashboardUrl(client, config.project.team, d.slug, dashIds.get(d.key)!);
+
+  for (const d of dashboards) {
+    const step = stepFor("dashboard", d.slug)!;
+    const id = dashIds.get(d.key)!;
+    const desired = desiredDashboard(d, vizIds, url);
+    let dashboard: RemoteDashboard | null;
+    if (step.action === "create" || step.action === "update") {
+      const body: DashboardWrite = { ...desired, visualization_widgets: desired.visualization_widgets as DashboardWrite["visualization_widgets"] };
+      dashboard = await client.updateDashboard(guard(protectedIds.dashboards, id), body);
+      dashboard = (await client.getDashboard(id)) ?? dashboard;
+      log(`updated dashboard ${d.slug} (${id})`);
+    } else dashboard = await client.getDashboard(id);
+    if (!dashboard) throw new Error(`dashboard ${id} not readable`);
+    if (options.requirePrivate && !dashboard.is_private) {
+      await client.updateDashboard(id, { visualization_widgets: [], text_widgets: [] });
+      throw new Error(`dashboard ${d.slug} (${id}) is public; previews must be private. Its widgets were removed.`);
+    }
+    if (dashboard.slug !== d.slug) throw new Error(`Dune changed the slug of dashboard ${id} to "${dashboard.slug}" instead of "${d.slug}"`);
+    next.dashboards[d.key] = {
+      id,
+      url: dashboard.dashboard_url,
+      desired: dashboardFingerprint(desired),
+      remote: dashboardFingerprint(remoteDashboard(dashboard)),
+    };
   }
-  if (dashboard.slug !== d.slug)
-    log(`warning: Dune set the dashboard slug to "${dashboard.slug}" instead of "${d.slug}"`);
-  next.dashboard = {
-    id: dashboard.dashboard_id,
-    url: dashboard.dashboard_url,
-    desired: dashboardFingerprint(desired),
-    remote: dashboardFingerprint(remoteDashboard(dashboard)),
-  };
 
   // Removals, after the dashboard no longer references them.
   for (const s of planned.steps) {
@@ -621,7 +712,7 @@ export async function runDeploy(config: Config, state: State, client: DuneClient
   log(`\n${formatPlan(planned)}\n`);
   if (planned.conflicts.length || options.dryRun) {
     if (client.writes.length) throw new Error(`planning made writes: ${client.writes.join(", ")}`);
-    return { plan: planned, state, writes: [] as string[] };
+    return { plan: planned, state, writes: [] as string[], links: [] as LinkCheck[] };
   }
 
   const next: State = structuredClone(state);
@@ -638,11 +729,16 @@ export async function runDeploy(config: Config, state: State, client: DuneClient
     await options.save?.(next);
   }
 
+  const links = await checkLinks(config, next, client);
+  log(`\nLinks:\n${formatLinkChecks(links)}`);
+  const broken = links.filter((l) => !l.ok);
+  if (broken.length) throw new Error(`${broken.length} dashboard links do not resolve to their dashboard`);
+
   for (const [ref, snap] of before) {
     const after = await snapshotProtected(client, ref);
     if (after?.fingerprint !== snap.fingerprint)
       throw new Error(`protected dashboard ${ref} changed during this deploy (${snap.fingerprint} -> ${after?.fingerprint})`);
     log(`protected ${ref} unchanged`);
   }
-  return { plan: planned, state: next, writes: [...client.writes] };
+  return { plan: planned, state: next, writes: [...client.writes], links };
 }

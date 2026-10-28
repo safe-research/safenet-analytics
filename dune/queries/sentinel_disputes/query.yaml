@@ -30,3 +30,8 @@ visualizations:
         - { name: ruling_tx, title: Ruling tx (UTC), type: normal, alignContent: left, isHidden: false }
         - { name: slashed_usdc, title: Slashed (USDC.e), type: normal, alignContent: right, isHidden: false }
         - { name: attested, title: Attested, type: normal, alignContent: left, isHidden: false }
+        - { name: triggered_at, title: triggered_at, type: normal, alignContent: left, isHidden: true }
+        - { name: secure_votes, title: secure_votes, type: normal, alignContent: left, isHidden: true }
+        - { name: insecure_votes, title: insecure_votes, type: normal, alignContent: left, isHidden: true }
+        - { name: request_id, title: request_id, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }

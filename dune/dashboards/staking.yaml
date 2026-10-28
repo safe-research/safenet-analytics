@@ -1,0 +1,54 @@
+# Safenet — Staking: https://dune.com/safe/safenet-staking-withdrawals
+# (safe/safenet-staking is a separately maintained dashboard, see docs/metrics/staking.md.)
+# Active stake, flows, withdrawals and stake by validator. Linked from the overview (overview.yaml);
+# the navigation bar at the top and bottom links back to it and to the other sections.
+# Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
+name: Safenet — Staking
+slug: safenet-staking-withdrawals
+private: false
+tags: [safenet, safe]
+
+widgets:
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · **Staking** · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}})"
+    position: { row: 0, col: 0, size_x: 6, size_y: 2 }
+
+  - text_file: text/staking.md
+    position: { row: 2, col: 0, size_x: 4, size_y: 4 }
+  - visualization: staking_overview/freshness
+    position: { row: 2, col: 4, size_x: 2, size_y: 4 }
+
+  # Current state
+  - visualization: staking_overview/active_stake
+    position: { row: 6, col: 0, size_x: 2, size_y: 4 }
+  - visualization: staking_overview/stakers
+    position: { row: 6, col: 2, size_x: 2, size_y: 4 }
+  - visualization: staking_overview/outstanding
+    position: { row: 6, col: 4, size_x: 1, size_y: 4 }
+  - visualization: staking_overview/claimable
+    position: { row: 6, col: 5, size_x: 1, size_y: 4 }
+  - visualization: staking_flow_summary/table
+    position: { row: 10, col: 0, size_x: 6, size_y: 5 }
+
+  # History (all time)
+  - visualization: staking_daily/active_stake
+    position: { row: 15, col: 0, size_x: 3, size_y: 8 }
+  - visualization: staking_daily/net_flow
+    position: { row: 15, col: 3, size_x: 3, size_y: 8 }
+  - visualization: staking_daily/flows
+    position: { row: 23, col: 0, size_x: 3, size_y: 8 }
+  - visualization: staking_daily/requests
+    position: { row: 23, col: 3, size_x: 3, size_y: 8 }
+
+  # Withdrawals and validators (current state)
+  - visualization: staking_withdrawals_outstanding/table
+    position: { row: 31, col: 0, size_x: 6, size_y: 9 }
+  - visualization: staking_by_validator/bars
+    position: { row: 40, col: 0, size_x: 3, size_y: 8 }
+  - visualization: staking_by_validator/table
+    position: { row: 40, col: 3, size_x: 3, size_y: 8 }
+
+  - text_file: text/staking_definitions.md
+    position: { row: 48, col: 0, size_x: 6, size_y: 10 }
+
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · **Staking** · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}})"
+    position: { row: 58, col: 0, size_x: 6, size_y: 2 }
