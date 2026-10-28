@@ -43,7 +43,232 @@
       "url": "https://dune.com/safe/safenet-validators-preview-navigation"
     }
   },
-  "executions": {},
+  "executions": {
+    "fee_allocation": {
+      "credits": 7.294264706,
+      "ended_at": "2026-10-28T07:50:06.588198501Z",
+      "execution_id": "01M60QRTR4YRK1JSE79VH6KNRM",
+      "query_id": 9022766,
+      "sql": "ca86e57157bcae90"
+    },
+    "fee_config": {
+      "credits": 0.341205883,
+      "ended_at": "2026-10-28T07:50:13.66992559Z",
+      "execution_id": "01M60QSTV8PDWP909NM52BDQXB",
+      "query_id": 9022767,
+      "sql": "76cfe393b52d9eaa"
+    },
+    "fee_revenue_daily": {
+      "credits": 4.124852942,
+      "ended_at": "2026-10-28T07:50:47.830145243Z",
+      "execution_id": "01M60QT0E3SKMS1ARD7EQZS1AS",
+      "query_id": 9022768,
+      "sql": "80e3d68aa62783e7"
+    },
+    "guard_adoption": {
+      "credits": 1.66132353,
+      "ended_at": "2026-10-28T07:50:56.513482286Z",
+      "execution_id": "01M60QV0GRF0MCC502PF19S8KZ",
+      "query_id": 9022771,
+      "sql": "f812cf862aba4b42"
+    },
+    "latest_requests": {
+      "credits": 0.569911765,
+      "ended_at": "2026-10-28T07:51:03.223058857Z",
+      "execution_id": "01M60QVBDCPA7W0D5QRAXX5QFQ",
+      "query_id": 9022772,
+      "sql": "29ad1cb5341133ed"
+    },
+    "network_breakdown": {
+      "credits": 1.786710527,
+      "ended_at": "2026-10-28T07:51:13.913177678Z",
+      "execution_id": "01M60QVH1EKTES7MMGBSM7HYNV",
+      "query_id": 9022773,
+      "sql": "a63508ebb35f6acb"
+    },
+    "network_summary": {
+      "credits": 2.254264706,
+      "ended_at": "2026-10-28T07:51:31.313576923Z",
+      "execution_id": "01M60QVVXVXKSYKC2KMYRFG1EF",
+      "query_id": 9022774,
+      "sql": "e842e1e29775e1a2"
+    },
+    "results_daily": {
+      "credits": 0.863676471,
+      "ended_at": "2026-10-28T07:51:55.21146295Z",
+      "execution_id": "01M60QWC3K90PA53GXEBW3314P",
+      "query_id": 9022775,
+      "sql": "105110d4fa8a3b4f"
+    },
+    "sentinel_bonds": {
+      "credits": 2.917794118,
+      "ended_at": "2026-10-28T07:52:44.711659098Z",
+      "execution_id": "01M60QX6VYX0YMWMSFPD403CCQ",
+      "query_id": 9022781,
+      "sql": "bcc12ef44c835320"
+    },
+    "sentinel_coverage": {
+      "credits": 0.691558824,
+      "ended_at": "2026-10-28T07:53:00.422843783Z",
+      "execution_id": "01M60QYPSRDMXSPF7EA7332E55",
+      "query_id": 9022782,
+      "sql": "815ead989f19bb7e"
+    },
+    "sentinel_disputes": {
+      "credits": 1.237794118,
+      "ended_at": "2026-10-28T07:53:35.167269979Z",
+      "execution_id": "01M60QZ1NY5H3VK3Q1F6N2K4B3",
+      "query_id": 9022783,
+      "sql": "ae2445a5482aad38"
+    },
+    "sentinel_earnings": {
+      "credits": 0.856617648,
+      "ended_at": "2026-10-28T07:54:38.493343777Z",
+      "execution_id": "01M60R070ZR4VEF8QEB8JQTFVP",
+      "query_id": 9022784,
+      "sql": "6d93d33dac2056f9"
+    },
+    "sentinel_earnings_daily": {
+      "credits": 0.577676471,
+      "ended_at": "2026-10-28T07:54:44.93802646Z",
+      "execution_id": "01M60R21JSNTQBMVPG9FP9VDGN",
+      "query_id": 9022785,
+      "sql": "026dd543c6338457"
+    },
+    "sentinel_overview": {
+      "credits": 0.771911765,
+      "ended_at": "2026-10-28T07:55:02.520294188Z",
+      "execution_id": "01M60R2CEJEXFZ57QS4XVGQPAS",
+      "query_id": 9022786,
+      "sql": "933f360cde974a7e"
+    },
+    "sentinel_participation_daily": {
+      "credits": 0.569205883,
+      "ended_at": "2026-10-28T07:55:12.754893453Z",
+      "execution_id": "01M60R2WM6JP4DJZMM2TZMM6BE",
+      "query_id": 9022787,
+      "sql": "98cdd2ea79ba2bda"
+    },
+    "sentinel_verdicts": {
+      "credits": 0.664617648,
+      "ended_at": "2026-10-28T07:55:24.632811515Z",
+      "execution_id": "01M60R37G7QC2WAGBN7V7MFBQ6",
+      "query_id": 9022788,
+      "sql": "db85d920ff44a842"
+    },
+    "sentinel_windows": {
+      "credits": 0.605088236,
+      "ended_at": "2026-10-28T07:55:35.634121308Z",
+      "execution_id": "01M60R3JCB3GHNSY335BXKPTG9",
+      "query_id": 9022789,
+      "sql": "a516d9eec2f6e5ce"
+    },
+    "staking_by_validator": {
+      "credits": 0.290029412,
+      "ended_at": "2026-10-28T07:55:46.873507598Z",
+      "execution_id": "01M60R3XA415K2VV6NDMHK0V0N",
+      "query_id": 9022794,
+      "sql": "8c4c8b864d01c0ff"
+    },
+    "staking_daily": {
+      "credits": 0.3355,
+      "ended_at": "2026-10-28T07:55:55.970449944Z",
+      "execution_id": "01M60R48666BE0GHFP62XWD0R2",
+      "query_id": 9022795,
+      "sql": "a950e1185feaf3cb"
+    },
+    "staking_flow_summary": {
+      "credits": 0.333735295,
+      "ended_at": "2026-10-28T07:56:00.838041289Z",
+      "execution_id": "01M60R4DRTF4WWFWDEW3D6M3RB",
+      "query_id": 9022796,
+      "sql": "8ca8616b4eb5310a"
+    },
+    "staking_overview": {
+      "credits": 1.468337322,
+      "ended_at": "2026-10-28T07:56:08.630549741Z",
+      "execution_id": "01M60R4KBGN5Y40HRQRQGTMKX8",
+      "query_id": 9022798,
+      "sql": "b43bd70df672c40f"
+    },
+    "staking_withdrawals_outstanding": {
+      "credits": 0.777147059,
+      "ended_at": "2026-10-28T07:56:22.443826436Z",
+      "execution_id": "01M60R4Y875AVDS8DWM1YCQSXX",
+      "query_id": 9022799,
+      "sql": "35684007177c3136"
+    },
+    "transaction_checks_daily": {
+      "credits": 1.096617648,
+      "ended_at": "2026-10-28T07:56:33.344254436Z",
+      "execution_id": "01M60R595SWT6ZRK0PTJD4EJ56",
+      "query_id": 9022800,
+      "sql": "708eb4ae14292fec"
+    },
+    "validator_overview": {
+      "credits": 0.334970589,
+      "ended_at": "2026-10-28T07:56:45.299456511Z",
+      "execution_id": "01M60R5M23CN7MC6A5VE5V1QDR",
+      "query_id": 9022804,
+      "sql": "f872ebe9530e0123"
+    },
+    "validator_participation_daily": {
+      "credits": 11.494264707,
+      "ended_at": "2026-10-28T07:58:56.620143998Z",
+      "execution_id": "01M60R5YZYXSGPGT5Q46CVEH2P",
+      "query_id": 9022805,
+      "sql": "15ce92ef28f03ae1"
+    },
+    "validator_participation_windows": {
+      "credits": 0.265088236,
+      "ended_at": "2026-10-28T07:59:02.87579387Z",
+      "execution_id": "01M60R9YCNM5AQHKGNZD5MWCCM",
+      "query_id": 9022806,
+      "sql": "40c4456e69cbb84a"
+    },
+    "validator_rewards_by_staker": {
+      "credits": 1.816617648,
+      "ended_at": "2026-10-28T07:59:13.316582567Z",
+      "execution_id": "01M60RA3ZPFSC5MST3Q4AC09VZ",
+      "query_id": 9022808,
+      "sql": "21fe29865b0f3138"
+    },
+    "validator_rewards_periods": {
+      "credits": 1.068382353,
+      "ended_at": "2026-10-28T07:59:26.490057772Z",
+      "execution_id": "01M60RAEW450ZR0DQ4R1NP45QS",
+      "query_id": 9022809,
+      "sql": "fd0b19c65e72c5fc"
+    },
+    "validator_stake_daily": {
+      "credits": 0.293058824,
+      "ended_at": "2026-10-28T07:59:34.697928924Z",
+      "execution_id": "01M60RAZ170TW9T825QWFKPQ2X",
+      "query_id": 9022810,
+      "sql": "9447ab6ede9befaa"
+    },
+    "validator_stake_split_daily": {
+      "credits": 0.104852942,
+      "ended_at": "2026-10-28T07:59:46.211260845Z",
+      "execution_id": "01M60RB4KTK0P9QWTMSW6QY57A",
+      "query_id": 9022811,
+      "sql": "c48db278cae5bb33"
+    },
+    "validator_stake_status": {
+      "credits": 0.2605,
+      "ended_at": "2026-10-28T08:00:00.356426012Z",
+      "execution_id": "01M60RBFFTD5N5YBD6V1W52N61",
+      "query_id": 9022812,
+      "sql": "9b8ef80d261254d1"
+    },
+    "validator_withdrawal_exposure": {
+      "credits": 1.150500001,
+      "ended_at": "2026-10-28T08:00:30.659733121Z",
+      "execution_id": "01M60RBZQPCNH47JRJ7SZG3VS1",
+      "query_id": 9022813,
+      "sql": "ee05e49cdac993d6"
+    }
+  },
   "protected": {
     "safe/safenet-beta": {
       "checked_at": "2026-10-27T17:05:16.823Z",
