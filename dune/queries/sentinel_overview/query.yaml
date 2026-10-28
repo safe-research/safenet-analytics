@@ -38,6 +38,12 @@ visualizations:
         - { name: last_revert_reason, title: Last revert reason, type: normal, alignContent: left, isHidden: false }
         - { name: last_activity, title: Last activity (UTC), type: normal, alignContent: left, isHidden: false }
         - { name: address, title: Address, type: normal, alignContent: left, isHidden: true }
+        - { name: name, title: name, type: normal, alignContent: left, isHidden: true }
+        - { name: last_activity_at, title: last_activity_at, type: normal, alignContent: left, isHidden: true }
+        - { name: as_of_time, title: as_of_time, type: normal, alignContent: left, isHidden: true }
+        - { name: as_of_block, title: as_of_block, type: normal, alignContent: left, isHidden: true }
+        - { name: computed_at, title: computed_at, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }
   freshness:
     name: Sentinels data as of
     type: table
@@ -46,3 +52,23 @@ visualizations:
       columns:
         - { name: as_of_time, title: Gnosis Chain data as of (UTC), type: normal, alignContent: left, isHidden: false }
         - { name: computed_at, title: Computed (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: sentinel_link, title: sentinel_link, type: normal, alignContent: left, isHidden: true }
+        - { name: name, title: name, type: normal, alignContent: left, isHidden: true }
+        - { name: address, title: address, type: normal, alignContent: left, isHidden: true }
+        - { name: current_status, title: current_status, type: normal, alignContent: left, isHidden: true }
+        - { name: eligible_requests, title: eligible_requests, type: normal, alignContent: left, isHidden: true }
+        - { name: commits, title: commits, type: normal, alignContent: left, isHidden: true }
+        - { name: valid_reveals, title: valid_reveals, type: normal, alignContent: left, isHidden: true }
+        - { name: participation_rate, title: participation_rate, type: normal, alignContent: left, isHidden: true }
+        - { name: secure, title: secure, type: normal, alignContent: left, isHidden: true }
+        - { name: insecure, title: insecure, type: normal, alignContent: left, isHidden: true }
+        - { name: no_commit, title: no_commit, type: normal, alignContent: left, isHidden: true }
+        - { name: reverted_commit, title: reverted_commit, type: normal, alignContent: left, isHidden: true }
+        - { name: missing_responses, title: missing_responses, type: normal, alignContent: left, isHidden: true }
+        - { name: pending, title: pending, type: normal, alignContent: left, isHidden: true }
+        - { name: reverted_calls, title: reverted_calls, type: normal, alignContent: left, isHidden: true }
+        - { name: last_revert_reason, title: last_revert_reason, type: normal, alignContent: left, isHidden: true }
+        - { name: last_activity, title: last_activity, type: normal, alignContent: left, isHidden: true }
+        - { name: last_activity_at, title: last_activity_at, type: normal, alignContent: left, isHidden: true }
+        - { name: as_of_block, title: as_of_block, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }

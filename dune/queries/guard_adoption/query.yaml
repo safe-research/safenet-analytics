@@ -24,3 +24,4 @@ visualizations:
         - { name: guard_enabled_safes, title: Guard-enabled Safes now, type: normal, alignContent: right, isHidden: false }
         - { name: verified_production_guards, title: Production guard deployments, type: normal, alignContent: right, isHidden: false }
         - { name: note, title: Note, type: normal, alignContent: left, isHidden: false }
+        - { name: sort_order, title: sort_order, type: normal, alignContent: left, isHidden: true }

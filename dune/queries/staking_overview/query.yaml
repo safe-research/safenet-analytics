@@ -35,3 +35,15 @@ visualizations:
         - { name: as_of_time, title: Ethereum data as of (UTC), type: normal, alignContent: left, isHidden: false }
         - { name: through_block, title: Block, type: normal, alignContent: left, isHidden: false }
         - { name: computed_at, title: Computed (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: active_stake, title: active_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: active_stakers, title: active_stakers, type: normal, alignContent: left, isHidden: true }
+        - { name: outstanding_withdrawals, title: outstanding_withdrawals, type: normal, alignContent: left, isHidden: true }
+        - { name: waiting_withdrawals, title: waiting_withdrawals, type: normal, alignContent: left, isHidden: true }
+        - { name: claimable_withdrawals, title: claimable_withdrawals, type: normal, alignContent: left, isHidden: true }
+        - { name: waiting_count, title: waiting_count, type: normal, alignContent: left, isHidden: true }
+        - { name: claimable_count, title: claimable_count, type: normal, alignContent: left, isHidden: true }
+        - { name: deregistered_stake, title: deregistered_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: validators_with_stake, title: validators_with_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: active_stake_raw, title: active_stake_raw, type: normal, alignContent: left, isHidden: true }
+        - { name: outstanding_withdrawals_raw, title: outstanding_withdrawals_raw, type: normal, alignContent: left, isHidden: true }
+        - { name: inconsistent_withdrawals, title: inconsistent_withdrawals, type: normal, alignContent: left, isHidden: true }

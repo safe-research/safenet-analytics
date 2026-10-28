@@ -31,3 +31,7 @@ visualizations:
         - { name: missing_30d, title: Missing 30d, type: normal, alignContent: right, isHidden: false }
         - { name: rate_all, title: Rate all time, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
         - { name: eligible_all, title: Eligible all time, type: normal, alignContent: right, isHidden: false }
+        - { name: name, title: name, type: normal, alignContent: left, isHidden: true }
+        - { name: address, title: address, type: normal, alignContent: left, isHidden: true }
+        - { name: computed_at, title: computed_at, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }

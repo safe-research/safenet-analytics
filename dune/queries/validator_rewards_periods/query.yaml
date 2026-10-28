@@ -51,3 +51,7 @@ visualizations:
         - { name: reissues, title: Re-issues, type: normal, alignContent: right, isHidden: false }
         - { name: root_on_chain, title: Root set on chain, type: normal, alignContent: left, isHidden: false }
         - { name: merkle_root, title: Merkle root, type: normal, alignContent: left, isHidden: true }
+        - { name: era, title: era, type: normal, alignContent: left, isHidden: true }
+        - { name: period_start, title: period_start, type: normal, alignContent: left, isHidden: true }
+        - { name: period_end, title: period_end, type: normal, alignContent: left, isHidden: true }
+        - { name: commission, title: commission, type: normal, alignContent: left, isHidden: true }

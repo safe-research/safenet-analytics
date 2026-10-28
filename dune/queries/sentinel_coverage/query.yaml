@@ -36,3 +36,7 @@ visualizations:
         - { name: requests_30d, title: Requests 30d, type: normal, alignContent: right, isHidden: false }
         - { name: requests_all, title: Requests all time, type: normal, alignContent: right, isHidden: false }
         - { name: pending_requests, title: Still in response window, type: normal, alignContent: right, isHidden: false }
+        - { name: valid_responses, title: valid_responses, type: normal, alignContent: left, isHidden: true }
+        - { name: decided_30d, title: decided_30d, type: normal, alignContent: left, isHidden: true }
+        - { name: decided_all, title: decided_all, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }

@@ -44,7 +44,7 @@ describe("diagnose", () => {
     assert.ok(w.findings.some((f) => f.level === "note" && f.message === "participation_pct is null in 1 of 1 rows"));
   });
 
-  test("a result that fits the options has no errors; extra table columns are noted", async () => {
+  test("a result that fits the options has no findings; unlisted table columns are errors", async () => {
     const table = specs.find((v) => v.key === LATEST)!;
     const columns = (table.options.columns as { name: string }[]).map((c) => c.name);
     fake.results.set(state.queries.latest_requests.id, {
@@ -52,7 +52,9 @@ describe("diagnose", () => {
       rows: [Object.fromEntries([...columns, "unlisted"].map((c) => [c, "x"]))],
     });
     const { w } = await widget("network-revenue", LATEST);
-    assert.deepEqual(w.findings, [{ level: "note", message: "result columns without column settings: unlisted" }]);
+    assert.deepEqual(w.findings, [
+      { level: "error", message: "Dune shows result columns that options.columns does not list (add them with isHidden: true): unlisted" },
+    ]);
     assert.deepEqual(w.result, { state: "QUERY_STATE_COMPLETED", rows: 1, columns: [...columns, "unlisted"], ended_at: undefined });
   });
 

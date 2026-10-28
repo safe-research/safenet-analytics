@@ -28,6 +28,10 @@ visualizations:
         - { name: test_requests, title: "Test requests (not counted)", type: normal, alignContent: right, isHidden: false }
         - { name: gross_fees_usdc, title: Gross fees (USDC.e), type: normal, alignContent: right, isHidden: false }
         - { name: refunds_usdc, title: Refunds (USDC.e), type: normal, alignContent: right, isHidden: false }
+        - { name: gnosis_data_as_of, title: gnosis_data_as_of, type: normal, alignContent: left, isHidden: true }
+        - { name: latest_request_at, title: latest_request_at, type: normal, alignContent: left, isHidden: true }
+        - { name: computed_at, title: computed_at, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }
   freshness:
     name: Data as of
     type: table
@@ -37,6 +41,19 @@ visualizations:
         - { name: gnosis_data_as_of, title: Gnosis Chain data as of (UTC), type: normal, alignContent: left, isHidden: false }
         - { name: latest_request_at, title: Latest request (UTC), type: normal, alignContent: left, isHidden: false }
         - { name: computed_at, title: Computed (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: time_window, title: time_window, type: normal, alignContent: left, isHidden: true }
+        - { name: requests, title: requests, type: normal, alignContent: left, isHidden: true }
+        - { name: unique_safe_transactions, title: unique_safe_transactions, type: normal, alignContent: left, isHidden: true }
+        - { name: sentinel_responses, title: sentinel_responses, type: normal, alignContent: left, isHidden: true }
+        - { name: completed_results, title: completed_results, type: normal, alignContent: left, isHidden: true }
+        - { name: attestations, title: attestations, type: normal, alignContent: left, isHidden: true }
+        - { name: safes_with_requests, title: safes_with_requests, type: normal, alignContent: left, isHidden: true }
+        - { name: safes_with_completed_checks, title: safes_with_completed_checks, type: normal, alignContent: left, isHidden: true }
+        - { name: operational_requests, title: operational_requests, type: normal, alignContent: left, isHidden: true }
+        - { name: test_requests, title: test_requests, type: normal, alignContent: left, isHidden: true }
+        - { name: gross_fees_usdc, title: gross_fees_usdc, type: normal, alignContent: left, isHidden: true }
+        - { name: refunds_usdc, title: refunds_usdc, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }
   completed_results:
     name: Completed results (all time)
     type: counter

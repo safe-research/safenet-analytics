@@ -94,7 +94,9 @@ export async function diagnoseDashboard(
     if (viz.type === "table" && Array.isArray(options.columns)) {
       const configured = new Set((options.columns as { name?: string }[]).map((c) => c.name));
       const extra = result.columns.filter((c) => !configured.has(c));
-      if (extra.length) d.findings.push({ level: "note", message: `result columns without column settings: ${extra.join(", ")}` });
+      // Dune shows every result column; options.columns only titles, formats or hides them.
+      if (extra.length)
+        d.findings.push({ level: "error", message: `Dune shows result columns that options.columns does not list (add them with isHidden: true): ${extra.join(", ")}` });
     }
     if (!result.rows.length) d.findings.push({ level: "note", message: "empty result (0 rows)" });
     for (const c of columns.filter((c) => result.columns.includes(c))) {

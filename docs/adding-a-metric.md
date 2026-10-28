@@ -51,7 +51,7 @@ The Dune API takes the same options JSON as the Dune UI, but Dune does not publi
   ```
 
 - **Counter:** `type: counter`, options `{ counterColName: requests, rowNumber: 1, stringDecimal: 0, counterLabel: Requests }`.
-- **Table:** `type: table`, options `{ itemsPerPage: 25, columns: [{ name: day, title: Day, type: normal, alignContent: left, isHidden: false }] }`.
+- **Table:** `type: table`, options `{ itemsPerPage: 25, columns: [{ name: day, title: Day, type: normal, alignContent: left, isHidden: false }] }`. List **every** result column. Dune shows all result columns in result order, and `columns` only titles, formats or hides them. Helper columns (`through_block`, `address`, `computed_at`, …) need an entry with `isHidden: true`, or they appear in the table. `npm run dune -- diagnose` reports unlisted columns as errors.
 
 - **Pivot table:** `type: pivot`, options in Dune's own format:
 

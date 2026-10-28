@@ -24,3 +24,4 @@ visualizations:
         - { name: outstanding_usdc, title: Outstanding (USDC.e), type: normal, alignContent: right, isHidden: false }
         - { name: note, title: Note, type: normal, alignContent: left, isHidden: false }
         - { name: sort_order, title: Order, type: normal, alignContent: right, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }

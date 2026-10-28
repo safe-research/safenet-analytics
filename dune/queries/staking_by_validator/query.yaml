@@ -53,3 +53,8 @@ visualizations:
         - { name: stakers, title: Stakers, type: normal, alignContent: right, isHidden: false }
         - { name: validator_address, title: Validator address, type: normal, alignContent: left, isHidden: true }
         - { name: unreconciled_stake, title: "Rows minus headline (expected 0)", type: normal, alignContent: right, isHidden: true }
+        - { name: validator_label, title: validator_label, type: normal, alignContent: left, isHidden: true }
+        - { name: self_stake, title: self_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: delegated_stake, title: delegated_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: unattributed_stake, title: unattributed_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: deregistered_stake, title: deregistered_stake, type: normal, alignContent: left, isHidden: true }

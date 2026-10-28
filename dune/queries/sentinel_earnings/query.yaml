@@ -28,3 +28,8 @@ visualizations:
         - { name: safe_published, title: SAFE published, type: normal, alignContent: left, isHidden: false }
         - { name: safe_claimed, title: SAFE claimed, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
         - { name: safe_claimable, title: SAFE claimable, type: normal, alignContent: left, isHidden: false }
+        - { name: name, title: name, type: normal, alignContent: left, isHidden: true }
+        - { name: address, title: address, type: normal, alignContent: left, isHidden: true }
+        - { name: rewarded_requests, title: rewarded_requests, type: normal, alignContent: left, isHidden: true }
+        - { name: published_root_is_current, title: published_root_is_current, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }
