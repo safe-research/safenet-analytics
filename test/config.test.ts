@@ -32,13 +32,13 @@ test("the repository configuration is valid", async () => {
   assert.equal(config.project.team, "safe");
   assert.deepEqual(config.project.protectedDashboards, ["safe/safenet-beta"]);
   assert.deepEqual(
-    config.dashboards.map((d) => [d.key, d.slug]).filter(([k]) => !k.startsWith("crash-")),
+    config.dashboards.map((d) => [d.key, d.slug, d.previewOnly]),
     [
-      ["overview", "safenet"],
-      ["network-revenue", "safenet-network-revenue"],
-      ["sentinels", "safenet-sentinels"],
-      ["staking", "safenet-staking-withdrawals"],
-      ["validators", "safenet-validators"],
+      ["overview", "safenet", false],
+      ["network-revenue", "safenet-network-revenue", false],
+      ["sentinels", "safenet-sentinels", false],
+      ["staking", "safenet-staking-withdrawals", false],
+      ["validators", "safenet-validators", false],
     ],
   );
   assert.equal(config.queries.find((q) => q.key === "transaction_checks_daily")!.refresh, "daily");
@@ -47,12 +47,15 @@ test("the repository configuration is valid", async () => {
 
 test("reads a configuration from before dune/dashboards/ (single dashboard.yaml) as the overview", async () => {
   // main's configuration until this change, used as the preview baseline, and older commits that
-  // docs/restoring.md checks out. crash-repro.yaml is that layout verbatim.
+  // docs/restoring.md checks out: one page with every visualization.
+  const refs = [
+    ...new Set((await loadConfig()).dashboards.flatMap((d) => d.widgets.flatMap((w) => (w.kind === "visualization" ? [w.ref] : [])))),
+  ];
   const legacy = await withConfig(async (root) => {
-    const { readFile, rm, writeFile } = await import("node:fs/promises");
-    const repro = await readFile(join(root, "dashboards", "crash-repro.yaml"), "utf8");
+    const { rm, writeFile } = await import("node:fs/promises");
     await rm(join(root, "dashboards"), { recursive: true });
-    await writeFile(join(root, "dashboard.yaml"), repro.replace("slug: safenet-crash-repro", "slug: safenet").replace("preview_only: true\n", ""));
+    const widgets = refs.map((ref, i) => `  - visualization: ${ref}\n    position: { row: ${i}, col: 0, size_x: 6, size_y: 1 }`);
+    await writeFile(join(root, "dashboard.yaml"), `name: Safenet\nslug: safenet\nwidgets:\n${widgets.join("\n")}\n`);
   });
   assert.deepEqual(legacy.dashboards.map((d) => [d.key, d.slug, d.previewOnly]), [["overview", "safenet", false]]);
   assert.equal(legacy.queries.length, (await loadConfig()).queries.length);

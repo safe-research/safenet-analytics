@@ -299,10 +299,11 @@ describe("several dashboards", () => {
   });
 
   test("preview-only dashboards are never deployed to production", async () => {
-    assert.ok(config.dashboards.some((d) => d.previewOnly));
-    const r = await deploy(fake, config, emptyState());
-    assert.ok(![...fake.dashboards.values()].some((d) => d.slug.includes("crash")));
-    assert.ok(!Object.keys(r.state.dashboards).some((k) => k.startsWith("crash")));
+    const withDiagnostic = structuredClone(config);
+    withDiagnostic.dashboards.push({ ...structuredClone(overview(config)), key: "diagnostic", slug: "safenet-diagnostic", previewOnly: true });
+    const r = await deploy(fake, withDiagnostic, emptyState());
+    assert.ok(![...fake.dashboards.values()].some((d) => d.slug === "safenet-diagnostic"));
+    assert.equal(r.state.dashboards.diagnostic, undefined);
   });
 
   test("a visualization on several dashboards is one Dune visualization, its query refreshed once", async () => {

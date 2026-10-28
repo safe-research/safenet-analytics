@@ -155,9 +155,27 @@ describe("preview deploy", () => {
     assert.ok(r.links.length > 0 && r.links.every((l) => l.ok && isPreviewSlug(l.url.split("/").pop()!)));
   });
 
-  test("deploys the preview-only crash dashboards", async () => {
-    const r = await deployPreview(fake, production, emptyState());
-    assert.equal(fake.dashboards.get(r.state.dashboards["crash-repro"].id)!.slug, "safenet-crash-repro-preview");
+  test("deploys preview-only dashboards in the preview", async () => {
+    const withDiagnostic = structuredClone(config);
+    const base = withDiagnostic.dashboards.find((d) => d.key === "overview")!;
+    withDiagnostic.dashboards.push({ ...structuredClone(base), key: "diagnostic", slug: "safenet-diagnostic", previewOnly: true });
+    const cfg = toPreview(withDiagnostic, { ...settings, track: "default" }, { sha: SHA });
+    const r = await deployPreview(fake, production, emptyState(), cfg);
+    assert.equal(fake.dashboards.get(r.state.dashboards.diagnostic.id)!.slug, "safenet-diagnostic-preview");
+  });
+
+  test("a dashboard removed from the configuration is left unchanged for the cleanup", async () => {
+    // As the crash-repro and crash-isolation dashboards were removed once the crash was fixed.
+    const withDiagnostic = structuredClone(config);
+    const base = withDiagnostic.dashboards.find((d) => d.key === "overview")!;
+    withDiagnostic.dashboards.push({ ...structuredClone(base), key: "diagnostic", slug: "safenet-diagnostic", previewOnly: true });
+    const first = await deployPreview(fake, production, emptyState(), toPreview(withDiagnostic, { ...settings, track: "default" }, { sha: SHA }));
+    const id = first.state.dashboards.diagnostic.id;
+    const writes = fake.writes().length;
+    const r = await deployPreview(fake, production, first.state, previewOf());
+    assert.equal(r.plan.steps.find((s) => s.resource === "dashboard" && s.key === "diagnostic")!.action, "noop");
+    assert.equal(r.state.dashboards.diagnostic.id, id);
+    assert.ok(!fake.writes().slice(writes).some((w) => w.includes(`/dashboards/${id}`)));
   });
 
   test("production queries read production queries", () => {
