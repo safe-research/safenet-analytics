@@ -96,6 +96,28 @@ describe("preview cleanup", () => {
     assert.ok(again.items.filter((i) => i.resource === "query").every((i) => i.action === "forget"));
   });
 
+  test("a dashboard Dune archived as archived-<slug> by an earlier cleanup is left alone", async () => {
+    // As safenet-preview-sentinels: emptied and archived, then the cleanup stopped. Dune renamed the
+    // slug on archiving; the name no longer starts with [Archived].
+    const [key, t] = Object.entries(preview.dashboards)[0];
+    const d = fake.dashboards.get(t.id)!;
+    Object.assign(d, { slug: `archived-${d.slug}`, visualization_widgets: [], text_widgets: [] });
+    const p = await planCleanup(settings.track, preview, production, fake.client(), options);
+    assert.deepEqual(p.blockers, []);
+    const item = p.items.find((i) => i.resource === "dashboard" && i.id === t.id)!;
+    assert.equal(item.action, "forget", key);
+    const writes = fake.writes().length;
+    await applyCleanup(p, fake.client(), quiet);
+    assert.ok(!fake.writes().slice(writes).some((w) => w.includes(`/dashboards/${t.id}`)));
+  });
+
+  test("an archived- slug that is not a preview slug still blocks", async () => {
+    const [, t] = Object.entries(preview.dashboards)[0];
+    Object.assign(fake.dashboards.get(t.id)!, { slug: "archived-safenet" });
+    const p = await planCleanup(settings.track, preview, production, fake.client(), options);
+    assert.ok(p.blockers.some((b) => b.includes("has slug archived-safenet, not a preview slug")), p.blockers.join("\n"));
+  });
+
   test("refuses while another query reads a preview query", async () => {
     const id = preview.queries.safenet_events.id;
     fake.seedQuery({ name: "Someone's analysis", query_sql: `select * from query_${id}` });
