@@ -1,45 +1,45 @@
 {
   "dashboards": {
     "crash-isolation": {
-      "desired": "e2aa7b0d13a321cc",
+      "desired": "5f9b3e3162dbee02",
       "id": 222623,
-      "remote": "e97ade922cd93cf9",
+      "remote": "13192fa4ab2b76c4",
       "url": "https://dune.com/safe/safenet-crash-isolation-preview-navigation"
     },
     "crash-repro": {
-      "desired": "6370e6497d707161",
+      "desired": "5e9b4112ba419e3d",
       "id": 222624,
-      "remote": "11429e728bd29c29",
+      "remote": "accffbef0d6fe980",
       "url": "https://dune.com/safe/safenet-crash-repro-preview-navigation"
     },
     "network-revenue": {
-      "desired": "d3120c4a162815b8",
+      "desired": "5e8d995b7598b436",
       "id": 222625,
-      "remote": "f8adefeecac6cd62",
+      "remote": "7d49340c8791ebd8",
       "url": "https://dune.com/safe/safenet-network-revenue-preview-navigation"
     },
     "overview": {
-      "desired": "ade184e57b6ad220",
+      "desired": "d8bd61ac70bc6a47",
       "id": 222622,
-      "remote": "6318c4d5631be49a",
+      "remote": "1f8b4af9df0789a6",
       "url": "https://dune.com/safe/safenet-preview-navigation"
     },
     "sentinels": {
-      "desired": "9a307a81c08fb374",
+      "desired": "0b8928c3c0033634",
       "id": 222626,
-      "remote": "718b84791818a5c3",
+      "remote": "a20463f2423a14cb",
       "url": "https://dune.com/safe/safenet-sentinels-preview-navigation"
     },
     "staking": {
-      "desired": "0d37108d5014a38a",
+      "desired": "1389b6d33516656b",
       "id": 222627,
-      "remote": "7f92adc8ddb4f32d",
+      "remote": "d36d57af72f99e25",
       "url": "https://dune.com/safe/safenet-staking-preview-navigation"
     },
     "validators": {
-      "desired": "68e3e88a7cf1d6a7",
+      "desired": "77b650bf30a4db3d",
       "id": 222628,
-      "remote": "55f569b4eee03c83",
+      "remote": "88d5139080655c2c",
       "url": "https://dune.com/safe/safenet-validators-preview-navigation"
     }
   },
