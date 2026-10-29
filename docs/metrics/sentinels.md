@@ -147,7 +147,7 @@ The table keeps these apart:
 
 ## Arbitration rate and resolution time
 
-Shown together at the top of the Sentinels dashboard. The overview has one counter, *Arbitration rate, last 30 days*, which links there. Queries: `arbitration_windows`, `arbitration_daily`, `arbitration_resolution` and the extended `sentinel_disputes`, all built on `safenet_requests`. The TypeScript model is [`scripts/lib/arbitration.ts`](../../scripts/lib/arbitration.ts), unit-tested in `test/arbitration.test.ts`.
+Shown together on the Sentinels dashboard, after participation, verdicts and coverage: unanimous Sentinel decisions are the normal case, and arbitration is the exception. The overview has one counter, *Arbitration rate, last 30 days*, next to a link to the Sentinels dashboard that names the section. Dune cannot link to a position within a dashboard. Queries: `arbitration_windows`, `arbitration_daily`, `arbitration_resolution` and the extended `sentinel_disputes`, all built on `safenet_requests`. The TypeScript model is [`scripts/lib/arbitration.ts`](../../scripts/lib/arbitration.ts), unit-tested in `test/arbitration.test.ts`.
 
 ### The freeze boundary
 

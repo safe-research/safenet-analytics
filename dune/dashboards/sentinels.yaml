@@ -16,43 +16,43 @@ widgets:
     position: { row: 2, col: 0, size_x: 4, size_y: 4 }
   - visualization: sentinel_overview/freshness
     position: { row: 2, col: 4, size_x: 2, size_y: 4 }
-  # Arbitration: rates, resolution time, open cases and every dispute (linked from the overview)
-  - text_file: text/arbitration.md
-    position: { row: 6, col: 0, size_x: 4, size_y: 6 }
-  - visualization: arbitration_resolution/open
-    position: { row: 6, col: 4, size_x: 2, size_y: 3 }
-  - visualization: arbitration_resolution/oldest_open
-    position: { row: 9, col: 4, size_x: 2, size_y: 3 }
-  - visualization: arbitration_windows/table
-    position: { row: 12, col: 0, size_x: 6, size_y: 5 }
-  - visualization: arbitration_daily/chart
-    position: { row: 17, col: 0, size_x: 3, size_y: 8 }
-  - visualization: sentinel_disputes/durations
-    position: { row: 17, col: 3, size_x: 3, size_y: 8 }
-  - visualization: arbitration_resolution/table
-    position: { row: 25, col: 0, size_x: 6, size_y: 4 }
-  - visualization: sentinel_disputes/table
-    position: { row: 29, col: 0, size_x: 6, size_y: 10 }
-
   - visualization: sentinel_overview/table
-    position: { row: 39, col: 0, size_x: 6, size_y: 8 }
+    position: { row: 6, col: 0, size_x: 6, size_y: 8 }
   - visualization: sentinel_windows/table
-    position: { row: 47, col: 0, size_x: 6, size_y: 6 }
+    position: { row: 14, col: 0, size_x: 6, size_y: 6 }
 
   # Participation history (last 30 days)
   - visualization: sentinel_participation_daily/heatmap
-    position: { row: 53, col: 0, size_x: 6, size_y: 7 }
+    position: { row: 20, col: 0, size_x: 6, size_y: 7 }
 
   # Verdicts and coverage
   - visualization: sentinel_verdicts/bars
-    position: { row: 60, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 27, col: 0, size_x: 3, size_y: 8 }
   - visualization: sentinel_coverage/bars
-    position: { row: 60, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 27, col: 3, size_x: 3, size_y: 8 }
   - visualization: sentinel_verdicts/table
-    position: { row: 68, col: 0, size_x: 3, size_y: 6 }
+    position: { row: 35, col: 0, size_x: 3, size_y: 6 }
   - visualization: sentinel_coverage/table
-    position: { row: 68, col: 3, size_x: 3, size_y: 6 }
+    position: { row: 35, col: 3, size_x: 3, size_y: 6 }
 
+  # Arbitration, after the regular decisions: rates, resolution time, open cases and every
+  # dispute (linked from the overview)
+  - text_file: text/arbitration.md
+    position: { row: 41, col: 0, size_x: 4, size_y: 6 }
+  - visualization: arbitration_resolution/open
+    position: { row: 41, col: 4, size_x: 2, size_y: 3 }
+  - visualization: arbitration_resolution/oldest_open
+    position: { row: 44, col: 4, size_x: 2, size_y: 3 }
+  - visualization: arbitration_windows/table
+    position: { row: 47, col: 0, size_x: 6, size_y: 5 }
+  - visualization: arbitration_daily/chart
+    position: { row: 52, col: 0, size_x: 3, size_y: 8 }
+  - visualization: sentinel_disputes/durations
+    position: { row: 52, col: 3, size_x: 3, size_y: 8 }
+  - visualization: arbitration_resolution/table
+    position: { row: 60, col: 0, size_x: 6, size_y: 4 }
+  - visualization: sentinel_disputes/table
+    position: { row: 64, col: 0, size_x: 6, size_y: 10 }
 
   # Earnings
   - visualization: sentinel_earnings/table

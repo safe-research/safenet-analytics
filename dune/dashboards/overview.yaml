@@ -60,7 +60,7 @@ widgets:
       ### [Arbitration]({{dashboard:sentinels}})
       Share of requests proposed in the last 30 days (Charter chains) that went to arbitration because Sentinels disagreed. Recent requests can still be disputed.
 
-      **[View arbitration rates & resolution times →]({{dashboard:sentinels}})**
+      **[View arbitration rates & resolution times →]({{dashboard:sentinels}})** (Sentinels dashboard, *Arbitration* section after participation and verdicts)
     position: { row: 18, col: 2, size_x: 4, size_y: 4 }
 
   # Key charts
