@@ -34,7 +34,7 @@ widgets:
     position: { row: 7, col: 0, size_x: 3, size_y: 3 }
   - text: |
       ### [Sentinels]({{dashboard:sentinels}})
-      Participation, verdicts and coverage, disputes and arbitration, earnings and bonds.
+      Participation, verdicts and coverage, earnings and bonds.
 
       **[View Sentinels & participation →]({{dashboard:sentinels}})**
     position: { row: 7, col: 3, size_x: 3, size_y: 3 }
@@ -53,14 +53,14 @@ widgets:
   - visualization: staking_overview/active_stake
     position: { row: 14, col: 4, size_x: 2, size_y: 4 }
 
-  # Arbitration (details on the Sentinels dashboard)
+  # Arbitration (details on the Arbitration dashboard)
   - visualization: arbitration_windows/rate_30d
     position: { row: 18, col: 0, size_x: 2, size_y: 4 }
   - text: |
-      ### [Arbitration]({{dashboard:sentinels}})
+      ### [Arbitration]({{dashboard:arbitration}})
       Share of requests proposed in the last 30 days (Charter chains) that went to arbitration because Sentinels disagreed. Recent requests can still be disputed.
 
-      **[View arbitration rates & resolution times →]({{dashboard:sentinels}})** (Sentinels dashboard, *Arbitration* section after participation and verdicts)
+      **[View arbitration rates & resolution times →]({{dashboard:arbitration}})**
     position: { row: 18, col: 2, size_x: 4, size_y: 4 }
 
   # Key charts

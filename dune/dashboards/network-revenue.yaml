@@ -9,7 +9,7 @@ private: false
 tags: [safenet, safe]
 
 widgets:
-  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · **Network & revenue** · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}})"
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · **Network & revenue** · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}}) · [Arbitration]({{dashboard:arbitration}})"
     position: { row: 0, col: 0, size_x: 6, size_y: 2 }
 
   - text_file: text/network_revenue.md
@@ -66,5 +66,5 @@ widgets:
   - text_file: text/definitions.md
     position: { row: 78, col: 0, size_x: 6, size_y: 8 }
 
-  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · **Network & revenue** · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}})"
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · **Network & revenue** · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}}) · [Arbitration]({{dashboard:arbitration}})"
     position: { row: 86, col: 0, size_x: 6, size_y: 2 }

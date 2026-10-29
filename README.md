@@ -1,6 +1,6 @@
 # safenet-analytics
 
-Safenet production analytics on Dune, managed from GitHub. The overview is [dune.com/safe/safenet](https://dune.com/safe/safenet), owned by the `safe` team. Each section has its own dashboard, linked from the overview's section boxes:
+Safenet production analytics on Dune, managed from GitHub. The overview is [dune.com/safe/safenet](https://dune.com/safe/safenet), owned by the `safe` team. Each section has its own dashboard, linked from the overview's section boxes and its arbitration counter:
 
 | Dashboard | URL | Contents |
 | --- | --- | --- |
@@ -8,7 +8,8 @@ Safenet production analytics on Dune, managed from GitHub. The overview is [dune
 | Network & revenue | [safe/safenet-network-revenue](https://dune.com/safe/safenet-network-revenue) | all transaction-check and fee panels, latest requests, definitions |
 | Staking | [safe/safenet-staking-withdrawals](https://dune.com/safe/safenet-staking-withdrawals) | stake, flows, withdrawals, stake by validator, definitions |
 | Validators | [safe/safenet-validators](https://dune.com/safe/safenet-validators) | attestation set, participation, stake history, rewards, withdrawal exposure, definitions |
-| Sentinels | [safe/safenet-sentinels](https://dune.com/safe/safenet-sentinels) | participation, verdicts, coverage, arbitration (rates, resolution times, open cases, every dispute), earnings, bonds, definitions |
+| Sentinels | [safe/safenet-sentinels](https://dune.com/safe/safenet-sentinels) | participation, verdicts, coverage, earnings, bonds, definitions |
+| Arbitration | [safe/safenet-arbitration](https://dune.com/safe/safenet-arbitration) | arbitration rate by request cohort and per proposal day, time from freeze to ruling, open cases, every dispute with Sentinel votes, ruling and timing |
 
 The dashboards share their queries and visualizations: a panel shown on the overview and on a section dashboard is one Dune visualization, and its query is executed once per refresh.
 

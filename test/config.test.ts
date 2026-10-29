@@ -35,6 +35,7 @@ test("the repository configuration is valid", async () => {
     config.dashboards.map((d) => [d.key, d.slug, d.previewOnly]),
     [
       ["overview", "safenet", false],
+      ["arbitration", "safenet-arbitration", false],
       ["network-revenue", "safenet-network-revenue", false],
       ["sentinels", "safenet-sentinels", false],
       ["staking", "safenet-staking-withdrawals", false],

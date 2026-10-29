@@ -26,7 +26,7 @@ const all = (cfg: Config, action: string) =>
 
 const overview = (cfg: Config) => cfg.dashboards.find((d) => d.key === "overview")!;
 const textCount = (cfg: Config) => overview(cfg).widgets.filter((w) => w.kind === "text").length;
-const SECTIONS = ["network-revenue", "sentinels", "staking", "validators"];
+const SECTIONS = ["network-revenue", "sentinels", "staking", "validators", "arbitration"];
 const sectionSlug = (key: string) => (key === "staking" ? "safenet-staking-withdrawals" : `safenet-${key}`);
 
 const daily = (cfg: Config) => cfg.queries.find((q) => q.key === "transaction_checks_daily")!;
@@ -111,7 +111,7 @@ describe("deploy", () => {
     const dash = fake.dashboards.get(first.state.dashboards.overview.id)!;
     assert.ok(dash.text_widgets.some((w) => w.text === "# New intro"));
     assert.equal(dash.visualization_widgets.find((w) => w.visualization_id === vizId)!.position.size_x, 3);
-    assert.equal(fake.dashboards.size, 6); // Beta + the overview and four sections
+    assert.equal(fake.dashboards.size, 7); // Beta + the overview and five sections
   });
 
   test("edits made directly in Dune are reported as conflicts and not overwritten", async () => {
@@ -254,8 +254,8 @@ describe("several dashboards", () => {
     assert.doesNotMatch(text, /\{\{dashboard:/);
     const staking = fake.dashboards.get(r.state.dashboards.staking.id)!.text_widgets.map((w) => w.text).join("\n");
     assert.match(staking, /\[← Safenet overview\]\(https:\/\/dune\.com\/safe\/safenet\)/);
-    // The overview links to 4 sections; each section to the overview and the 3 others.
-    assert.equal(r.links.length, 4 + 4 * 4);
+    // The overview links to 5 sections; each section to the overview and the 4 others.
+    assert.equal(r.links.length, 5 + 5 * 5);
     assert.ok(r.links.every((l) => l.ok), JSON.stringify(r.links.filter((l) => !l.ok)));
   });
 
@@ -319,7 +319,7 @@ describe("several dashboards", () => {
     const r = await deploy(fake, changed, first.state);
     assert.equal(actions(r)["visualization:sentinel_disputes/extra"], "create");
     assert.equal(actions(r)["dashboard:safenet-sentinels"], "update");
-    for (const slug of ["safenet", "safenet-network-revenue", "safenet-staking-withdrawals", "safenet-validators"])
+    for (const slug of ["safenet", "safenet-network-revenue", "safenet-staking-withdrawals", "safenet-validators", "safenet-arbitration"])
       assert.equal(actions(r)[`dashboard:${slug}`], "noop", slug);
     const shown = fake.dashboards.get(r.state.dashboards.sentinels.id)!.visualization_widgets.map((w) => w.visualization_id);
     assert.ok(shown.includes(r.state.visualizations["sentinel_disputes/extra"].id));
@@ -356,7 +356,7 @@ describe("deploy failure paths", () => {
     assert.ok(saved?.dashboards.overview?.id);
     const r = await deploy(fake, renamed, saved!);
     assert.equal(actions(r)["dashboard:safenet"], "update");
-    assert.equal(fake.dashboards.size, 6); // Beta + one overview and four sections, no duplicates
+    assert.equal(fake.dashboards.size, 7); // Beta + one overview and five sections, no duplicates
     assert.equal(fake.dashboards.get(saved!.dashboards.overview.id)!.slug, "safenet");
   });
 

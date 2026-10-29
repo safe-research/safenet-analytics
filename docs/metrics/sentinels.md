@@ -23,6 +23,8 @@ The verification checks both sections against the same chain data.
 
 ## Panels
 
+On the [Sentinels dashboard](https://dune.com/safe/safenet-sentinels):
+
 | Panel | Query | Time basis |
 | --- | --- | --- |
 | Sentinels data as of | `sentinel_overview` | Latest Gnosis Chain block Dune has ingested, and computation time |
@@ -31,16 +33,21 @@ The verification checks both sections against the same chain data.
 | Participation per day (pivot table, Sentinel × day) | `sentinel_participation_daily` | Last 30 UTC days, by proposal day |
 | Sentinel responses by kind (bars and table) | `sentinel_verdicts` | Bars: requests proposed in the last 30 days. Table: also all time |
 | Requests by number of valid responses (bars and table) | `sentinel_coverage` | Bars: last 30 days. Table: also all time, by proposal time |
-| Arbitration (open arbitrations, oldest open case) | `arbitration_resolution` | **Now** (latest execution) |
+| Sentinel earnings | `sentinel_earnings` | All time and last 30 days (fees); latest published root (SAFE) |
+| Fee rewards per day by Sentinel | `sentinel_earnings_daily` | Last 30 UTC days, by decision day |
+| Sentinel bonds | `sentinel_bonds` | Available and locked: **now**. Movements: all time |
+
+On the [Arbitration dashboard](https://dune.com/safe/safenet-arbitration), plus one counter on the overview:
+
+| Panel | Query | Time basis |
+| --- | --- | --- |
+| Open arbitrations, oldest open arbitration (counters) | `arbitration_resolution` | **Now** (latest execution) |
 | Arbitration rate by request cohort | `arbitration_windows` | Requests proposed in the last 24 hours, 7 days, 30 days, and since production start (2026-10-07) |
 | Arbitration rate per proposal day | `arbitration_daily` | Every UTC proposal day since the first production request |
 | Time from dispute (freeze) to ruling, per ruled case | `sentinel_disputes` | All ruled cases, at their dispute time |
 | Time from dispute (freeze) to ruling (median, p90) | `arbitration_resolution` | Cases ruled in the last 30 days, and since production start |
 | Disputes and arbitration | `sentinel_disputes` | All disputes, newest first |
 | Overview: arbitration rate, last 30 days | `arbitration_windows` | Requests proposed in the last 30 days |
-| Sentinel earnings | `sentinel_earnings` | All time and last 30 days (fees); latest published root (SAFE) |
-| Fee rewards per day by Sentinel | `sentinel_earnings_daily` | Last 30 UTC days, by decision day |
-| Sentinel bonds | `sentinel_bonds` | Available and locked: **now**. Movements: all time |
 
 "All time" means production since the first production request (2026-10-14).
 
@@ -147,7 +154,7 @@ The table keeps these apart:
 
 ## Arbitration rate and resolution time
 
-Shown together on the Sentinels dashboard, after participation, verdicts and coverage: unanimous Sentinel decisions are the normal case, and arbitration is the exception. The overview has one counter, *Arbitration rate, last 30 days*, next to a link to the Sentinels dashboard that names the section. Dune cannot link to a position within a dashboard. Queries: `arbitration_windows`, `arbitration_daily`, `arbitration_resolution` and the extended `sentinel_disputes`, all built on `safenet_requests`. The TypeScript model is [`scripts/lib/arbitration.ts`](../../scripts/lib/arbitration.ts), unit-tested in `test/arbitration.test.ts`.
+Shown together on their own dashboard, [safe/safenet-arbitration](https://dune.com/safe/safenet-arbitration). Arbitration is a separate stage: the Security Council decides there, not the Sentinels. The dispute table, with each Sentinel's vote and reason, lives there too, and the Sentinels dashboard links to it. The overview has one counter, *Arbitration rate, last 30 days*, next to a link to the Arbitration dashboard. Queries: `arbitration_windows`, `arbitration_daily`, `arbitration_resolution` and the extended `sentinel_disputes`, all built on `safenet_requests`. The TypeScript model is [`scripts/lib/arbitration.ts`](../../scripts/lib/arbitration.ts), unit-tested in `test/arbitration.test.ts`.
 
 ### The freeze boundary
 
