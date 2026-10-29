@@ -26,7 +26,13 @@ export async function refresh(
   const results: RefreshResult[] = [];
   for (const q of queries) {
     const id = state.queries[q.key]?.id;
-    if (!id) throw new Error(`query ${q.key} has no Dune ID in dune/state.json; deploy it first`);
+    // A query deployed without its ID recorded (for example when saving dune/state.json failed)
+    // fails here, and the others are still refreshed.
+    if (!id) {
+      log(`${q.key}: no Dune ID in dune/state.json; deploy it first`);
+      results.push({ key: q.key, id: 0, status: { execution_id: "", state: "QUERY_STATE_FAILED", error: { message: "no Dune ID in dune/state.json; deploy it first" } } });
+      continue;
+    }
     const executionId = await client.execute(id, q.performance);
     log(`executing ${q.key} (${id}) on ${q.performance}: ${executionId}`);
     const status = await client.waitForExecution(executionId, options.timeoutMs ?? 20 * 60_000, options.pollMs);

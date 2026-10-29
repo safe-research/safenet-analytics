@@ -26,23 +26,39 @@ concurrency:
   group: dune-deploy
   cancel-in-progress: false
 
+# dune/state.json is pushed over SSH with the repository's deploy key, which main's ruleset lets
+# bypass its rules (pull requests, preview deployment, status checks), as in safe-fndn/safenet-data.
+# The private key lives in the dune-production environment, which only main can use
+# (docs/setup.md).
 permissions:
-  contents: write # commits dune/state.json
+  contents: read
 
 jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: dune-production
     env:
       DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
       CI: "true"
     steps:
+      - name: Require the deploy key
+        if: ${{ !inputs.dry_run }}
+        env:
+          KEY_SET: ${{ secrets.DEPLOY_STATE_SSH_KEY != '' }}
+        run: |
+          if [ "$KEY_SET" != "true" ]; then
+            echo "::error::Add the deploy key's private key as secret DEPLOY_STATE_SSH_KEY in the dune-production environment, so the deploy can record dune/state.json on main. See docs/setup.md."
+            exit 1
+          fi
       # Deploy the current main, not the pushed commit: a queued run must see the state.json
       # committed by the run before it.
       - uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
+          # git push then authenticates with the deploy key; empty (dry run) falls back to the token.
+          ssh-key: ${{ !inputs.dry_run && secrets.DEPLOY_STATE_SSH_KEY || '' }}
       - name: Check the triggering commit is on main
         run: git merge-base --is-ancestor "$GITHUB_SHA" HEAD
       - uses: actions/setup-node@v5
