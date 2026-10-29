@@ -1,33 +1,39 @@
 {
   "dashboards": {
+    "arbitration": {
+      "desired": "f262f35212cdbe7f",
+      "id": 222679,
+      "remote": "a6b72035d8f69457",
+      "url": "https://dune.com/safe/safenet-arbitration"
+    },
     "network-revenue": {
-      "desired": "afc6fef962d3ddef",
+      "desired": "a631a0ac30b2ef91",
       "id": 222639,
-      "remote": "ea8a1ea91cd788ee",
+      "remote": "8fd64812e92af824",
       "url": "https://dune.com/safe/safenet-network-revenue"
     },
     "overview": {
-      "desired": "52a9d6c06079df41",
+      "desired": "1eed18ccbd9be20b",
       "id": 222526,
-      "remote": "f3a2ed78fc3d7b55",
+      "remote": "59b1b06e08af2c25",
       "url": "https://dune.com/safe/safenet"
     },
     "sentinels": {
-      "desired": "1ea0d1041e3fd63e",
+      "desired": "476342e4536964fb",
       "id": 222640,
-      "remote": "b63013557653ae6a",
+      "remote": "14dc420ff91cdd22",
       "url": "https://dune.com/safe/safenet-sentinels"
     },
     "staking": {
-      "desired": "cee936a5ddd02e8f",
+      "desired": "543897cf33553909",
       "id": 222642,
-      "remote": "e7d96b671852a5ee",
+      "remote": "6783f6696e42962e",
       "url": "https://dune.com/safe/safenet-staking-withdrawals"
     },
     "validators": {
-      "desired": "1e418ff95088090d",
+      "desired": "70e363f48ee34372",
       "id": 222643,
-      "remote": "ce6453e5caaec89f",
+      "remote": "47c11e04f5656e41",
       "url": "https://dune.com/safe/safenet-validators"
     }
   },
@@ -70,6 +76,21 @@
     }
   },
   "queries": {
+    "arbitration_daily": {
+      "desired": "57b95597ac04a68e",
+      "id": 9033905,
+      "remote": "57b95597ac04a68e"
+    },
+    "arbitration_resolution": {
+      "desired": "2978a4bf1515b3be",
+      "id": 9033906,
+      "remote": "2978a4bf1515b3be"
+    },
+    "arbitration_windows": {
+      "desired": "642ae36f625af04e",
+      "id": 9033907,
+      "remote": "642ae36f625af04e"
+    },
     "fee_allocation": {
       "desired": "46687a477bc91890",
       "id": 9012049,
@@ -196,9 +217,9 @@
       "remote": "b69fa28ee71f90c2"
     },
     "sentinel_disputes": {
-      "desired": "19c96b0b9a510222",
+      "desired": "58bd6f8ea8cada85",
       "id": 9013463,
-      "remote": "19c96b0b9a510222"
+      "remote": "58bd6f8ea8cada85"
     },
     "sentinel_earnings": {
       "desired": "6d892d1b14cbfde9",
@@ -353,6 +374,42 @@
   },
   "version": 1,
   "visualizations": {
+    "arbitration_daily/chart": {
+      "desired": "2f5de4a2584cda36",
+      "id": 13079798,
+      "query_id": 9033905,
+      "remote": "2f5de4a2584cda36"
+    },
+    "arbitration_resolution/oldest_open": {
+      "desired": "f58b975b646b293c",
+      "id": 13079801,
+      "query_id": 9033906,
+      "remote": "f58b975b646b293c"
+    },
+    "arbitration_resolution/open": {
+      "desired": "71a1b7859b3c0d02",
+      "id": 13079800,
+      "query_id": 9033906,
+      "remote": "71a1b7859b3c0d02"
+    },
+    "arbitration_resolution/table": {
+      "desired": "561d29fa47967211",
+      "id": 13079799,
+      "query_id": 9033906,
+      "remote": "561d29fa47967211"
+    },
+    "arbitration_windows/rate_30d": {
+      "desired": "8a65f97e13afaeef",
+      "id": 13079803,
+      "query_id": 9033907,
+      "remote": "8a65f97e13afaeef"
+    },
+    "arbitration_windows/table": {
+      "desired": "b42df6ae4f959a26",
+      "id": 13079802,
+      "query_id": 9033907,
+      "remote": "b42df6ae4f959a26"
+    },
     "fee_allocation/table": {
       "desired": "0af63050f1695b24",
       "id": 13056261,
@@ -473,11 +530,17 @@
       "query_id": 9013462,
       "remote": "693f1366d55ff2ae"
     },
+    "sentinel_disputes/durations": {
+      "desired": "17bca486bf1123f4",
+      "id": 13079804,
+      "query_id": 9013463,
+      "remote": "17bca486bf1123f4"
+    },
     "sentinel_disputes/table": {
-      "desired": "e498d53f5c1f9ef1",
+      "desired": "5eb91c87b56e452d",
       "id": 13057798,
       "query_id": 9013463,
-      "remote": "e498d53f5c1f9ef1"
+      "remote": "5eb91c87b56e452d"
     },
     "sentinel_earnings/table": {
       "desired": "22aa9c4e15d2d0b5",
