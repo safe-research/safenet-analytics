@@ -10,7 +10,7 @@ GitHub is the source of truth for the queries, charts, dashboard text and layout
 | **Preview auto-cleanup** | pull request closed | Starts *Preview cleanup* for the pull request's track, unless another open pull request uses it; see [preview.md](preview.md#cleanup) |
 | **Preview cleanup** | started by *Preview auto-cleanup*; manual | Removes a preview track's resources; see [preview.md](preview.md#cleanup) |
 | **Validate** | pull requests | Typecheck, tests, offline validation. With `DUNE_API_KEY`, also a dry-run plan against Dune, which fails on conflicting Dune edits. It also runs each changed query's SQL on Dune as an unsaved execution, which costs credits, and checks that the columns the charts use exist in the result. |
-| **Deploy** | push to `main` touching `dune/`, `src/` or dependencies; manual (optional *dry run*, *force*) | Deploys the current `main` (so queued runs see the previous run's `state.json`), then commits `dune/state.json` |
+| **Deploy** | push to `main` touching `dune/`, `src/` or dependencies; manual (optional *dry run*, *force*) | Deploys the current `main` (so queued runs see the previous run's `state.json`), then commits `dune/state.json` to `main` over SSH with the repository's deploy key, which `main`'s ruleset lets through ([setup.md](setup.md)) |
 | **Refresh** | daily 05:17 UTC; after a successful deploy; manual | Executes the queries, then checks the first metric against on-chain events |
 
 ## How a deploy works

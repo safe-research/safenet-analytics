@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import { loadConfig, productionDashboards, type Config, type Widget } from "../src/config.ts";
 import { runDeploy } from "../src/deploy.ts";
-import { refresh, selectQueries } from "../src/refresh.ts";
+import { refresh, selectQueries, succeeded } from "../src/refresh.ts";
 import { emptyState, migrateState, type State } from "../src/state.ts";
 import { FakeDune } from "./fake-dune.ts";
 
@@ -408,7 +408,14 @@ describe("refresh", () => {
     assert.ok(fake.requests.every((r) => !r.includes("/execute")));
   });
 
-  test("refuses to refresh undeployed queries", async () => {
-    await assert.rejects(refresh(config.queries, emptyState(), new FakeDune().client(), { log: quiet }), /deploy it first/);
+  test("a query without a recorded ID fails, and the others are still refreshed", async () => {
+    const fake = withBeta();
+    const { state } = await deploy(fake, config, emptyState());
+    const missing = "arbitration_windows";
+    delete state.queries[missing];
+    const results = await refresh(selectQueries(config, { schedule: "daily" }), state, fake.client(), { pollMs: 0, log: quiet });
+    const failed = results.filter((r) => !succeeded(r));
+    assert.deepEqual(failed.map((r) => [r.key, r.status.error?.message]), [[missing, "no Dune ID in dune/state.json; deploy it first"]]);
+    assert.equal(results.length, selectQueries(config, { schedule: "daily" }).length);
   });
 });
