@@ -13,7 +13,7 @@ widgets:
   - visualization: network_summary/freshness
     position: { row: 0, col: 4, size_x: 2, size_y: 4 }
 
-  # Sections: five section boxes and the arbitration rate, 3 x 2
+  # Sections: five section boxes and the request counter, 3 x 2
   - text: |
       ### [Network & revenue]({{dashboard:network-revenue}})
       Requests, results, networks, Guard-enabled Safes, fees and fee allocation, latest requests.
@@ -44,21 +44,21 @@ widgets:
 
       **[View arbitration rates & resolution times →]({{dashboard:arbitration}})**
     position: { row: 8, col: 2, size_x: 2, size_y: 4 }
-  - visualization: arbitration_windows/rate_30d
+  - visualization: transaction_checks_daily/total_requests
     position: { row: 8, col: 4, size_x: 2, size_y: 4 }
 
-  # Headline counters (all time)
-  - visualization: transaction_checks_daily/total_requests
-    position: { row: 12, col: 0, size_x: 2, size_y: 4 }
+  # Headline counters (all time, except the arbitration rate: last 30 days)
   - visualization: network_summary/completed_results
-    position: { row: 12, col: 2, size_x: 2, size_y: 4 }
+    position: { row: 12, col: 0, size_x: 2, size_y: 4 }
   - visualization: network_summary/attestations
-    position: { row: 12, col: 4, size_x: 2, size_y: 4 }
+    position: { row: 12, col: 2, size_x: 2, size_y: 4 }
   - visualization: network_summary/safes_checked
-    position: { row: 16, col: 0, size_x: 2, size_y: 4 }
+    position: { row: 12, col: 4, size_x: 2, size_y: 4 }
   - visualization: network_summary/gross_fees
-    position: { row: 16, col: 2, size_x: 2, size_y: 4 }
+    position: { row: 16, col: 0, size_x: 2, size_y: 4 }
   - visualization: staking_overview/active_stake
+    position: { row: 16, col: 2, size_x: 2, size_y: 4 }
+  - visualization: arbitration_windows/rate_30d
     position: { row: 16, col: 4, size_x: 2, size_y: 4 }
 
   # Key charts
