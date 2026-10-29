@@ -1,6 +1,6 @@
 # The Safenet overview: https://dune.com/safe/safenet (production dashboard 222526).
-# Headline numbers and four key charts; every section has its own dashboard, linked from the boxes
-# below. Links use {{dashboard:<key>}} and render to the dashboard's URL in each environment.
+# Headline numbers and four key charts; every section has its own dashboard, linked from the five
+# section boxes. Links use {{dashboard:<key>}} and render to the dashboard's URL in each environment.
 # Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
 name: Safenet
 slug: safenet
@@ -13,65 +13,63 @@ widgets:
   - visualization: network_summary/freshness
     position: { row: 0, col: 4, size_x: 2, size_y: 4 }
 
-  # Sections
+  # Sections: five section boxes and the arbitration rate, 3 x 2
   - text: |
       ### [Network & revenue]({{dashboard:network-revenue}})
       Requests, results, networks, Guard-enabled Safes, fees and fee allocation, latest requests.
 
       **[View network activity & revenue →]({{dashboard:network-revenue}})**
-    position: { row: 4, col: 0, size_x: 3, size_y: 3 }
+    position: { row: 4, col: 0, size_x: 2, size_y: 4 }
   - text: |
       ### [Staking]({{dashboard:staking}})
       Active stake and stakers, deposits, withdrawal requests and outstanding withdrawals, stake by validator.
 
       **[View staking & withdrawals →]({{dashboard:staking}})**
-    position: { row: 4, col: 3, size_x: 3, size_y: 3 }
+    position: { row: 4, col: 2, size_x: 2, size_y: 4 }
   - text: |
       ### [Validators]({{dashboard:validators}})
       Attestation set, signing participation, stake history, rewards and withdrawal exposure.
 
       **[View validators & rewards →]({{dashboard:validators}})**
-    position: { row: 7, col: 0, size_x: 3, size_y: 3 }
+    position: { row: 4, col: 4, size_x: 2, size_y: 4 }
   - text: |
       ### [Sentinels]({{dashboard:sentinels}})
       Participation, verdicts and coverage, earnings and bonds.
 
       **[View Sentinels & participation →]({{dashboard:sentinels}})**
-    position: { row: 7, col: 3, size_x: 3, size_y: 3 }
+    position: { row: 8, col: 0, size_x: 2, size_y: 4 }
+  - text: |
+      ### [Arbitration]({{dashboard:arbitration}})
+      Disputed requests: arbitration rate, time from dispute to ruling, open cases and every dispute.
+
+      **[View arbitration rates & resolution times →]({{dashboard:arbitration}})**
+    position: { row: 8, col: 2, size_x: 2, size_y: 4 }
+  - visualization: arbitration_windows/rate_30d
+    position: { row: 8, col: 4, size_x: 2, size_y: 4 }
 
   # Headline counters (all time)
   - visualization: transaction_checks_daily/total_requests
-    position: { row: 10, col: 0, size_x: 2, size_y: 4 }
+    position: { row: 12, col: 0, size_x: 2, size_y: 4 }
   - visualization: network_summary/completed_results
-    position: { row: 10, col: 2, size_x: 2, size_y: 4 }
+    position: { row: 12, col: 2, size_x: 2, size_y: 4 }
   - visualization: network_summary/attestations
-    position: { row: 10, col: 4, size_x: 2, size_y: 4 }
+    position: { row: 12, col: 4, size_x: 2, size_y: 4 }
   - visualization: network_summary/safes_checked
-    position: { row: 14, col: 0, size_x: 2, size_y: 4 }
+    position: { row: 16, col: 0, size_x: 2, size_y: 4 }
   - visualization: network_summary/gross_fees
-    position: { row: 14, col: 2, size_x: 2, size_y: 4 }
+    position: { row: 16, col: 2, size_x: 2, size_y: 4 }
   - visualization: staking_overview/active_stake
-    position: { row: 14, col: 4, size_x: 2, size_y: 4 }
-
-  # Arbitration (details on the Arbitration dashboard)
-  - visualization: arbitration_windows/rate_30d
-    position: { row: 18, col: 0, size_x: 2, size_y: 4 }
-  - text: |
-      ### [Arbitration]({{dashboard:arbitration}})
-      Share of requests proposed in the last 30 days (Charter chains) that went to arbitration because Sentinels disagreed. Recent requests can still be disputed.
-
-      **[View arbitration rates & resolution times →]({{dashboard:arbitration}})**
-    position: { row: 18, col: 2, size_x: 4, size_y: 4 }
+    position: { row: 16, col: 4, size_x: 2, size_y: 4 }
 
   # Key charts
   - visualization: transaction_checks_daily/daily_chart
-    position: { row: 22, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 20, col: 0, size_x: 3, size_y: 8 }
   - visualization: results_daily/stacked
-    position: { row: 22, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 20, col: 3, size_x: 3, size_y: 8 }
   - visualization: fee_revenue_daily/daily
-    position: { row: 30, col: 0, size_x: 3, size_y: 8 }
+    position: { row: 28, col: 0, size_x: 3, size_y: 8 }
   - visualization: staking_daily/active_stake
-    position: { row: 30, col: 3, size_x: 3, size_y: 8 }
+    position: { row: 28, col: 3, size_x: 3, size_y: 8 }
 
   - text_file: text/overview_footer.md
-    position: { row: 38, col: 0, size_x: 6, size_y: 2 }
+    position: { row: 36, col: 0, size_x: 6, size_y: 2 }
