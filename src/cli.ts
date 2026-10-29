@@ -7,6 +7,7 @@ import { parse as parseYaml, stringify } from "yaml";
 import { applyCleanup, formatCleanup, planCleanup } from "./cleanup.ts";
 import { DEFAULT_ROOT, inlineSql, loadConfig, referencedColumns, type Config } from "./config.ts";
 import { checkIdentity, desiredQuery, formatLinkChecks, formatPlan, runDeploy, snapshotProtected } from "./deploy.ts";
+import { DECODED_SOURCES, formatVerdicts, paritySql, verdicts, type ParityRow, type Verdict } from "./decoded-parity.ts";
 import { diagnoseDashboard, formatDiagnosis, formatStoredOptions, hasErrors, storedOptions, type WidgetDiagnosis } from "./diagnose.ts";
 import { DuneClient } from "./dune.ts";
 import { fingerprint } from "./hash.ts";
@@ -31,6 +32,9 @@ Commands:
                            Run changed (or all) queries' SQL on Dune without saving it and
                            check that visualized columns exist in the result
   check-decoded            Look up the production contracts in Dune's decoded contract tables
+  decoded-parity [--out FILE]
+                           Read-only: compare every decoded Safenet event table with the raw logs,
+                           log by log, from the deploy block to a block at least a day old
   pull                     Write the current Dune versions of managed resources to dune/.remote/
   protected                Show protected dashboards (e.g. Beta) and the IDs they use
   diagnose [--preview] [--out FILE] [--strict]
@@ -311,6 +315,30 @@ async function diagnose(config: Config, production: State) {
   if (errors && values.strict) process.exitCode = 1;
 }
 
+// docs/decoding.md: decoded tables may replace raw logs only when every log matches.
+async function decodedParity() {
+  const dune = client();
+  const all: Verdict[] = [];
+  const errors: { source: string; error: string }[] = [];
+  let credits = 0;
+  for (const s of DECODED_SOURCES) {
+    try {
+      const status = await dune.waitForExecution(await dune.executeSql(paritySql(s), "medium"), 10 * 60_000);
+      credits += status.execution_cost_credits ?? 0;
+      if (status.state !== "QUERY_STATE_COMPLETED") throw new Error(`${status.state} ${status.error?.message ?? ""}`.trim());
+      const rows = (await dune.executionResults(status.execution_id, 100)).rows as unknown as ParityRow[];
+      all.push(...verdicts(s, rows));
+    } catch (e) {
+      errors.push({ source: s.table, error: (e as Error).message });
+    }
+  }
+  const text = `### Decoded tables vs raw logs (read-only, ${credits.toFixed(2)} credits)\n\n${formatVerdicts(all, errors)}\n`;
+  console.log(text);
+  await summary(text);
+  if (values.out) await writeFile(values.out, text);
+  if (errors.length || all.some((v) => !v.ok)) process.exitCode = 1;
+}
+
 async function checkDecoded() {
   const dune = client();
   const byChain = Object.groupBy(DECODING_CANDIDATES, (c) => c.chain);
@@ -362,6 +390,8 @@ async function main() {
       return cleanupPreview(config);
     case "check-decoded":
       return checkDecoded();
+    case "decoded-parity":
+      return decodedParity();
     case "preview-track": {
       const raw = (parseYaml(await readFile(values.file ?? join(DEFAULT_ROOT, "preview.yaml"), "utf8")) ?? {}) as Record<string, unknown>;
       console.log(previewTrack(raw, values.pr ?? process.env.PR));

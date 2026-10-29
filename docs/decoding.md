@@ -69,7 +69,18 @@ Three production contracts were submitted to Dune for decoding. The submissions 
 - Staking on Ethereum
 - SAFE rewards distributor (CumulativeMerkleDrop) on Ethereum
 
-Current status: **not yet checked against Dune in this repository.** The first `check-decoded` result in a pull request comment replaces this sentence. Until both Consensus and SentinelOracle are decoded with full history, raw logs stay.
+Status on 2026-10-29 (`check-decoded`):
+
+| Contract | Decoded tables |
+| --- | --- |
+| Consensus | `safe_gnosis.SafenetAegisConsensus_evt_*` |
+| SentinelOracle | `safe_gnosis.SafenetAegisSentinelOracle_evt_*` |
+| FROSTCoordinator | `safe_gnosis.SafenetAegisFROSTCoordinator_evt_*` |
+| Staking | `safe_ethereum.Staking_evt_*` (already used) |
+| SAFE rewards distributor | `safe_ethereum.CumulativeMerkleDrop_evt_*` |
+| Safenet 7702 Executor | not decoded (no metric reads it) |
+
+The models still read raw logs until the parity check below holds and each switch passes its preview reconciliations.
 
 **Staking (Ethereum) is decoded on Dune** as `safe_ethereum.Staking_evt_*`, so the staking models read the decoded tables instead of raw logs. All reads go through one query, [`staking_events`](../dune/queries/staking_events/query.sql), which is the only query that names those tables (`test/safenet.test.ts`). The production Consensus is not decoded, so the validator → staker relation (`ValidatorStakerSet`) is decoded from `gnosis.logs` in `staking_validator_stakers`. Coverage of the decoded tables from the deploy block 24585750 is checked by `verify:staking`: each preview compares Dune's results with an RPC replay over the same block range ([metrics/staking.md](metrics/staking.md#validation)).
 
@@ -83,7 +94,7 @@ Only replace the decoding when all of the following hold:
 
 1. **Decoded everywhere it matters.** `check-decoded` lists Consensus and SentinelOracle.
 2. **Full history.** The decoded event tables start at the deploy blocks: their minimum `evt_block_number` is at or before the first raw event of each type in `safenet_events`. Dune sometimes backfills decoded tables gradually.
-3. **Matching results over identical block ranges.** Run [`scripts/decoded-parity.sql`](../scripts/decoded-parity.sql) on Dune for the range from the deploy block to a block at least a day old, after filling in the table names and the production ID of `safenet_events`. The result must be empty. Extend it to the oracle outcome events as described in the file before switching those.
+3. **The same logs over identical block ranges.** `npm run dune -- decoded-parity` ([`src/decoded-parity.ts`](../src/decoded-parity.ts)) is read-only. It runs one unsaved query per decoded contract and compares every decoded event table with the raw logs of the same contract and topic0, log by log (transaction hash and log index). It covers the range from the deploy block to the latest block at least a day old, and reports the first block on each side, which shows a partial backfill. Every event must show *all logs match*, or *no logs on either side yet* for events that never happened. `test/decoded-parity.test.ts` requires the check to cover every event a model reads from raw logs; USDC.e transfers, Safe guard changes and guard deployments stay raw. The Preview workflow runs the check, at a few credits, whenever a pull request changes it or a model that decodes raw logs, and posts the result in the comment.
 4. **Same output.** In the pull request that switches the query, both preview reconciliations must show no mismatches: the counter, every daily value, every window and network, the result breakdown and the fee allocation must equal the RPC recount.
 
 The same rules apply to the other three models. For `safenet_fee_flows`, the decoded transfer table must give the same rows over the same block range. For the guard models, a decoded table must cover every Safe version on each network.

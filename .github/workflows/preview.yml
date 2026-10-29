@@ -133,6 +133,20 @@ jobs:
         continue-on-error: true
         run: npm run dune -- check-decoded | tee "$RUNNER_TEMP/decoded.txt"
 
+      # Read-only, a few credits: only when the pull request changes the parity check or a model
+      # that decodes raw logs (docs/decoding.md#replacing-raw-logs-with-decoded-tables).
+      - name: Decoded tables vs raw logs
+        if: steps.pr.outputs.skip != 'true' && steps.current.outputs.skip != 'true'
+        continue-on-error: true
+        run: |
+          if git diff --quiet origin/main...HEAD -- src/decoded-parity.ts dune/queries/safenet_events dune/queries/safenet_sentinel_texts \
+            dune/queries/safenet_sentinel_failed_calls dune/queries/safenet_reward_events dune/queries/staking_validator_stakers \
+            dune/queries/validator_epochs dune/queries/validator_membership dune/queries/validator_ceremonies dune/queries/validator_staker_history; then
+            echo "No decoding change in this pull request; parity not checked."
+            exit 0
+          fi
+          npm run dune -- decoded-parity --out "$RUNNER_TEMP/decoded-parity.md" > /dev/null
+
       - name: Deploy preview
         id: deploy
         if: steps.pr.outputs.skip != 'true' && steps.current.outputs.skip != 'true'
@@ -244,6 +258,7 @@ jobs:
             ${{ runner.temp }}/production-plan.txt
             ${{ runner.temp }}/diagnose-production.md
             ${{ runner.temp }}/diagnose-preview.md
+            ${{ runner.temp }}/decoded-parity.md
           if-no-files-found: ignore
 
       - name: Comment on the pull request
@@ -394,6 +409,13 @@ jobs:
             if [ -f "$T/production-plan.txt" ]; then grep -vE '^(> |$)' "$T/production-plan.txt"; else echo "not run"; fi
             echo '```'
             echo "</details>"
+            if [ -f "$T/decoded-parity.md" ]; then
+              echo
+              echo "<details><summary>Decoded tables vs raw logs (parity)</summary>"
+              echo
+              cat "$T/decoded-parity.md"
+              echo "</details>"
+            fi
             if [ -f "$T/decoded.txt" ]; then
               echo
               echo "<details><summary>Decoded contracts on Dune</summary>"

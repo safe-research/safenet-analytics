@@ -215,7 +215,7 @@ Generated. `kind_row` is `root` or `entry`:
   - Partition pruning uses `block_date`.
   - Topic0 values are in `src/safenet.ts` (`VALIDATOR_EVENTS`); `test/validators.test.ts` recomputes them from their signatures.
 - **Migration to decoded tables.** If `check-decoded` shows Consensus and the FROSTCoordinator decoded with full history, switch to decoded tables only under these conditions:
-  - the rows of `validator_epochs`, `validator_membership` and `validator_ceremonies` from decoded tables equal the raw-log versions over identical block ranges (`scripts/decoded-parity.sql` pattern);
+  - the rows of `validator_epochs`, `validator_membership` and `validator_ceremonies` from decoded tables equal the raw-log versions over identical block ranges (`npm run dune -- decoded-parity`, src/decoded-parity.ts);
   - the preview reconciliation shows no mismatches.
 
   Output columns stay the same.
