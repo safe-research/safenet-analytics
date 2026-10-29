@@ -1,10 +1,9 @@
 # Event decoding
 
-The Safenet production contracts were not decoded on Dune when the first metric was built (2026-10-23). The metrics therefore read raw logs and traces, and only eight model queries do so. Every other query reads them through `{{query:...}}` references (`test/safenet.test.ts` enforces this). Replacing the decoding later changes only these models:
+The Safenet production contracts were not decoded on Dune when the first metric was built (2026-10-23), so the metrics read raw logs and traces, and only a few model queries do so. Every other query reads those models through `{{query:...}}` references (`test/safenet.test.ts` enforces this). Since 2026-10-29, `safenet_events` and `safenet_sentinel_texts` read Dune's decoded Safenet tables instead (see [Switches](#switches)). Replacing the decoding of the others changes only these models:
 
 | Model | Reads | Replace with |
 | --- | --- | --- |
-| [`safenet_events`](../dune/queries/safenet_events/query.sql) | `gnosis.logs` of Consensus and SentinelOracle | Dune's decoded Safenet tables |
 | [`safenet_fee_flows`](../dune/queries/safenet_fee_flows/query.sql) | `gnosis.logs` USDC.e `Transfer` logs to and from the oracle | a decoded ERC-20 transfer table, with the same parity rule |
 | [`safenet_guards`](../dune/queries/safenet_guards/query.sql) | guard constructor events and creation traces on Ethereum, Gnosis Chain and Arbitrum One | decoded SafenetGuard tables, once a guard is deployed and decoded |
 | [`safenet_guard_status`](../dune/queries/safenet_guard_status/query.sql) | Safe `ChangedGuard` logs on the three networks | Dune's decoded Safe tables, which split this event by Safe version |
@@ -24,7 +23,7 @@ The Safenet production contracts were not decoded on Dune when the first metric 
 - `covered_chain`
 - `sentinel`, `vote_approved`, `bond_amount`, `fee_reward`, `slashed`, for votes, claims and dispute rulings
 - `fee`, `bond_target`, `dao_fee_share`, `slash_amount`, `commit_deadline`, `reveal_deadline`, on request rows
-- `active_at_block`, `config_data`, for governance events
+- `active_at_block`, `config_change`, for governance events
 - `safe_url`, `tx_url`, `safe_tx_url`
 
 Amounts are USDC.e base units. They are decoded as the low 8 bytes of their word, so values must stay below 2^63. Real values are far below that, and the verification would catch a difference.
@@ -42,10 +41,10 @@ The `event` values:
 | `claimed` | `Claimed(requestId, sentinel, bondReturn, feeReward)`: the bond and fee reward paid out |
 | `attestation` | `Consensus.TransactionAttested` with `oracle` = production SentinelOracle |
 | `sentinel_scheduled`, `sentinel_removed` | `SentinelScheduled(sentinel, activeAtBlock)`, `SentinelRemoved(sentinel)` |
-| `config_scheduled` | `FeeScheduled`, `DaoFeeShareScheduled`, `ProtocolFundsReceiverScheduled`, `BondConfigScheduled`; raw data in `config_data` |
+| `config_scheduled` | `FeeScheduled`, `DaoFeeShareScheduled`, `ProtocolFundsReceiverScheduled`, `BondConfigScheduled`; the decoded values in `config_change`, for example `newValue 250000, activeAtBlock 49100000` |
 
-- **ABIs.** The signatures and topic0 values are in [`src/safenet.ts`](../src/safenet.ts). `test/safenet.test.ts` recomputes each topic0 from its signature and checks that the SQL uses them, and no Beta, testnet or coordinator addresses.
-- **Field layout.** The indexed fields and data words come from the event declarations in `safe-research/safenet` at commit `4ed5101`:
+- **Sources.** `safe_gnosis.SafenetAegisConsensus_evt_*` and `safe_gnosis.SafenetAegisSentinelOracle_evt_*`, restricted to the production contract addresses, and proposals and attestations to `oracle` = production SentinelOracle. Column names are the event parameters in `safe-research/safenet` at commit `4ed5101`: `requestId`, `safeTxHash`, `safeId` (bytes32: chain ID in the top 12 bytes, Safe in the low 20), `sponsor`, `sentinel`, `approved`, `bondAmount`, `bondReturn`, `feeReward`, `outcome` (`SentinelOracleRequest.State`, 3 = approved, 4 = denied), `slashed` and the `NewRequest` terms. `test/safenet.test.ts` checks the tables and filters, and no Beta, testnet or coordinator addresses. `test/decoded-parity.test.ts` checks that every decoded table any query reads is covered by the parity check.
+- **Raw-log layout (until 2026-10-29).** The raw decoding read the indexed fields and data words from the same declarations:
   - `TransactionProposed` / `TransactionAttested`: `safeTxHash`, `safeId` and `oracle` are indexed; `epoch` is data word 0.
   - `NewRequest`: `requestId` and `sponsor` are indexed.
   - `OracleResult`: `requestId` and `sponsor` are indexed; `approved` is data word 1.
@@ -53,7 +52,7 @@ The `event` values:
   - `NewRequest` data words: `fee`, `bondTarget`, `daoFeeShare` (of 100000), `slashAmount`, `commitDeadline`, `revealDeadline`.
   - `Committed`, `Revealed` and `Claimed`: `requestId` and `sentinel` are indexed. `Revealed` data starts with `approved` and then `bondAmount`; `Claimed` data is `bondReturn` then `feeReward`.
   - `SentinelScheduled` / `SentinelRemoved`: `sentinel` is indexed.
-- **Ranges.** Consensus from block 48635843 and SentinelOracle from block 48635850, with `block_date >= 2026-10-07` for partition pruning.
+- **Ranges.** Consensus from block 48635843 and SentinelOracle from block 48635850.
 - **Deduplication.** Each log is one row. A request is identified by its `request_id`, the EIP-712 proposal hash, which is unique per proposal and epoch. `scripts/verify-transaction-checks.ts` and `scripts/verify-network-revenue.ts` check from RPC logs that every proposal has exactly one oracle request, that each request has at most one outcome, and that every reveal follows a commit.
 
 ## Decoding status
@@ -87,6 +86,14 @@ The models still read raw logs until the parity check below holds and each switc
 The **Validators** models read Consensus (epochs, attestations, staker settings) and the FROSTCoordinator (key generation and signing) from `gnosis.logs` in `validator_epochs`, `validator_membership`, `validator_ceremonies` and `validator_staker_history`. Their sources, coverage and the conditions for moving them to decoded tables are in [metrics/validators.md](metrics/validators.md#decoding-and-coverage).
 
 The FROSTCoordinator is shared by production and the Aegis testnet. Even once decoded, its events cannot be attributed to production by address alone.
+
+## Switches
+
+| Date | Models | Evidence |
+| --- | --- | --- |
+| 2026-10-29 | `safenet_events`, `safenet_sentinel_texts` | `decoded-parity` in [#9](https://github.com/safe-research/safenet-analytics/pull/9): all 21 Consensus and SentinelOracle events match the raw logs log by log, from the deploy blocks to block 48987090 (for example 584 requests, 1,336 commits and reveals, 14 disputes). The switch's preview reconciliations: see its pull request. |
+
+The Validators models (Consensus epochs, FROSTCoordinator key generation and ceremonies, validator stakers) and `safenet_reward_events` have the same parity result, and are switched the same way in later pull requests. `safenet_sentinel_failed_calls` reads call traces, which the parity check does not cover yet.
 
 ## Replacing raw logs with decoded tables
 

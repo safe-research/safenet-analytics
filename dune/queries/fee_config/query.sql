@@ -32,7 +32,7 @@ scheduled as (
         cast(null as double), cast(null as double), cast(null as double), cast(null as double),
         cast(null as bigint),
         block_time, block_time,
-        source_event || ' 0x' || lower(to_hex(config_data))
+        source_event || ': ' || config_change
             || ' (<a href="' || tx_url || '" target="_blank">tx</a>)' as change
     from events
     where event = 'config_scheduled'
