@@ -35,6 +35,7 @@ test("the repository configuration is valid", async () => {
     config.dashboards.map((d) => [d.key, d.slug, d.previewOnly]),
     [
       ["overview", "safenet", false],
+      ["arbitration", "safenet-arbitration", false],
       ["network-revenue", "safenet-network-revenue", false],
       ["sentinels", "safenet-sentinels", false],
       ["staking", "safenet-staking-withdrawals", false],
@@ -63,14 +64,14 @@ test("reads a configuration from before dune/dashboards/ (single dashboard.yaml)
 
 test("rejects overlapping widgets", async () => {
   const p = await problems((root) =>
-    replaceIn(root, "dashboards/overview.yaml", "{ row: 18, col: 3, size_x: 3, size_y: 8 }", "{ row: 18, col: 2, size_x: 3, size_y: 8 }")(),
+    replaceIn(root, "dashboards/overview.yaml", "{ row: 20, col: 3, size_x: 3, size_y: 8 }", "{ row: 20, col: 2, size_x: 3, size_y: 8 }")(),
   );
   assert.ok(p.some((x) => x.includes("overlaps")), p.join("\n"));
 });
 
 test("rejects widgets outside the grid", async () => {
   const p = await problems((root) =>
-    replaceIn(root, "dashboards/overview.yaml", "{ row: 18, col: 3, size_x: 3, size_y: 8 }", "{ row: 18, col: 3, size_x: 4, size_y: 8 }")(),
+    replaceIn(root, "dashboards/overview.yaml", "{ row: 20, col: 3, size_x: 3, size_y: 8 }", "{ row: 20, col: 3, size_x: 4, size_y: 8 }")(),
   );
   assert.ok(p.some((x) => x.includes("outside the 6-column grid")), p.join("\n"));
 });

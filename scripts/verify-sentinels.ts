@@ -15,6 +15,9 @@
 //     token), the distributor's merkleRoot() against the latest published root, and
 //     cumulativeClaimed() of every Sentinel.
 //   - With --traces, recounts reverted commit and reveal calls with trace_filter (slow).
+//   - Recounts arbitration rates (by proposal-time cohort), resolution times (freeze to ruling) and
+//     open arbitrations (scripts/lib/arbitration.ts), and each dispute's timestamps and durations,
+//     at each result's through_block and its computed_at; reconciles them with the dispute table.
 //   - Lists representative cases with explorer links for a manual check on safenet-explorer.eth.limo.
 //
 //   node scripts/verify-sentinels.ts [--rpc URL] [--eth-rpc URL] [--state dune/.preview/<track>.json]
@@ -31,6 +34,7 @@ import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, PRODUCTION, REWARDS_DISTRIBUTOR, S
 import { loadSentinelRewards } from "../src/sentinel-rewards.ts";
 import { loadState } from "../src/state.ts";
 import { buildRequests, day, fetchSafenetLogs, rpcClient, status, upTo, usdc } from "./lib/recount.ts";
+import { arbitrationState, hoursToRuling, openHours, rateDaily, rateWindows, resolution } from "./lib/arbitration.ts";
 import { buildResponses, buildTerms, currentStatus, requestWindowClosed, sentinelTotals, type Response } from "./lib/sentinels.ts";
 
 const { values: args } = parseArgs({
@@ -53,6 +57,8 @@ const compare = (where: string, column: string, rpcValue: number | null, duneVal
   if (rpcValue === null || d === null ? rpcValue !== d : !near(rpcValue, d)) mismatches.push({ where, column, rpc: rpcValue, dune: d });
 };
 const addressOf = (row: Record<string, unknown>) => String(row.address ?? "").toLowerCase();
+// Dune timestamps ("2026-10-20 12:34:56.000 UTC") as Unix seconds.
+const duneTime = (v: unknown) => (v === null || v === undefined ? null : Date.parse(String(v).replace(" UTC", "Z").replace(" ", "T")) / 1000);
 const call = (to: string, data: string, block: number | "latest", client = rpc) =>
   client.call<string>("eth_call", [{ to, data }, typeof block === "number" ? `0x${block.toString(16)}` : block]);
 const addressArg = (a: string) => a.slice(2).padStart(64, "0");
@@ -70,6 +76,9 @@ const QUERIES = [
   "sentinel_earnings",
   "sentinel_bonds",
   "fee_allocation",
+  "arbitration_windows",
+  "arbitration_daily",
+  "arbitration_resolution",
 ] as const;
 type Result = Awaited<ReturnType<DuneClient["latestResults"]>>;
 const dune: Partial<Record<(typeof QUERIES)[number], Result>> = {};
@@ -79,7 +88,8 @@ if (key) {
   const client = new DuneClient(key);
   for (const q of QUERIES) {
     const id = state.queries[q]?.id;
-    if (id) dune[q] = await client.latestResults(id);
+    // A preview query whose SQL equals production's is not executed and has no result: skipped.
+    if (id) dune[q] = await client.latestResults(id).catch(() => undefined);
   }
 }
 const boundOf = (r?: Result) => (r?.rows.length ? Math.max(...r.rows.map((x) => Number(x.through_block ?? 0))) : undefined);
@@ -281,6 +291,60 @@ async function compareDisputes(r: Result) {
     compare(where, "secure_votes", q.votes.filter((v) => v.approved === true).length, row.secure_votes);
     compare(where, "insecure_votes", q.votes.filter((v) => v.approved === false).length, row.insecure_votes);
     compare(where, "slashed_usdc", usdc(q.outcome?.slashed ?? 0n), row.slashed_usdc);
+    // Timing: proposal, freeze (DisputeTriggered), terminal outcome, and the durations.
+    compare(where, "proposed_at", q.proposedAt, duneTime(row.proposed_at));
+    compare(where, "triggered_at", q.disputedAt, duneTime(row.triggered_at));
+    compare(where, "outcome_at", q.outcome?.time ?? null, duneTime(row.outcome_at));
+    compare(where, "hours_to_ruling", hoursToRuling(q), row.hours_to_ruling as number | null);
+    compare(where, "open_hours", openHours(q, duneTime(row.computed_at)!), row.open_hours as number | null);
+  }
+}
+
+// Arbitration rate by proposal-time window, judged at the query's own execution time.
+async function compareArbitrationWindows(r: Result) {
+  const rec = await recountFor(r);
+  for (const exp of rateWindows(rec.requests, duneTime(r.rows[0].computed_at)!)) {
+    const row = r.rows.find((x) => x.time_window === exp.time_window);
+    const where = `arbitration_windows ${exp.time_window}`;
+    if (!row) {
+      mismatches.push({ where, column: "row", rpc: "present", dune: "missing" });
+      continue;
+    }
+    for (const [column, value] of Object.entries(exp)) if (column !== "time_window") compare(where, column, value as number | null, row[column]);
+    const label = exp.arbitration_rate === null ? "no requests" : `${(100 * exp.arbitration_rate).toFixed(2)}%`;
+    if (row.arbitration_rate_label !== label) mismatches.push({ where, column: "arbitration_rate_label", rpc: label, dune: row.arbitration_rate_label });
+  }
+}
+
+async function compareArbitrationDaily(r: Result) {
+  const rec = await recountFor(r);
+  const lastDay = String(r.rows.at(-1)!.day).slice(0, 10);
+  const expected = rateDaily(rec.requests, Date.parse(`${lastDay}T00:00:00Z`) / 1000);
+  compare("arbitration_daily", "rows", expected.length, r.rows.length);
+  for (const exp of expected) {
+    const row = r.rows.find((x) => String(x.day).slice(0, 10) === exp.day) ?? {};
+    const where = `arbitration_daily ${exp.day}`;
+    compare(where, "requests", exp.requests, row.requests);
+    compare(where, "arbitrated", exp.arbitrated, row.arbitrated);
+    compare(where, "arbitration_pct", exp.arbitration_rate === null ? null : 100 * exp.arbitration_rate, row.arbitration_pct);
+    compare(where, "still_voting", exp.still_voting, row.still_voting);
+  }
+}
+
+async function compareArbitrationResolution(r: Result) {
+  const rec = await recountFor(r);
+  for (const exp of resolution(rec.requests, duneTime(r.rows[0].computed_at)!)) {
+    const row = r.rows.find((x) => x.time_window === exp.time_window);
+    const where = `arbitration_resolution ${exp.time_window}`;
+    if (!row) {
+      mismatches.push({ where, column: "row", rpc: "present", dune: "missing" });
+      continue;
+    }
+    for (const [column, value] of Object.entries(exp)) if (column !== "time_window") compare(where, column, value as number | null, row[column]);
+    const label = (h: number | null) => (h === null ? "no ruled cases" : `${h.toFixed(1)} h`);
+    if (row.median_label !== label(exp.median_hours)) mismatches.push({ where, column: "median_label", rpc: label(exp.median_hours), dune: row.median_label });
+    if (row.p90_label !== label(exp.p90_hours)) mismatches.push({ where, column: "p90_label", rpc: label(exp.p90_hours), dune: row.p90_label });
+    if (row.max_label !== label(exp.max_hours)) mismatches.push({ where, column: "max_label", rpc: label(exp.max_hours), dune: row.max_label });
   }
 }
 
@@ -368,7 +432,44 @@ await run("sentinel_coverage", compareCoverage);
 await run("sentinel_disputes", compareDisputes);
 await run("sentinel_earnings", compareEarnings);
 await run("sentinel_bonds", compareBonds);
+await run("arbitration_windows", compareArbitrationWindows);
+await run("arbitration_daily", compareArbitrationDaily);
+await run("arbitration_resolution", compareArbitrationResolution);
 reconcile();
+reconcileArbitration();
+
+// The arbitration panels against each other and against the dispute table, where their results
+// end at the same block (Charter chains; the dispute table also lists test traffic, marked).
+function reconcileArbitration() {
+  const w = dune.arbitration_windows;
+  const all = w?.rows.find((x) => x.time_window === "Production, all time");
+  const sameBlock = (a?: Result, b?: Result) => a && b && boundOf(a) === boundOf(b);
+  const n = (v: unknown) => Number(v ?? 0);
+  const t = dune.sentinel_disputes;
+  if (all && sameBlock(w, t)) {
+    const covered = t!.rows.filter((x) => !String(x.safe_chain).includes("(test traffic)"));
+    compare("windows vs dispute table", "arbitrated (all time) = disputes on Charter chains", n(all.arbitrated), covered.length);
+    const byStatus = (s: string) => covered.filter((x) => x.arbitration_status === s).length;
+    compare("windows vs dispute table", "awaiting", n(all.awaiting), byStatus("Awaiting ruling"));
+    compare("windows vs dispute table", "ruled secure", n(all.ruled_secure), covered.filter((x) => x.ruling === "Secure").length);
+    compare("windows vs dispute table", "ruled insecure", n(all.ruled_insecure), covered.filter((x) => x.ruling === "Insecure").length);
+    compare("windows vs dispute table", "out of scope", n(all.out_of_scope), byStatus("Out of scope (no ruling)"));
+    compare("windows vs dispute table", "timed out", n(all.timed_out), byStatus("Arbitration timed out (no ruling)"));
+  }
+  const d = dune.arbitration_daily;
+  if (all && sameBlock(w, d)) {
+    compare("windows vs daily", "requests (all time) = sum of days", n(all.requests), d!.rows.reduce((s, x) => s + n(x.requests), 0));
+    compare("windows vs daily", "arbitrated (all time) = sum of days", n(all.arbitrated), d!.rows.reduce((s, x) => s + n(x.arbitrated), 0));
+  }
+  const res = dune.arbitration_resolution;
+  const since = res?.rows.find((x) => x.time_window === "Ruled since production start");
+  if (all && since && sameBlock(w, res)) {
+    compare("windows vs resolution", "ruled secure + insecure = ruled cases", n(all.ruled_secure) + n(all.ruled_insecure), n(since.ruled_cases));
+    compare("windows vs resolution", "out of scope", n(all.out_of_scope), n(since.out_of_scope));
+    compare("windows vs resolution", "timed out", n(all.timed_out), n(since.timed_out));
+    compare("windows vs resolution", "awaiting = open arbitrations", n(all.awaiting), n(since.open_arbitrations));
+  }
+}
 
 // ---------------------------------------------------------------------------------------------
 // Representative cases for a manual check on safenet-explorer.eth.limo
@@ -404,6 +505,40 @@ const representative = [
   caseOf("disputed, out of scope or timed out", (x) => status(x.request).ruling === "none"),
   caseOf("disputed, awaiting ruling", (x) => status(x.request).ruling === "awaiting"),
 ].filter(Boolean);
+
+// Representative arbitration cases, one per state where one exists, with the timestamps and
+// durations the dashboard shows (open cases aged as of this run).
+const runTime = Date.now() / 1000;
+const iso = (t: number | null) => (t === null ? null : new Date(t * 1000).toISOString().replace(".000Z", "Z"));
+const arbitrationCases = (["ruled_secure", "ruled_insecure", "awaiting", "out_of_scope", "timed_out"] as const).map((state) => {
+  const r = [...atHead.requests].reverse().find((x) => x.covered && arbitrationState(x) === state);
+  if (!r) return { state, case: "none so far" };
+  const hours = hoursToRuling(r);
+  const open = openHours(r, runTime);
+  return {
+    state,
+    request_id: r.requestId,
+    safe_tx: safeTxUrl(r.chainId, r.safeTxHash),
+    proposed_at: iso(r.proposedAt),
+    proposal_tx: txUrl(100, r.proposalTx),
+    disputed_at: iso(r.disputedAt),
+    dispute_tx: r.disputeTx && txUrl(100, r.disputeTx),
+    dispute_block: r.disputedBlock,
+    arbitration_deadline_block: r.arbitrationDeadline,
+    outcome: r.outcome?.event ?? null,
+    outcome_at: iso(r.outcome?.time ?? null),
+    outcome_tx: r.outcome ? txUrl(100, r.outcome.tx) : null,
+    hours_to_ruling: hours === null ? null : Number(hours.toFixed(3)),
+    open_hours: open === null ? null : Number(open.toFixed(3)),
+  };
+});
+for (const r of atHead.requests.filter((x) => x.disputed)) {
+  if (r.disputedBlock !== null && r.arbitrationDeadline !== null && r.arbitrationDeadline <= r.disputedBlock)
+    issues.push(`dispute ${r.requestId}: arbitration deadline ${r.arbitrationDeadline} not after the freeze block ${r.disputedBlock}`);
+  if (r.outcome && r.disputedAt !== null && r.outcome.time < r.disputedAt) issues.push(`dispute ${r.requestId}: outcome before the freeze`);
+  if (r.outcome && !["DisputeResolved", "DisputeOutOfScope", "ArbitrationTimedOut"].includes(r.outcome.event))
+    issues.push(`dispute ${r.requestId}: ended with ${r.outcome.event}`);
+}
 
 // ---------------------------------------------------------------------------------------------
 
@@ -460,6 +595,21 @@ const report = {
     latest_published_root: latestRoot,
     published_source: `${published.source}@${published.ref}`,
     sentinel_entries: published.entries.length,
+  },
+  arbitration: {
+    as_of: iso(runTime),
+    windows: rateWindows(atHead.requests, runTime),
+    resolution: resolution(atHead.requests, runTime),
+    cases: arbitrationCases,
+    // A Safe transaction proposed again (a later epoch) is a new request and counted separately.
+    repeated_proposals: (() => {
+      const groups = Object.values(Object.groupBy(atHead.requests.filter((r) => r.covered), (r) => `${r.chainId}:${r.safeTxHash}`)).filter((g) => g!.length > 1);
+      return {
+        safe_transactions: groups.length,
+        requests: groups.reduce((n, g) => n + g!.length, 0),
+        disputed_requests: groups.reduce((n, g) => n + g!.filter((r) => r.disputed).length, 0),
+      };
+    })(),
   },
   issues,
   dune: key ? { compared, bounds: Object.fromEntries(Object.entries(dune).map(([k, r]) => [k, boundOf(r)])), as_of_block: overviewAsOf, mismatches } : { skipped: "DUNE_API_KEY not set" },

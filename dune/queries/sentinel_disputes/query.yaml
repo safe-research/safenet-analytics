@@ -1,7 +1,8 @@
 name: "Safenet: disputes and arbitration"
 description: >
   Safenet production (Aegis): every disputed request with each Sentinel's vote and recorded reason,
-  the Oracle result, the arbitration status, the ruling and the arbitrator's recorded context.
+  the Oracle result, the arbitration status, the ruling and the arbitrator's recorded context,
+  and its timing: proposal, dispute (freeze), outcome, time to ruling and age of open cases.
   Managed in github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
 private: false
 tags: [safenet]
@@ -15,11 +16,14 @@ visualizations:
     description: >
       Sentinel votes, the Oracle result and the arbitrator's ruling are separate. A ruling is not the
       Sentinels' consensus, and disputed requests are never attested. Reasons and context are shown
-      as recorded on chain. No rows: no dispute so far.
+      as recorded on chain. Disputed = DisputeTriggered, which freezes the request. Time to ruling:
+      freeze to secure or insecure ruling, ruled cases only. Open for: hours since the freeze of a
+      case still awaiting an outcome, as of the latest execution. No rows: no dispute so far.
     options:
       itemsPerPage: 25
       columns:
-        - { name: dispute_tx, title: Disputed (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: proposal_tx, title: Proposed (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: dispute_tx, title: "Disputed, frozen (UTC)", type: normal, alignContent: left, isHidden: false }
         - { name: safe_chain, title: Safe chain, type: normal, alignContent: left, isHidden: false }
         - { name: safe_tx, title: Safe transaction, type: normal, alignContent: left, isHidden: false }
         - { name: sentinel_votes, title: "Sentinel votes (recorded reason)", type: normal, alignContent: left, isHidden: false }
@@ -27,11 +31,34 @@ visualizations:
         - { name: arbitration_status, title: Arbitration, type: normal, alignContent: left, isHidden: false }
         - { name: ruling, title: Ruling, type: normal, alignContent: left, isHidden: false }
         - { name: arbitrator_context, title: Arbitrator's recorded context, type: normal, alignContent: left, isHidden: false }
-        - { name: ruling_tx, title: Ruling tx (UTC), type: normal, alignContent: left, isHidden: false }
+        - { name: ruling_tx, title: "Outcome tx (UTC)", type: normal, alignContent: left, isHidden: false }
+        - { name: hours_to_ruling, title: "Time to ruling (h)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.0" }
+        - { name: open_hours, title: "Open for (h)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.0" }
         - { name: slashed_usdc, title: Slashed (USDC.e), type: normal, alignContent: right, isHidden: false }
         - { name: attested, title: Attested, type: normal, alignContent: left, isHidden: false }
         - { name: triggered_at, title: triggered_at, type: normal, alignContent: left, isHidden: true }
         - { name: secure_votes, title: secure_votes, type: normal, alignContent: left, isHidden: true }
         - { name: insecure_votes, title: insecure_votes, type: normal, alignContent: left, isHidden: true }
         - { name: request_id, title: request_id, type: normal, alignContent: left, isHidden: true }
+        - { name: proposed_at, title: proposed_at, type: normal, alignContent: left, isHidden: true }
+        - { name: outcome_at, title: outcome_at, type: normal, alignContent: left, isHidden: true }
+        - { name: computed_at, title: computed_at, type: normal, alignContent: left, isHidden: true }
         - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }
+  durations:
+    name: Time from dispute (freeze) to ruling, per ruled case (hours)
+    type: chart
+    description: >
+      One point per ruled case (secure or insecure), at its dispute time. Open, out-of-scope and
+      timed-out cases have no ruling and no point. No points: no ruled cases.
+    options:
+      globalSeriesType: scatter
+      sortX: true
+      legend: { enabled: false }
+      xAxis: { title: { text: "Disputed (UTC)" } }
+      yAxis:
+        - title: { text: Hours to ruling }
+      columnMapping:
+        triggered_at: x
+        hours_to_ruling: y
+      seriesOptions:
+        hours_to_ruling: { type: scatter, yAxis: 0, zIndex: 0, name: Hours to ruling, color: "#d03b3b" }

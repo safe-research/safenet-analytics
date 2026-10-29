@@ -1,0 +1,39 @@
+# Safenet — Arbitration: https://dune.com/safe/safenet-arbitration
+# Disputed requests and the Security Council's arbitration: rates by request cohort and per
+# proposal day, time from the freeze to the ruling, open cases, and every dispute. Linked from the
+# overview's arbitration counter; the navigation bars link back to it and to the other sections.
+# Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
+name: Safenet — Arbitration
+slug: safenet-arbitration
+private: false
+tags: [safenet, safe]
+
+widgets:
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}}) · **Arbitration**"
+    position: { row: 0, col: 0, size_x: 6, size_y: 2 }
+
+  - text_file: text/arbitration.md
+    position: { row: 2, col: 0, size_x: 4, size_y: 6 }
+  - visualization: arbitration_resolution/open
+    position: { row: 2, col: 4, size_x: 2, size_y: 3 }
+  - visualization: arbitration_resolution/oldest_open
+    position: { row: 5, col: 4, size_x: 2, size_y: 3 }
+
+  # Arbitration rate (by request cohort)
+  - visualization: arbitration_windows/table
+    position: { row: 8, col: 0, size_x: 6, size_y: 5 }
+  - visualization: arbitration_daily/chart
+    position: { row: 13, col: 0, size_x: 3, size_y: 8 }
+  - visualization: sentinel_disputes/durations
+    position: { row: 13, col: 3, size_x: 3, size_y: 8 }
+
+  # Resolution time (by ruling time)
+  - visualization: arbitration_resolution/table
+    position: { row: 21, col: 0, size_x: 6, size_y: 4 }
+
+  # Every dispute: Sentinel votes and reasons, arbitration status, ruling, context and timing
+  - visualization: sentinel_disputes/table
+    position: { row: 25, col: 0, size_x: 6, size_y: 10 }
+
+  - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}}) · **Arbitration**"
+    position: { row: 35, col: 0, size_x: 6, size_y: 2 }

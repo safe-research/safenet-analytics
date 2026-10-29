@@ -134,6 +134,11 @@ export type RequestRecord = {
   claims: { sentinel: string; bondReturn: bigint; feeReward: bigint }[];
   bondLocked: bigint;
   disputed: boolean;
+  // DisputeTriggered: the freeze (State.FROZEN), and the block after which the arbitration can time out.
+  disputedAt: number | null;
+  disputedBlock: number | null;
+  disputeTx: string | null;
+  arbitrationDeadline: number | null;
   outcome: { verdict: "approved" | "denied" | "no_verdict"; event: string; time: number; tx: string; slashed: bigint } | null;
   attestedAt: number | null;
   attestationTx: string | null;
@@ -228,6 +233,10 @@ export async function buildRequests(rpc: Pick<Rpc, "blockTime">, logs: SafenetLo
         claims: [],
         bondLocked: 0n,
         disputed: false,
+        disputedAt: null,
+        disputedBlock: null,
+        disputeTx: null,
+        arbitrationDeadline: null,
         outcome: null,
         attestedAt: null,
         attestationTx: null,
@@ -254,7 +263,12 @@ export async function buildRequests(rpc: Pick<Rpc, "blockTime">, logs: SafenetLo
     } else if (name === "Claimed") {
       req.claims.push({ sentinel, bondReturn: word(l.data, 0), feeReward: word(l.data, 1) });
     } else if (name === "DisputeTriggered") {
+      if (req.disputed) issues.push(`request ${req.requestId}: more than one DisputeTriggered`);
       req.disputed = true;
+      req.disputedAt = time;
+      req.disputedBlock = Number(l.blockNumber);
+      req.disputeTx = l.transactionHash;
+      req.arbitrationDeadline = Number(word(l.data, 0));
     } else {
       if (req.outcome) issues.push(`request ${req.requestId}: more than one terminal outcome`);
       const verdict =

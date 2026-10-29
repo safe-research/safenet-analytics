@@ -23,6 +23,8 @@ The verification checks both sections against the same chain data.
 
 ## Panels
 
+On the [Sentinels dashboard](https://dune.com/safe/safenet-sentinels):
+
 | Panel | Query | Time basis |
 | --- | --- | --- |
 | Sentinels data as of | `sentinel_overview` | Latest Gnosis Chain block Dune has ingested, and computation time |
@@ -31,10 +33,21 @@ The verification checks both sections against the same chain data.
 | Participation per day (pivot table, Sentinel × day) | `sentinel_participation_daily` | Last 30 UTC days, by proposal day |
 | Sentinel responses by kind (bars and table) | `sentinel_verdicts` | Bars: requests proposed in the last 30 days. Table: also all time |
 | Requests by number of valid responses (bars and table) | `sentinel_coverage` | Bars: last 30 days. Table: also all time, by proposal time |
-| Disputes and arbitration | `sentinel_disputes` | All disputes, newest first |
 | Sentinel earnings | `sentinel_earnings` | All time and last 30 days (fees); latest published root (SAFE) |
 | Fee rewards per day by Sentinel | `sentinel_earnings_daily` | Last 30 UTC days, by decision day |
 | Sentinel bonds | `sentinel_bonds` | Available and locked: **now**. Movements: all time |
+
+On the [Arbitration dashboard](https://dune.com/safe/safenet-arbitration), plus one counter on the overview:
+
+| Panel | Query | Time basis |
+| --- | --- | --- |
+| Open arbitrations, oldest open arbitration (counters) | `arbitration_resolution` | **Now** (latest execution) |
+| Arbitration rate by request cohort | `arbitration_windows` | Requests proposed in the last 24 hours, 7 days, 30 days, and since production start (2026-10-07) |
+| Arbitration rate per proposal day | `arbitration_daily` | Every UTC proposal day since the first production request |
+| Time from dispute (freeze) to ruling, per ruled case | `sentinel_disputes` | All ruled cases, at their dispute time |
+| Time from dispute (freeze) to ruling (median, p90, longest) | `arbitration_resolution` | Cases ruled in the last 30 days, and since production start |
+| Disputes and arbitration | `sentinel_disputes` | All disputes, newest first |
+| Overview: arbitration rate, last 30 days | `arbitration_windows` | Requests proposed in the last 30 days |
 
 "All time" means production since the first production request (2026-10-14).
 
@@ -137,6 +150,42 @@ The table keeps these apart:
 - **Arbitration status and ruling.** A ruling is never shown as the Sentinels' consensus.
 - **Arbitrator's recorded context.** As recorded on chain: HTML-escaped, shortened to 160 characters, with a link to the ruling transaction. Nothing is added when nothing was recorded.
 - **Attested.** Always *No*: disputed requests are never attested by the validators, whatever the ruling. *Yes (unexpected)* would flag a data error.
+- **Timing.** The request's proposal, the dispute (freeze), the terminal outcome (ruling, out of scope or arbitration timeout), the time to ruling (ruled cases only), and how long a case still awaiting an outcome has been open (as of the latest execution). See [Arbitration rate and resolution time](#arbitration-rate-and-resolution-time).
+
+## Arbitration rate and resolution time
+
+Shown together on their own dashboard, [safe/safenet-arbitration](https://dune.com/safe/safenet-arbitration). Arbitration is a separate stage: the Security Council decides there, not the Sentinels. The dispute table, with each Sentinel's vote and reason, lives there too, and the Sentinels dashboard links to it. The overview has one counter, *Arbitration rate, last 30 days*, next to a link to the Arbitration dashboard. Queries: `arbitration_windows`, `arbitration_daily`, `arbitration_resolution` and the extended `sentinel_disputes`, all built on `safenet_requests`. The TypeScript model is [`scripts/lib/arbitration.ts`](../../scripts/lib/arbitration.ts), unit-tested in `test/arbitration.test.ts`.
+
+### The freeze boundary
+
+A request **enters arbitration** with `DisputeTriggered(requestId, deadline)`:
+- **The freeze.** `SentinelOracle.finalize` emits it when the revealed votes include both an approval and a denial, and moves the request to `State.FROZEN`. Source: `contracts/src/SentinelOracle.sol` and `libraries/SentinelOracleRequests.sol` in `safe-research/safenet`, read at commit `c6ab855`. There is no separate freeze event: this is the freeze.
+- **The deadline.** `deadline` is the block after which anyone can call `timeoutArbitration`. In production it is always the freeze block + 483,840 blocks, 28 days at 5-second blocks; the verification checks this.
+
+A frozen request leaves arbitration with exactly one terminal event:
+
+| State | Event | Ruling? |
+| --- | --- | --- |
+| Awaiting outcome | none yet | not yet |
+| Ruled secure / ruled insecure | `DisputeResolved` (outcome 3 or 4) | yes |
+| Out of scope | `DisputeOutOfScope` (the arbitrator declined) | no |
+| Arbitration timed out | `ArbitrationTimedOut` (after the deadline) | no |
+
+### Arbitration rate
+
+- **Population.** As in Network & revenue: requests for Safes on the Charter's chains (Ethereum, Gnosis Chain, Arbitrum One), including Safenet's operational Safes. Requests for Safes on other chains are test traffic and excluded. The dispute table still lists them, marked.
+- **Cohorts.** Requests are selected by **proposal time**: the last 24 hours, 7 days and 30 days before the execution, and *production, all time* since 2026-10-07. Each request counts once, in its **latest state**, unresolved arbitrations included. A Safe transaction proposed again in a later epoch is a new request, counted as such, as in the request counter.
+- **Rate** = requests that entered arbitration ÷ requests. A window without requests shows *no requests*, not 0%. The awaiting, ruled secure, ruled insecure, out-of-scope and timed-out cases add up to the arbitrated requests.
+- **Recent cohorts can rise.** A request still being voted on (*Still being voted on*: no outcome and no dispute yet) can still be disputed. So the latest windows and days can gain arbitrations later. Dispute dates are never mixed in: a request disputed today but proposed 40 days ago is in the all-time cohort only.
+- **Per day.** The chart shows each UTC proposal day since the first production request, days without requests included. Columns: requests, arbitrated, still being voted on (left axis). Line: the rate (right axis), with no point on days without requests.
+
+### Resolution time
+
+- **Definition.** From the freeze (`DisputeTriggered`) to the ruling (`DisputeResolved`), in hours, from the two blocks' timestamps.
+- **Sample.** Ruled cases only, selected by **ruling time**: *ruled in the last 30 days* and *ruled since production start*. Unresolved cases are excluded. Out-of-scope outcomes and arbitration timeouts end without a ruling: they are counted separately and never as resolved.
+- **Median and p90** interpolate linearly between the closest ruled cases (position q × (n − 1) in the sorted durations). **Longest** is the slowest ruled case in the sample. With no ruled case, all three show *no ruled cases*, never 0 hours. The sample size is shown next to them.
+- **Individual cases.** A scatter chart shows one point per ruled case, at its dispute time.
+- **Open arbitrations.** Frozen requests without an outcome, as of the latest execution. Out-of-scope and timed-out cases have ended and are not open. *Oldest open arbitration* is the hours since the oldest open case's freeze. It is blank when none is open.
 
 Linkage is by `request_id`. The verification recounts, from RPC logs, the disputes, the vote counts, each ruling and the slashed totals.
 
@@ -224,6 +273,8 @@ There is no slash after a total timeout (nobody revealed), an out-of-scope dispu
 [`scripts/verify-sentinels.ts`](../../scripts/verify-sentinels.ts) (`npm run verify:sentinels`) recounts the section from Gnosis Chain RPC logs with the same rules in TypeScript ([`scripts/lib/sentinels.ts`](../../scripts/lib/sentinels.ts), unit-tested in `test/sentinels.test.ts`).
 - **Comparison with Dune.** With `DUNE_API_KEY`, it compares every Dune result at that result's `through_block`, judging open windows at Dune's `as_of_block`:
   - the overview, windows, per-day pivot, verdicts, coverage, disputes, earnings and bonds;
+  - the arbitration rates, per-day rates, resolution times and open arbitrations, judged at each query's own `computed_at`, and every dispute's proposal, freeze and outcome timestamps and durations;
+  - the arbitration panels with each other and with the dispute table: all-time arbitrations and states = dispute table rows on Charter chains, all time = sum of the days, ruled = resolution sample, awaiting = open arbitrations;
   - the panels with each other over the same population (overview = verdict breakdown, overview = windows);
   - the per-Sentinel fee rewards with the Network & revenue fee allocation.
 - **Independent checks:**
@@ -231,10 +282,11 @@ There is no slash after a total timeout (nobody revealed), an out-of-scope dispu
   - every ruled dispute's slashed total equals its losers' slashes;
   - no Sentinel committed while not a member;
   - Sentinel USDC.e transfers since deployment equal `balanceOf`;
-  - the distributor's current root is the latest published root, and `cumulativeClaimed` per Sentinel is read on Ethereum.
+  - the distributor's current root is the latest published root, and `cumulativeClaimed` per Sentinel is read on Ethereum;
+  - every dispute has one `DisputeTriggered`, ends only with `DisputeResolved`, `DisputeOutOfScope` or `ArbitrationTimedOut`, never before its freeze, and its deadline is after its freeze block.
 - **Traces.** `--traces` also recounts reverted calls with `trace_filter`. This takes about 15 minutes on the public RPC, which allows 100 blocks per call. Without it, *no commit* and *commit reverted* are compared as a sum.
 - **Where it runs:** after every preview deploy, with the result and representative cases in the pull request comment, and after every production refresh.
-- **Representative cases.** It lists a recent example of each case with Safenet explorer and Gnosisscan links, for a manual check on [safenet-explorer.eth.limo](https://safenet-explorer.eth.limo/). The cases are secure, insecure, no commit, commit reverted, missing response, pending, and each dispute ending.
+- **Representative cases.** It lists a recent example of each case with Safenet explorer and Gnosisscan links, for a manual check on [safenet-explorer.eth.limo](https://safenet-explorer.eth.limo/). The cases are secure, insecure, no commit, commit reverted, missing response, pending, and each dispute ending. For arbitration, it lists one case per state (ruled secure, ruled insecure, awaiting, out of scope, timed out) with its proposal, freeze and outcome times and transactions, deadline block and durations. It also counts repeated proposals of one Safe transaction.
 
 Result up to Gnosis block 48951573 (2026-10-26), in [`verification/sentinels.json`](../../verification/sentinels.json):
 

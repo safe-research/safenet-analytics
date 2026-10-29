@@ -1,14 +1,15 @@
 # safenet-analytics
 
-Safenet production analytics on Dune, managed from GitHub. The overview is [dune.com/safe/safenet](https://dune.com/safe/safenet), owned by the `safe` team. Each section has its own dashboard, linked from the overview's section boxes:
+Safenet production analytics on Dune, managed from GitHub. The overview is [dune.com/safe/safenet](https://dune.com/safe/safenet), owned by the `safe` team. Each section has its own dashboard, linked from the overview's section boxes and its arbitration counter:
 
 | Dashboard | URL | Contents |
 | --- | --- | --- |
-| Overview | [safe/safenet](https://dune.com/safe/safenet) | data freshness, headline counters (requests, completed results, attestations, Safes checked, gross fees, active stake), activity, results, fees and active stake charts |
+| Overview | [safe/safenet](https://dune.com/safe/safenet) | data freshness, headline counters (requests, completed results, attestations, Safes checked, gross fees, active stake), arbitration rate (last 30 days), activity, results, fees and active stake charts |
 | Network & revenue | [safe/safenet-network-revenue](https://dune.com/safe/safenet-network-revenue) | all transaction-check and fee panels, latest requests, definitions |
 | Staking | [safe/safenet-staking-withdrawals](https://dune.com/safe/safenet-staking-withdrawals) | stake, flows, withdrawals, stake by validator, definitions |
 | Validators | [safe/safenet-validators](https://dune.com/safe/safenet-validators) | attestation set, participation, stake history, rewards, withdrawal exposure, definitions |
-| Sentinels | [safe/safenet-sentinels](https://dune.com/safe/safenet-sentinels) | participation, verdicts, coverage, disputes, earnings, bonds, definitions |
+| Sentinels | [safe/safenet-sentinels](https://dune.com/safe/safenet-sentinels) | participation, verdicts, coverage, earnings, bonds, definitions |
+| Arbitration | [safe/safenet-arbitration](https://dune.com/safe/safenet-arbitration) | arbitration rate by request cohort and per proposal day, time from freeze to ruling, open cases, every dispute with Sentinel votes, ruling and timing |
 
 The dashboards share their queries and visualizations: a panel shown on the overview and on a section dashboard is one Dune visualization, and its query is executed once per refresh.
 
@@ -39,6 +40,7 @@ docs/                         documentation
 | Network & revenue: headline counters, time windows, result breakdown, networks, Guard-enabled Safes, fees and fee allocation | `network_summary`, `results_daily`, `network_breakdown`, `guard_adoption`, `fee_revenue_daily`, `fee_allocation`, `fee_config` | [docs/metrics/network-and-revenue.md](docs/metrics/network-and-revenue.md) |
 | Shared models (not displayed): requests, oracle USDC.e flows, known traffic, SafenetGuard deployments and Safe guard status | `safenet_requests`, `safenet_fee_flows`, `safenet_known_traffic`, `safenet_guards`, `safenet_guard_status` | [docs/metrics/network-and-revenue.md](docs/metrics/network-and-revenue.md) |
 | Sentinels: overview, participation by window and per day, verdicts, coverage, disputes and arbitration, earnings (USDC.e fees, SAFE subsidies), bonds | `sentinel_overview`, `sentinel_windows`, `sentinel_participation_daily`, `sentinel_verdicts`, `sentinel_coverage`, `sentinel_disputes`, `sentinel_earnings`, `sentinel_earnings_daily`, `sentinel_bonds` | [docs/metrics/sentinels.md](docs/metrics/sentinels.md) |
+| Arbitration: rate by request cohort and per proposal day, resolution time (freeze to ruling), open arbitrations | `arbitration_windows`, `arbitration_daily`, `arbitration_resolution`, `sentinel_disputes` | [docs/metrics/sentinels.md](docs/metrics/sentinels.md#arbitration-rate-and-resolution-time) |
 | Sentinel models (not displayed): membership terms, responses per request, reverted calls, Sentinel USDC.e transfers, SAFE rewards distributor events, published SAFE allocations | `safenet_sentinel_terms`, `safenet_sentinel_responses`, `safenet_sentinel_failed_calls`, `safenet_sentinel_wallet_transfers`, `safenet_reward_events`, `safenet_sentinel_rewards` | [docs/metrics/sentinels.md](docs/metrics/sentinels.md) |
 | Staking: active stake, stakers and outstanding withdrawals now, flows by window, active stake history, deposits and completed withdrawals, net capital flow, withdrawal requests, outstanding withdrawals, stake by validator (self-stake and delegated) | `staking_overview`, `staking_flow_summary`, `staking_daily`, `staking_withdrawals_outstanding`, `staking_by_validator` | [docs/metrics/staking.md](docs/metrics/staking.md) |
 | Staking models (not displayed, shared with the Validators section): events, validator stakers, withdrawals, positions, validators | `staking_events`, `staking_validator_stakers`, `staking_withdrawals`, `staking_positions`, `staking_validators` | [docs/metrics/staking.md](docs/metrics/staking.md#models) |
