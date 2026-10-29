@@ -6,8 +6,8 @@
 -- ruled cases count. Unresolved cases are excluded; out-of-scope outcomes (DisputeOutOfScope) and
 -- arbitration timeouts (ArbitrationTimedOut) end without a ruling and are counted separately, never
 -- as resolved. One row per window of ruling time. Median and p90 interpolate linearly between the
--- closest ranks (position q * (n - 1) in the sorted durations). No ruled case: no statistics, and
--- the label says so instead of showing a duration of 0.
+-- closest ranks (position q * (n - 1) in the sorted durations); max is the longest ruled case. No
+-- ruled case: no statistics, and the label says so instead of showing a duration of 0.
 --
 -- Open arbitrations (frozen, no outcome yet) and the oldest one's age are as of the execution
 -- (computed_at) and the same on every row. Population as arbitration_windows: Charter chains.
@@ -86,6 +86,8 @@ select
     p.p90_hours,
     if(p.ruled_cases > 0, format('%.1f h', p.median_hours), 'no ruled cases') as median_label,
     if(p.ruled_cases > 0, format('%.1f h', p.p90_hours), 'no ruled cases') as p90_label,
+    element_at(p.hours, -1) as max_hours, -- sorted ascending: the last is the longest; null when empty
+    if(p.ruled_cases > 0, format('%.1f h', element_at(p.hours, -1)), 'no ruled cases') as max_label,
     p.out_of_scope,
     p.timed_out,
     o.open_arbitrations,

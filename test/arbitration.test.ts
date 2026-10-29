@@ -157,6 +157,7 @@ describe("resolution time", () => {
       ruled_cases: 0,
       median_hours: null,
       p90_hours: null,
+      max_hours: null,
       out_of_scope: 1,
       timed_out: 1,
       open_arbitrations: 2,
@@ -176,8 +177,8 @@ describe("resolution time", () => {
       disputed(NOW - D, NOW - D), // unresolved
     ];
     const [last30, all] = resolution(requests, NOW);
-    assert.deepEqual([last30.ruled_cases, last30.median_hours, last30.p90_hours], [2, 15, 19]);
-    assert.deepEqual([all.ruled_cases, all.median_hours], [3, 20]);
+    assert.deepEqual([last30.ruled_cases, last30.median_hours, last30.p90_hours, last30.max_hours], [2, 15, 19, 20]);
+    assert.deepEqual([all.ruled_cases, all.median_hours, all.max_hours], [3, 20, 30]);
     assert.equal(all.open_arbitrations, 1);
   });
 });

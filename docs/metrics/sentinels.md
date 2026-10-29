@@ -45,7 +45,7 @@ On the [Arbitration dashboard](https://dune.com/safe/safenet-arbitration), plus 
 | Arbitration rate by request cohort | `arbitration_windows` | Requests proposed in the last 24 hours, 7 days, 30 days, and since production start (2026-10-07) |
 | Arbitration rate per proposal day | `arbitration_daily` | Every UTC proposal day since the first production request |
 | Time from dispute (freeze) to ruling, per ruled case | `sentinel_disputes` | All ruled cases, at their dispute time |
-| Time from dispute (freeze) to ruling (median, p90) | `arbitration_resolution` | Cases ruled in the last 30 days, and since production start |
+| Time from dispute (freeze) to ruling (median, p90, longest) | `arbitration_resolution` | Cases ruled in the last 30 days, and since production start |
 | Disputes and arbitration | `sentinel_disputes` | All disputes, newest first |
 | Overview: arbitration rate, last 30 days | `arbitration_windows` | Requests proposed in the last 30 days |
 
@@ -183,7 +183,7 @@ A frozen request leaves arbitration with exactly one terminal event:
 
 - **Definition.** From the freeze (`DisputeTriggered`) to the ruling (`DisputeResolved`), in hours, from the two blocks' timestamps.
 - **Sample.** Ruled cases only, selected by **ruling time**: *ruled in the last 30 days* and *ruled since production start*. Unresolved cases are excluded. Out-of-scope outcomes and arbitration timeouts end without a ruling: they are counted separately and never as resolved.
-- **Median and p90** interpolate linearly between the closest ruled cases (position q × (n − 1) in the sorted durations). With no ruled case, both show *no ruled cases*, never 0 hours. The sample size is shown next to them.
+- **Median and p90** interpolate linearly between the closest ruled cases (position q × (n − 1) in the sorted durations). **Longest** is the slowest ruled case in the sample. With no ruled case, all three show *no ruled cases*, never 0 hours. The sample size is shown next to them.
 - **Individual cases.** A scatter chart shows one point per ruled case, at its dispute time.
 - **Open arbitrations.** Frozen requests without an outcome, as of the latest execution. Out-of-scope and timed-out cases have ended and are not open. *Oldest open arbitration* is the hours since the oldest open case's freeze. It is blank when none is open.
 

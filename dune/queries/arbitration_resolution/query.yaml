@@ -16,7 +16,8 @@ visualizations:
     description: >
       Ruled cases only (secure or insecure), selected by ruling time. Unresolved cases are
       excluded; out-of-scope outcomes and arbitration timeouts end without a ruling and are not
-      counted as resolved. Median and p90 interpolate between the closest cases.
+      counted as resolved. Median and p90 interpolate between the closest cases; Longest is the
+      slowest ruled case.
     options:
       itemsPerPage: 2
       columns:
@@ -26,6 +27,8 @@ visualizations:
         - { name: p90_hours, title: "p90_hours", type: normal, alignContent: right, isHidden: true }
         - { name: median_label, title: "Median", type: normal, alignContent: right, isHidden: false }
         - { name: p90_label, title: "p90", type: normal, alignContent: right, isHidden: false }
+        - { name: max_hours, title: "max_hours", type: normal, alignContent: right, isHidden: true }
+        - { name: max_label, title: "Longest", type: normal, alignContent: right, isHidden: false }
         - { name: out_of_scope, title: "Out of scope in window (no ruling)", type: normal, alignContent: right, isHidden: false }
         - { name: timed_out, title: "Arbitration timed out in window (no ruling)", type: normal, alignContent: right, isHidden: false }
         - { name: open_arbitrations, title: "open_arbitrations", type: normal, alignContent: right, isHidden: true }

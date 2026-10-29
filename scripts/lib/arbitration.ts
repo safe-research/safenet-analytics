@@ -126,6 +126,7 @@ export function resolution(requests: Req[], now: number) {
       ruled_cases: hours.length,
       median_hours: percentile(hours, 0.5),
       p90_hours: percentile(hours, 0.9),
+      max_hours: hours.length ? Math.max(...hours) : null,
       out_of_scope: ended.filter((r) => arbitrationState(r) === "out_of_scope").length,
       timed_out: ended.filter((r) => arbitrationState(r) === "timed_out").length,
       open_arbitrations: open.length,

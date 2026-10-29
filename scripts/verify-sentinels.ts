@@ -344,6 +344,7 @@ async function compareArbitrationResolution(r: Result) {
     const label = (h: number | null) => (h === null ? "no ruled cases" : `${h.toFixed(1)} h`);
     if (row.median_label !== label(exp.median_hours)) mismatches.push({ where, column: "median_label", rpc: label(exp.median_hours), dune: row.median_label });
     if (row.p90_label !== label(exp.p90_hours)) mismatches.push({ where, column: "p90_label", rpc: label(exp.p90_hours), dune: row.p90_label });
+    if (row.max_label !== label(exp.max_hours)) mismatches.push({ where, column: "max_label", rpc: label(exp.max_hours), dune: row.max_label });
   }
 }
 
