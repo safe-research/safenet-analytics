@@ -1,39 +1,39 @@
 {
   "dashboards": {
     "arbitration": {
-      "desired": "2f3190432f867216",
+      "desired": "79ab94259e38b0f7",
       "id": 222675,
-      "remote": "aa70405c648246b6",
+      "remote": "bf689ea7a23091e7",
       "url": "https://dune.com/safe/safenet-arbitration-preview-pr-7"
     },
     "network-revenue": {
-      "desired": "9293a7aa8e0a219c",
+      "desired": "99b4b18c20109f04",
       "id": 222650,
-      "remote": "45541d17a454c3a2",
+      "remote": "11395a8e253c9566",
       "url": "https://dune.com/safe/safenet-network-revenue-preview-pr-7"
     },
     "overview": {
-      "desired": "fa153de79e63f790",
+      "desired": "5126a99efc28460d",
       "id": 222649,
-      "remote": "566a595cd9371129",
+      "remote": "03266ebbc08d4f5e",
       "url": "https://dune.com/safe/safenet-preview-pr-7"
     },
     "sentinels": {
-      "desired": "1082e915289c3761",
+      "desired": "c9997bb8859afb9c",
       "id": 222651,
-      "remote": "735bd0eb71ee26f4",
+      "remote": "38b211a31ffd8906",
       "url": "https://dune.com/safe/safenet-sentinels-preview-pr-7"
     },
     "staking": {
-      "desired": "9d310755ffaa1a78",
+      "desired": "40233214875fe951",
       "id": 222652,
-      "remote": "2f03c0cc70039b67",
+      "remote": "0fe23edcebd14eb6",
       "url": "https://dune.com/safe/safenet-staking-preview-pr-7"
     },
     "validators": {
-      "desired": "4d5d1fb7a9e659eb",
+      "desired": "8814121ac69f6d27",
       "id": 222653,
-      "remote": "5eec0eba9f3f4796",
+      "remote": "9800047ca053ad0c",
       "url": "https://dune.com/safe/safenet-validators-preview-pr-7"
     }
   },
@@ -46,11 +46,11 @@
       "sql": "b25ca1ba597310f2"
     },
     "arbitration_resolution": {
-      "credits": 1.188382353,
-      "ended_at": "2026-10-28T14:32:44.169774241Z",
-      "execution_id": "01M61ETS7TB2DAJ127TMVZ9MXH",
+      "credits": 1.5625,
+      "ended_at": "2026-10-29T09:12:30.772290393Z",
+      "execution_id": "01M63EX08FVKMEK0S6YJE42CA0",
       "query_id": 9029666,
-      "sql": "bf9e889fb3a1782d"
+      "sql": "d95164c528a70296"
     },
     "arbitration_windows": {
       "credits": 0.683558824,
@@ -112,9 +112,9 @@
       "remote": "f4a2f772041d325b"
     },
     "arbitration_resolution": {
-      "desired": "986d0e5440b1ec1c",
+      "desired": "8b4047e59db33a6a",
       "id": 9029666,
-      "remote": "986d0e5440b1ec1c"
+      "remote": "8b4047e59db33a6a"
     },
     "arbitration_windows": {
       "desired": "b1a4a1fa61873502",
@@ -423,10 +423,10 @@
       "remote": "71a1b7859b3c0d02"
     },
     "arbitration_resolution/table": {
-      "desired": "3055387e9a0df9ad",
+      "desired": "561d29fa47967211",
       "id": 13075095,
       "query_id": 9029666,
-      "remote": "3055387e9a0df9ad"
+      "remote": "561d29fa47967211"
     },
     "arbitration_windows/rate_30d": {
       "desired": "8a65f97e13afaeef",
