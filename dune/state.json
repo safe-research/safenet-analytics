@@ -167,9 +167,9 @@
       "remote": "5ff5a1ded22b2ab0"
     },
     "safenet_reward_events": {
-      "desired": "6f205a20b97d55d3",
+      "desired": "971d5578f341d163",
       "id": 9013456,
-      "remote": "6f205a20b97d55d3"
+      "remote": "971d5578f341d163"
     },
     "safenet_sentinel_failed_calls": {
       "desired": "de229335ac2baa75",
@@ -282,9 +282,9 @@
       "remote": "6b5e85b364084d40"
     },
     "staking_validator_stakers": {
-      "desired": "27efd5e215230bf4",
+      "desired": "ac8aee9d7854b5dc",
       "id": 9020100,
-      "remote": "27efd5e215230bf4"
+      "remote": "ac8aee9d7854b5dc"
     },
     "staking_validators": {
       "desired": "5e6f4bf4cdd13d80",
@@ -307,19 +307,19 @@
       "remote": "0be2f79aa6137f37"
     },
     "validator_ceremonies": {
-      "desired": "59d7062462b0bc46",
+      "desired": "32c304fe70f89f27",
       "id": 9022242,
-      "remote": "59d7062462b0bc46"
+      "remote": "32c304fe70f89f27"
     },
     "validator_epochs": {
-      "desired": "af007bc2ad56eff8",
+      "desired": "8d506682dcc2bf54",
       "id": 9022240,
-      "remote": "af007bc2ad56eff8"
+      "remote": "8d506682dcc2bf54"
     },
     "validator_membership": {
-      "desired": "577507874a537cdd",
+      "desired": "a9fc98a0a0f5c65a",
       "id": 9022241,
-      "remote": "577507874a537cdd"
+      "remote": "a9fc98a0a0f5c65a"
     },
     "validator_overview": {
       "desired": "19a49155956b94e0",
@@ -362,9 +362,9 @@
       "remote": "d86ab91030281479"
     },
     "validator_staker_history": {
-      "desired": "ac23d1b375eda4d5",
+      "desired": "0d7d862ad832f420",
       "id": 9022248,
-      "remote": "ac23d1b375eda4d5"
+      "remote": "0d7d862ad832f420"
     },
     "validator_withdrawal_exposure": {
       "desired": "f5d2ac2f8ae15979",
