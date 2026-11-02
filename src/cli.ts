@@ -322,14 +322,19 @@ async function decodedParity() {
   const errors: { source: string; error: string }[] = [];
   let credits = 0;
   for (const s of DECODED_SOURCES) {
-    try {
-      const status = await dune.waitForExecution(await dune.executeSql(paritySql(s), "medium"), 10 * 60_000);
-      credits += status.execution_cost_credits ?? 0;
-      if (status.state !== "QUERY_STATE_COMPLETED") throw new Error(`${status.state} ${status.error?.message ?? ""}`.trim());
-      const rows = (await dune.executionResults(status.execution_id, 100)).rows as unknown as ParityRow[];
-      all.push(...verdicts(s, rows));
-    } catch (e) {
-      errors.push({ source: s.table, error: (e as Error).message });
+    // Retried once: Dune occasionally fails a read of its own tables ("Error getting snapshot").
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const status = await dune.waitForExecution(await dune.executeSql(paritySql(s), "medium"), 10 * 60_000);
+        credits += status.execution_cost_credits ?? 0;
+        if (status.state !== "QUERY_STATE_COMPLETED") throw new Error(`${status.state} ${status.error?.message ?? ""}`.trim());
+        const rows = (await dune.executionResults(status.execution_id, 100)).rows as unknown as ParityRow[];
+        all.push(...verdicts(s, rows));
+        break;
+      } catch (e) {
+        if (attempt === 2) errors.push({ source: s.table, error: (e as Error).message });
+        else console.error(`${s.table}: ${(e as Error).message}; retrying once`);
+      }
     }
   }
   const text = `### Decoded tables vs raw logs (read-only, ${credits.toFixed(2)} credits)\n\n${formatVerdicts(all, errors)}\n`;

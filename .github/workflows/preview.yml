@@ -162,9 +162,10 @@ jobs:
           npm run dune -- run-preview --sha "${{ steps.pr.outputs.sha }}" --baseline "$RUNNER_TEMP/main/dune"
           ${{ inputs.force_run && '--force' || '' }}
 
-      # Shows mismatches in the comment; fails the job after the comment is posted. Each section is
-      # reconciled only if the preview has its results: sections whose SQL equals production's are
-      # not executed in the preview (run-preview --baseline); Refresh verifies them in production.
+      # Shows mismatches in the comment; fails the job after the comment is posted. A section is
+      # reconciled if the preview executed any of its queries (sections whose SQL equals production's
+      # are not executed: run-preview --baseline; Refresh verifies them in production). The scripts
+      # compare the results that exist and skip the others.
       - name: Reconcile against on-chain events
         if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' transaction_checks_daily ')
         run: >-
@@ -181,23 +182,22 @@ jobs:
 
       - name: Reconcile Sentinels and arbitration against on-chain events, balances and SAFE rewards
         if: >-
-          always() && steps.run.outcome == 'success' && (contains(steps.run.outputs.previewed, ' sentinel_overview ')
-          || contains(steps.run.outputs.previewed, ' sentinel_disputes ') || contains(steps.run.outputs.previewed, ' arbitration_windows ')
-          || contains(steps.run.outputs.previewed, ' arbitration_daily ') || contains(steps.run.outputs.previewed, ' arbitration_resolution '))
+          always() && steps.run.outcome == 'success' && (contains(steps.run.outputs.previewed, ' sentinel_')
+          || contains(steps.run.outputs.previewed, ' arbitration_'))
         run: >-
           npm run verify:sentinels --
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --out "$RUNNER_TEMP/verification-sentinels.json"
 
       - name: Reconcile staking against contract state, receipts and the registered stakers
-        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' staking_overview ')
+        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' staking_')
         run: >-
           npm run verify:staking --
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --out "$RUNNER_TEMP/verification-staking.json"
 
       - name: Reconcile validators against contract state, signing events and published rewards
-        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' validator_overview ')
+        if: always() && steps.run.outcome == 'success' && contains(steps.run.outputs.previewed, ' validator_')
         run: >-
           npm run verify:validators --
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"

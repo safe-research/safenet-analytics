@@ -104,7 +104,8 @@ if (key) {
   const client = new DuneClient(key);
   for (const q of DUNE_QUERIES) {
     const id = state.queries[q]?.id;
-    if (id) dune[q] = await client.latestResults(id);
+    // A preview query whose SQL equals production's is not executed and has no result: skipped.
+    if (id) dune[q] = await client.latestResults(id).catch(() => undefined);
   }
 }
 const boundOf = (r?: Result) => (r?.rows.length ? Math.max(...r.rows.map((x) => Number(x.through_block ?? 0))) : undefined);

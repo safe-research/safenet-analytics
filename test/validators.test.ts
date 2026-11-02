@@ -6,14 +6,13 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { parse } from "yaml";
 import { DEFAULT_ROOT, inlineSql, loadConfig, referencedColumns, type VisualizationSpec } from "../src/config.ts";
 import { loadParticipants } from "../src/participants.ts";
-import { BETA_CONSENSUS, EVENTS, FROST_COORDINATOR, GENESIS_GROUP_ID, PRODUCTION, VALIDATOR_EVENTS, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { BETA_CONSENSUS, FROST_COORDINATOR, GENESIS_GROUP_ID, PRODUCTION, VALIDATOR_EVENTS, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import { loadValidatorRewards, validatorRewardsSql, VALIDATOR_REWARDS_SQL_PATH } from "../src/validator-rewards.ts";
 import { VALIDATOR_COLORS } from "../src/validators.ts";
 
 const read = (key: string) => readFile(`${DEFAULT_ROOT}/queries/${key}/query.sql`, "utf8");
 const meta = async (key: string) => parse(await readFile(`${DEFAULT_ROOT}/queries/${key}/query.yaml`, "utf8"));
 const hash = (s: string) => `0x${bytesToHex(keccak_256(new TextEncoder().encode(s)))}`;
-const word = (address: string) => `0x000000000000000000000000${address.slice(2)}`;
 
 const MODELS = ["validator_epochs", "validator_membership", "validator_ceremonies", "validator_staker_history", "safenet_validator_rewards"];
 const PANELS = [
@@ -34,21 +33,22 @@ test("validator event signatures match their topic0 values", () => {
 
 test("epochs come from production Consensus: the genesis group and every EpochStaged", async () => {
   const q = await read("validator_epochs");
-  assert.ok(q.includes(PRODUCTION.consensus.address) && q.includes(VALIDATOR_EVENTS.EpochStaged.topic0));
+  assert.ok(q.includes(`contract_address = ${PRODUCTION.consensus.address}`) && q.includes("safe_gnosis.SafenetAegisConsensus_evt_EpochStaged"));
   assert.ok(q.includes(GENESIS_GROUP_ID), "genesis group (getEpochGroupId(0))");
   assert.ok(q.includes(String(PRODUCTION.consensus.deployBlock)));
 });
 
 test("membership and ceremonies read the shared coordinator only through production Consensus", async () => {
   const membership = await read("validator_membership");
-  assert.ok(membership.includes(FROST_COORDINATOR.address) && membership.includes(VALIDATOR_EVENTS.KeyGenConfirmed.topic0));
+  assert.ok(membership.includes(`contract_address = ${FROST_COORDINATOR.address}`) && membership.includes("safe_gnosis.SafenetAegisFROSTCoordinator_evt_KeyGenConfirmed"));
   assert.ok(membership.includes(String(FROST_COORDINATOR.deployBlock)));
   assert.ok(membership.includes("{{query:validator_epochs}}"), "groups named by production Consensus");
 
   const ceremonies = await read("validator_ceremonies");
-  for (const name of ["Sign", "SignShared", "SignCompleted"] as const) assert.ok(ceremonies.includes(VALIDATOR_EVENTS[name].topic0), name);
-  assert.ok(ceremonies.includes(word(PRODUCTION.consensus.address)), "Sign initiator = production Consensus");
-  assert.ok(ceremonies.includes(EVENTS.TransactionAttested.topic0) && ceremonies.includes(VALIDATOR_EVENTS.EpochStaged.topic0));
+  for (const name of ["Sign", "SignShared", "SignCompleted"]) assert.ok(ceremonies.includes(`safe_gnosis.SafenetAegisFROSTCoordinator_evt_${name}`), name);
+  assert.equal((ceremonies.match(new RegExp(`contract_address = ${FROST_COORDINATOR.address}`, "g")) ?? []).length, 3, "every coordinator read");
+  assert.ok(ceremonies.includes(`initiator = ${PRODUCTION.consensus.address}`), "Sign initiator = production Consensus");
+  for (const name of ["TransactionAttested", "EpochStaged"]) assert.ok(ceremonies.includes(`safe_gnosis.SafenetAegisConsensus_evt_${name}`), name);
   assert.ok(ceremonies.includes("{{query:validator_membership}}"));
 });
 
@@ -64,7 +64,8 @@ test("Beta Consensus is read only for the staker history", async () => {
     assert.equal(q.includes(BETA_CONSENSUS.address.slice(2)), key === "validator_staker_history", key);
   }
   const h = await read("validator_staker_history");
-  assert.ok(h.includes(PRODUCTION.consensus.address) && h.includes(VALIDATOR_STAKER_SET.topic0));
+  assert.ok(h.includes("safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet") && h.includes(`contract_address = ${PRODUCTION.consensus.address}`), "production from the decoded table");
+  assert.ok(h.includes(`contract_address = ${BETA_CONSENSUS.address}`) && h.includes(VALIDATOR_STAKER_SET.topic0), "Beta from raw logs");
 });
 
 test("validator panels read the shared models and stay within the scan limits", async () => {

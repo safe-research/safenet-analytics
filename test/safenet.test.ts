@@ -64,12 +64,7 @@ const RAW_LOG_MODELS = [
   "safenet_guard_status",
   "safenet_sentinel_failed_calls",
   "safenet_sentinel_wallet_transfers",
-  "safenet_reward_events",
-  "staking_validator_stakers",
-  "validator_epochs",
-  "validator_membership",
-  "validator_ceremonies",
-  "validator_staker_history",
+  "validator_staker_history", // Beta Consensus only; Beta is not decoded
 ];
 
 test("only the decoding models read raw logs; other queries read them by reference", async () => {
@@ -112,8 +107,8 @@ test("the Sentinel decoding queries use the production contracts, events and sel
 
   const rewards = await read("safenet_reward_events");
   assert.ok(rewards.includes(REWARDS_DISTRIBUTOR.address));
-  assert.ok(rewards.includes(String(REWARDS_DISTRIBUTOR.deployBlock)) && rewards.includes(REWARDS_DISTRIBUTOR.deployDate));
-  for (const name of ["RewardsClaimed", "MerkelRootUpdated"] as const) assert.ok(rewards.includes(EVENTS[name].topic0), name);
+  assert.ok(rewards.includes(`contract_address = ${REWARDS_DISTRIBUTOR.address}`) && rewards.includes(String(REWARDS_DISTRIBUTOR.deployBlock)));
+  for (const name of ["Claimed", "MerkelRootUpdated"]) assert.ok(rewards.includes(`safe_ethereum.CumulativeMerkleDrop_evt_${name}`), name);
 
   const texts = await read("safenet_sentinel_texts");
   assert.ok(texts.includes(`contract_address = ${PRODUCTION.sentinelOracle.address}`));
@@ -183,8 +178,8 @@ test("staking_events reads every decoded Staking table for the production contra
 
 test("staking_validator_stakers reads ValidatorStakerSet from the production Consensus only", async () => {
   const q = await read("staking_validator_stakers");
-  assert.ok(q.includes(PRODUCTION.consensus.address) && q.includes(VALIDATOR_STAKER_SET.topic0));
-  assert.ok(q.includes(String(PRODUCTION.consensus.deployBlock)));
+  assert.ok(q.includes("safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet"));
+  assert.ok(q.includes(`contract_address = ${PRODUCTION.consensus.address}`) && q.includes(String(PRODUCTION.consensus.deployBlock)));
   assert.ok(!q.includes("223624cbf099e5a8f8cd5af22afa424a1d1acee9"), "Beta Consensus");
 });
 

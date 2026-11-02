@@ -14,75 +14,62 @@
 --               reward scripts (safe-fndn/safenet-staking-scripts src/data/attestations.ts);
 --               epoch_rollover: in an EpochStaged; other: neither (yet)
 -- An aggregate attestation alone never makes a member "signed". first_row marks one row per ceremony.
+-- Reads Dune's decoded FROSTCoordinator and Consensus tables (docs/decoding.md).
 
 with
 
-coordinator as (
-    select topic0, topic1, topic2, topic3, data, block_time, block_number, tx_hash
-    from gnosis.logs
-    where contract_address = 0xc6b34da4c99c043a093214d58423a8be39585b78
-        and topic0 in (
-            0xb48d242879f9f3df555c800db966f65cba128c7213198748fa202ed54e092691, -- Sign
-            0x25a4d6e8d11a9fdc20ffdd826473485ae4cdd453271726c072a16836c1882e7c, -- SignShared
-            0x7f1641fa8e46c311f05dc0cb9f69f0ac0f27dd12388a5587c7983de9e99a028d  -- SignCompleted
-        )
-        and block_number >= 48617821
-        and block_date >= date '2026-10-06'
-),
-
--- One pass over the coordinator logs per signature id: the ceremony and its result.
+-- One row per signature id: the ceremony (Sign by production Consensus) and its result. The
+-- coordinator is shared with the Aegis testnet; ceremonies need a production Sign.
 ceremonies as (
     select
         sid,
-        max(if(kind = 'sign', group_id)) as group_id,
-        max(if(kind = 'sign', block_time)) as initiated_at,
-        max(if(kind = 'completed', selection_root)) as selection_root,
-        max(if(kind = 'completed', block_time)) as completed_at,
-        max(if(kind = 'completed', block_number)) as completed_block,
-        max(if(kind = 'completed', tx_hash)) as completed_tx
+        max(group_id) as group_id,
+        max(initiated_at) as initiated_at,
+        max(selection_root) as selection_root,
+        max(completed_at) as completed_at,
+        max(completed_block) as completed_block,
+        max(completed_tx) as completed_tx
     from (
-        select
-            if(topic0 = 0xb48d242879f9f3df555c800db966f65cba128c7213198748fa202ed54e092691, 'sign', 'completed') as kind,
-            if(topic0 = 0xb48d242879f9f3df555c800db966f65cba128c7213198748fa202ed54e092691, bytearray_substring(data, 1, 32), topic1) as sid,
-            if(topic0 = 0xb48d242879f9f3df555c800db966f65cba128c7213198748fa202ed54e092691, topic2) as group_id,
-            if(topic0 = 0x7f1641fa8e46c311f05dc0cb9f69f0ac0f27dd12388a5587c7983de9e99a028d, topic2) as selection_root,
-            block_time, block_number, tx_hash
-        from coordinator
-        where (topic0 = 0xb48d242879f9f3df555c800db966f65cba128c7213198748fa202ed54e092691
-                and topic1 = 0x000000000000000000000000c855761d619f6002923507ce68b84d7689c2aa96) -- initiator
-            or topic0 = 0x7f1641fa8e46c311f05dc0cb9f69f0ac0f27dd12388a5587c7983de9e99a028d
+        select sid, gid as group_id, evt_block_time as initiated_at,
+            cast(null as varbinary) as selection_root, cast(null as timestamp(3) with time zone) as completed_at,
+            cast(null as bigint) as completed_block, cast(null as varbinary) as completed_tx, 1 as is_sign
+        from safe_gnosis.SafenetAegisFROSTCoordinator_evt_Sign
+        where contract_address = 0xc6b34da4c99c043a093214d58423a8be39585b78
+            and initiator = 0xc855761d619f6002923507ce68b84d7689c2aa96 -- production Consensus
+            and evt_block_number >= 48617821
+        union all
+        select sid, null, null, selectionRoot, evt_block_time, evt_block_number, evt_tx_hash, 0
+        from safe_gnosis.SafenetAegisFROSTCoordinator_evt_SignCompleted
+        where contract_address = 0xc6b34da4c99c043a093214d58423a8be39585b78
+            and evt_block_number >= 48617821
     )
     group by 1
-    having max(if(kind = 'sign', 1)) = 1
+    having max(is_sign) = 1
 ),
 
 shares as (
     select
-        topic1 as sid,
-        topic2 as selection_root,
-        bytearray_substring(data, 13, 20) as validator,
-        block_time,
-        tx_hash
-    from coordinator
-    where topic0 = 0x25a4d6e8d11a9fdc20ffdd826473485ae4cdd453271726c072a16836c1882e7c
+        sid,
+        selectionRoot as selection_root,
+        participant as validator,
+        evt_block_time as block_time,
+        evt_tx_hash as tx_hash
+    from safe_gnosis.SafenetAegisFROSTCoordinator_evt_SignShared
+    where contract_address = 0xc6b34da4c99c043a093214d58423a8be39585b78
+        and evt_block_number >= 48617821
 ),
 
 -- Signature ids of attested transactions and staged epochs (production Consensus).
 purposes as (
-    select
-        if(topic0 = 0x1980afd018b6bb99a313d3b7a88274259621396f9b8acaa712ef114872977357,
-            bytearray_substring(data, 65, 32), bytearray_substring(data, 129, 32)) as sid,
-        if(topic0 = 0x1980afd018b6bb99a313d3b7a88274259621396f9b8acaa712ef114872977357, 'transaction', 'epoch_rollover') as purpose,
-        block_time as attested_at,
-        block_number as attested_block
-    from gnosis.logs
+    select signatureId as sid, 'transaction' as purpose, evt_block_time as attested_at, evt_block_number as attested_block
+    from safe_gnosis.SafenetAegisConsensus_evt_TransactionAttested
     where contract_address = 0xc855761d619f6002923507ce68b84d7689c2aa96
-        and topic0 in (
-            0x1980afd018b6bb99a313d3b7a88274259621396f9b8acaa712ef114872977357, -- TransactionAttested
-            0xd22757d0334b80219cf27dedaf82211008f84fc412a29a27e3000dc1c6160b86  -- EpochStaged
-        )
-        and block_number >= 48635843
-        and block_date >= date '2026-10-07'
+        and evt_block_number >= 48635843
+    union all
+    select signatureId, 'epoch_rollover', evt_block_time, evt_block_number
+    from safe_gnosis.SafenetAegisConsensus_evt_EpochStaged
+    where contract_address = 0xc855761d619f6002923507ce68b84d7689c2aa96
+        and evt_block_number >= 48635843
 ),
 
 groups as (
