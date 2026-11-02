@@ -8,8 +8,9 @@ import { EXPLORERS, LINK_SQL, STAKING_LINK_SQL } from "../src/links.ts";
 import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, PRODUCTION, PRODUCTION_START_TIME, REWARDS_DISTRIBUTOR, STAKING, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 
 const read = (key: string) => readFile(`${DEFAULT_ROOT}/queries/${key}/query.sql`, "utf8");
-// All raw-log decoding is in safenet_events.
+// The shared event model, on Dune's decoded Safenet tables (docs/decoding.md).
 const sql = await read("safenet_events");
+const decodedTable = (contract: "Consensus" | "SentinelOracle", event: string) => `safe_gnosis.SafenetAegis${contract}_evt_${event}`;
 
 test("every topic0 is the keccak hash of its event signature", () => {
   for (const [name, e] of Object.entries(EVENTS)) {
@@ -17,10 +18,9 @@ test("every topic0 is the keccak hash of its event signature", () => {
   }
 });
 
-test("the metric SQL uses the production contracts and the right events", () => {
+test("the metric SQL reads the production contracts' decoded tables, every event it needs", () => {
+  for (const name of ["TransactionProposed", "TransactionAttested"]) assert.ok(sql.includes(decodedTable("Consensus", name)), name);
   for (const name of [
-    "TransactionProposed",
-    "TransactionAttested",
     "NewRequest",
     "OracleResult",
     "DisputeResolved",
@@ -28,11 +28,23 @@ test("the metric SQL uses the production contracts and the right events", () => 
     "DisputeOutOfScope",
     "ArbitrationTimedOut",
     "DisputeTriggered",
-  ] as const)
-    assert.ok(sql.includes(EVENTS[name].topic0), `${name} topic0 missing from SQL`);
-  assert.ok(sql.includes(PRODUCTION.consensus.address));
-  assert.ok(sql.includes(PRODUCTION.sentinelOracle.address));
-  assert.ok(sql.includes(`0x000000000000000000000000${PRODUCTION.sentinelOracle.address.slice(2)}`));
+    "Committed",
+    "Revealed",
+    "Claimed",
+    "SentinelScheduled",
+    "SentinelRemoved",
+    "FeeScheduled",
+    "DaoFeeShareScheduled",
+    "ProtocolFundsReceiverScheduled",
+    "BondConfigScheduled",
+  ])
+    assert.ok(sql.includes(decodedTable("SentinelOracle", name)), `${name} missing from safenet_events`);
+  // Each decoded block is restricted to the production contract, and proposals and attestations
+  // to the production oracle.
+  assert.equal((sql.match(new RegExp(`contract_address = ${PRODUCTION.consensus.address}`, "g")) ?? []).length, 2);
+  assert.equal((sql.match(new RegExp(`contract_address = ${PRODUCTION.sentinelOracle.address}`, "g")) ?? []).length, 3);
+  assert.equal((sql.match(new RegExp(`oracle = ${PRODUCTION.sentinelOracle.address}`, "g")) ?? []).length, 2);
+  assert.ok(!/\bgnosis\.logs\b/.test(sql), "no raw logs");
 });
 
 test("the metric SQL does not read Beta, testnet or shared coordinator contracts", () => {
@@ -47,14 +59,12 @@ test("the metric SQL does not read Beta, testnet or shared coordinator contracts
 
 // Raw logs are read only by the decoding models; everything else reads the models by reference.
 const RAW_LOG_MODELS = [
-  "safenet_events",
   "safenet_fee_flows",
   "safenet_guards",
   "safenet_guard_status",
   "safenet_sentinel_failed_calls",
   "safenet_sentinel_wallet_transfers",
   "safenet_reward_events",
-  "safenet_sentinel_texts",
   "staking_validator_stakers",
   "validator_epochs",
   "validator_membership",
@@ -105,12 +115,10 @@ test("the Sentinel decoding queries use the production contracts, events and sel
   assert.ok(rewards.includes(String(REWARDS_DISTRIBUTOR.deployBlock)) && rewards.includes(REWARDS_DISTRIBUTOR.deployDate));
   for (const name of ["RewardsClaimed", "MerkelRootUpdated"] as const) assert.ok(rewards.includes(EVENTS[name].topic0), name);
 
-  for (const name of ["Committed", "Revealed", "Claimed", "SentinelScheduled", "SentinelRemoved"] as const)
-    assert.ok(sql.includes(EVENTS[name].topic0), `${name} topic0 missing from safenet_events`);
-
   const texts = await read("safenet_sentinel_texts");
-  assert.ok(texts.includes(PRODUCTION.sentinelOracle.address));
-  for (const name of ["Revealed", "DisputeResolved", "DisputeOutOfScope"] as const) assert.ok(texts.includes(EVENTS[name].topic0), name);
+  assert.ok(texts.includes(`contract_address = ${PRODUCTION.sentinelOracle.address}`));
+  for (const name of ["Revealed", "DisputeResolved", "DisputeOutOfScope"]) assert.ok(texts.includes(decodedTable("SentinelOracle", name)), name);
+  assert.ok(texts.includes("nullif(text, '')"), "empty text stays null");
 });
 
 test("Sentinel panel queries read the shared models, not their own decoding", async () => {

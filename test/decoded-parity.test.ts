@@ -28,6 +28,20 @@ test("every event a model reads from raw logs is covered by the parity check, or
   }
 });
 
+test("every decoded Safenet table a query reads is covered by the parity check", async () => {
+  const covered = new Set(DECODED_SOURCES.flatMap((s) => s.events.map((e) => `${s.table}_evt_${eventName(e)}`.toLowerCase())));
+  const queries = join(DEFAULT_ROOT, "queries");
+  let reads = 0;
+  for (const key of await readdir(queries)) {
+    const sql = await readFile(join(queries, key, "query.sql"), "utf8");
+    for (const [table] of sql.matchAll(/\bsafe_gnosis\.SafenetAegis\w+_evt_\w+/gi)) {
+      reads++;
+      assert.ok(covered.has(table.toLowerCase()), `${key} reads ${table}, which the parity check does not cover`);
+    }
+  }
+  assert.ok(reads > 0);
+});
+
 test("the parity query matches each decoded table with the raw logs of the same contract and topic0", () => {
   const sql = paritySql(ORACLE);
   for (const e of ORACLE.events) {
