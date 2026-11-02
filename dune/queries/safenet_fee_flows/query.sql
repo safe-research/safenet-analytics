@@ -12,6 +12,10 @@
 -- USDC.e on Gnosis Chain: 0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0 (6 decimals); amounts are
 -- base units. Protocol funds receiver: 0x9D02bed59170cdE96782Ea9a9b17F9bCF4916127
 -- (docs/configuration.md); no ProtocolFundsReceiverScheduled event has changed it.
+--
+-- Transfers are capped at the last block of safenet_events, the block the fee allocation ends at.
+-- safenet_events reads Dune's decoded tables, which can trail the raw logs read here by a minute or
+-- so; without the cap, a transfer in that gap would lack its event and count as unclassified.
 
 with
 
@@ -46,12 +50,18 @@ expected as (
             when 'claimed' then 'claim_out'
             else 'refund_out'
         end as flow,
-        if(event in ('committed', 'claimed'), sentinel, sponsor) as counterparty
-    from {{query:safenet_events}}
+        if(event in ('committed', 'claimed'), sentinel, sponsor) as counterparty,
+        through_block -- the last block of safenet_events, the same on every row
+    from (
+        select *, max(block_number) over () as through_block
+        from {{query:safenet_events}}
+    )
     where event in ('request', 'committed', 'claimed', 'no_verdict')
         or (event in ('approved', 'denied') and source_event = 'DisputeResolved')
-)
+),
 
+-- Each transfer, classified by the expected counterparties of its transaction.
+flows as (
 select
     t.block_time,
     t.block_number,
@@ -74,7 +84,16 @@ select
                 max(if(e.flow = 'refund_out' and e.counterparty = t.to_address, 'refund_out')),
                 'unclassified')
     end as flow,
-    'https://gnosisscan.io/tx/0x' || lower(to_hex(t.tx_hash)) as tx_url
+    'https://gnosisscan.io/tx/0x' || lower(to_hex(t.tx_hash)) as tx_url,
+    max(e.through_block) as matched_through_block
 from transfers as t
 left join expected as e on e.tx_hash = t.tx_hash
 group by 1, 2, 3, 4, 5, 6, 7
+)
+
+select block_time, block_number, tx_hash, log_index, from_address, to_address, amount, direction, flow, tx_url
+from (
+    select *, max(matched_through_block) over () as through_block
+    from flows
+)
+where block_number <= through_block

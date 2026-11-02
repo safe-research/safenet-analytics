@@ -86,6 +86,17 @@ test("only the decoding models read raw logs; other queries read them by referen
     assert.ok((await read(key)).includes("{{query:safenet_events}}"), `${key} does not read safenet_events`);
 });
 
+// Raw transfers combined with decoded events end at the decoded events' last block, read in the
+// same pass over safenet_events (no extra read): the decoded tables can trail the raw logs.
+test("raw USDC.e transfers are capped at the last block of safenet_events", async () => {
+  for (const key of ["safenet_fee_flows", "safenet_sentinel_wallet_transfers"]) {
+    const q = await read(key);
+    assert.equal((q.match(/\{\{query:safenet_events\}\}/g) ?? []).length, 1, `${key} reads safenet_events once`);
+    assert.ok(q.includes("max(block_number) over () as through_block"), `${key} takes the bound from that read`);
+    assert.ok(/block_number <= (s\.)?through_block/.test(q), `${key} drops transfers after the bound`);
+  }
+});
+
 test("safenet_events builds links with the expressions from src/links.ts", () => {
   for (const [column, expression] of Object.entries(LINK_SQL)) assert.ok(sql.includes(`${expression} as ${column}`), column);
 });

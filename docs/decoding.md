@@ -85,6 +85,8 @@ The **Validators** models read Consensus (epochs, attestations, staker settings)
 
 The FROSTCoordinator is shared by production and the Aegis testnet. Decoded or not, its events cannot be attributed to production by address alone: the models keep only ceremonies initiated by production Consensus and groups named by it.
 
+**Mixing raw logs with decoded tables.** Dune's decoded tables can trail its raw logs by a minute or so. A model that combines raw logs with decoded events must therefore end at the decoded events' last block. `safenet_fee_flows` and `safenet_sentinel_wallet_transfers` drop USDC.e transfers after the last block of `safenet_events`, the `through_block` the fee allocation and the Sentinel figures report. They take that bound from the read of `safenet_events` they already make, so no read is added (`test/safenet.test.ts`). Without the cap, a Sentinel claim inside that minute made available and locked bond end at different blocks (Refresh of 2026-11-02, OpenCover, Candide and BlockSec, 800.133333 USDC.e each).
+
 ## Switches
 
 | Date | Models | Evidence |
