@@ -137,9 +137,9 @@
       "remote": "d7ea41d62778046b"
     },
     "safenet_fee_flows": {
-      "desired": "865a6b9681a7c1be",
+      "desired": "36975e98095193af",
       "id": 9012046,
-      "remote": "865a6b9681a7c1be"
+      "remote": "36975e98095193af"
     },
     "safenet_guard_status": {
       "desired": "19edab2f8da0461a",
@@ -197,9 +197,9 @@
       "remote": "bf1618282cc480aa"
     },
     "safenet_sentinel_wallet_transfers": {
-      "desired": "56a0750802df6852",
+      "desired": "84d2981b5bc47081",
       "id": 9013459,
-      "remote": "56a0750802df6852"
+      "remote": "84d2981b5bc47081"
     },
     "safenet_validator_rewards": {
       "desired": "c71d28dc1ef1ff14",
