@@ -31,7 +31,7 @@ export class FakeDune {
   queries = new Map<number, Query>();
   visualizations = new Map<number, Viz>();
   dashboards = new Map<number, Dashboard>();
-  executions = new Map<string, { query_id?: number; polls: number; sql?: string; cancelled?: boolean }>();
+  executions = new Map<string, { query_id?: number; polls: number; sql?: string; cancelled?: boolean; failure?: string }>();
   // Latest stored result per query (GET /api/v1/query/{id}/results); none means never executed.
   results = new Map<number, { state?: string; columns: string[]; rows: Record<string, unknown>[] }>();
   requests: string[] = [];
@@ -43,6 +43,8 @@ export class FakeDune {
   dashboardArchive = false;
   // Visualization IDs whose DELETE fails with 500, as Dune sometimes does.
   failingVisualizationDeletes = new Set<number>();
+  // Query IDs whose next executions fail, with Dune's error (consumed one per execution).
+  failingExecutions = new Map<number, { times: number; message: string }>();
   executionCredits = 1.5;
   executionsNeverFinish = false;
   #next = 1000;
@@ -223,7 +225,10 @@ export class FakeDune {
     }
     if ((m = path.match(/^\/api\/v1\/query\/(\d+)\/execute$/)) && method === "POST") {
       const id = `01EXEC${this.#next++}`;
-      this.executions.set(id, { query_id: Number(m[1]), polls: 0 });
+      const fail = this.failingExecutions.get(Number(m[1]));
+      const failure = fail && fail.times > 0 ? fail.message : undefined;
+      if (failure) fail!.times--;
+      this.executions.set(id, { query_id: Number(m[1]), polls: 0, failure });
       return json(200, { execution_id: id, state: "QUERY_STATE_PENDING" });
     }
     if (method === "POST" && path === "/api/v1/sql/execute") {
@@ -236,6 +241,8 @@ export class FakeDune {
       if (!e) return notFound();
       e.polls++;
       const done = !this.executionsNeverFinish && e.polls > 1;
+      if (e.failure)
+        return json(200, { execution_id: m[1], state: "QUERY_STATE_FAILED", is_execution_finished: true, error: { type: "FAILED_TYPE_EXECUTION_FAILED", message: e.failure } });
       return json(200, {
         execution_id: m[1],
         state: e.cancelled ? "QUERY_STATE_CANCELED" : done ? "QUERY_STATE_COMPLETED" : "QUERY_STATE_EXECUTING",

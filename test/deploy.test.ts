@@ -408,6 +408,25 @@ describe("refresh", () => {
     assert.ok(fake.requests.every((r) => !r.includes("/execute")));
   });
 
+  test("a failed execution is retried once, and its error is logged", async () => {
+    const fake = withBeta();
+    const { state } = await deploy(fake, config, emptyState());
+    const daily = selectQueries(config, { schedule: "daily" });
+    const once = state.queries.fee_allocation.id;
+    const twice = state.queries.fee_config.id;
+    fake.failingExecutions.set(once, { times: 1, message: "transient" });
+    fake.failingExecutions.set(twice, { times: 2, message: "Query exceeded the maximum number of stages" });
+    const lines: string[] = [];
+    const results = await refresh(daily, state, fake.client(), { pollMs: 0, retryDelayMs: 0, log: (l) => lines.push(l) });
+    const by = (key: string) => results.find((r) => r.key === key)!;
+    assert.equal(by("fee_allocation").status.state, "QUERY_STATE_COMPLETED");
+    assert.equal(by("fee_config").status.state, "QUERY_STATE_FAILED");
+    assert.equal(by("fee_config").status.error?.message, "Query exceeded the maximum number of stages");
+    assert.ok(lines.some((l) => l === "fee_config: QUERY_STATE_FAILED - FAILED_TYPE_EXECUTION_FAILED: Query exceeded the maximum number of stages"), lines.join("\n"));
+    assert.equal(fake.requests.filter((r) => r === `POST /api/v1/query/${twice}/execute`).length, 2, "one retry, not more");
+    assert.equal(results.filter((r) => !succeeded(r)).length, 1);
+  });
+
   test("a query without a recorded ID fails, and the others are still refreshed", async () => {
     const fake = withBeta();
     const { state } = await deploy(fake, config, emptyState());

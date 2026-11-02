@@ -52,7 +52,7 @@ jobs:
           if [ -n "$QUERY" ]; then npm run refresh -- --query "$QUERY"; else npm run refresh -- --schedule daily; fi
       # Recomputes the first metric from Gnosis Chain logs and compares it with the fresh Dune result.
       - name: Check transaction checks against on-chain events
-        if: ${{ !inputs.query || inputs.query == 'transaction_checks_daily' }}
+        if: ${{ always() && (!inputs.query || inputs.query == 'transaction_checks_daily') }}
         run: npm run verify:transaction-checks -- --out verification/transaction_checks_daily.local.json
       # Recounts the Network & revenue section and checks fees against USDC.e flows.
       - name: Check network and revenue against on-chain events
@@ -70,7 +70,7 @@ jobs:
       - name: Check validators against contract state and signing events
         if: ${{ always() && !inputs.query }}
         run: npm run verify:validators -- --out verification/validators.local.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: verification

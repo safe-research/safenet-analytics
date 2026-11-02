@@ -402,7 +402,9 @@ async function main() {
     case "refresh": {
       const queries = selectQueries(config, { schedule: values.schedule, keys: values.query });
       const results = await refresh(queries, state, client());
-      await summary(`### Refresh\n\n${results.map((r) => `- ${r.key} (${r.id}): ${r.status.state}`).join("\n")}\n`);
+      await summary(
+        `### Refresh\n\n${results.map((r) => `- ${r.key} (${r.id}): ${r.status.state}${r.status.error?.message ? ` - ${r.status.error.message}` : ""}`).join("\n")}\n`,
+      );
       if (!results.every(succeeded)) process.exitCode = 1;
       return;
     }
