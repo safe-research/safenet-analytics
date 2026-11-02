@@ -1,5 +1,6 @@
 -- Safenet production epochs (Gnosis Chain), one row per epoch with the FROST group that attests in it.
--- Definitions: docs/metrics/validators.md#validator_epochs. Shared model.
+-- Definitions: docs/metrics/validators.md#validator_epochs. Shared model. Reads Dune's decoded
+-- Consensus tables (docs/decoding.md).
 --
 -- Epoch 0 uses the genesis group passed to the Consensus constructor (getEpochGroupId(0)); its key
 -- was generated on 2026-10-14, so nothing could be attested before. Every later epoch is staged by
@@ -12,17 +13,15 @@ with
 
 staged as (
     select
-        bytearray_to_bigint(bytearray_substring(topic2, 25, 8)) as epoch,
-        bytearray_to_bigint(bytearray_substring(data, 25, 8)) as active_from_block,
-        bytearray_substring(data, 33, 32) as group_id,
-        bytearray_substring(data, 129, 32) as rollover_signature_id,
-        block_time as staged_at,
-        tx_hash as staged_tx
-    from gnosis.logs
+        cast(proposedEpoch as bigint) as epoch,
+        cast(rolloverBlock as bigint) as active_from_block,
+        groupId as group_id,
+        signatureId as rollover_signature_id,
+        evt_block_time as staged_at,
+        evt_tx_hash as staged_tx
+    from safe_gnosis.SafenetAegisConsensus_evt_EpochStaged
     where contract_address = 0xc855761d619f6002923507ce68b84d7689c2aa96
-        and topic0 = 0xd22757d0334b80219cf27dedaf82211008f84fc412a29a27e3000dc1c6160b86 -- EpochStaged
-        and block_number >= 48635843
-        and block_date >= date '2026-10-07' -- partition pruning; Consensus deployed on 2026-10-07
+        and evt_block_number >= 48635843
 ),
 
 epochs as (

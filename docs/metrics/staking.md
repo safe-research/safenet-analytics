@@ -120,7 +120,7 @@ One row per Staking contract event. It reads Dune's decoded tables `safe_ethereu
 
 ### staking_validator_stakers
 
-One row per validator: the latest `ValidatorStakerSet` on the production Consensus (`0xc855…aa96`, Gnosis Chain), decoded from `gnosis.logs` because Consensus is not decoded on Dune. Fields: `validator`, `staker`, `set_at`, `set_block`, `set_tx`, `set_tx_url`.
+One row per validator: the latest `ValidatorStakerSet` on the production Consensus (`0xc855…aa96`, Gnosis Chain), from Dune's decoded table `safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet` ([decoding.md](../decoding.md#switches)). Fields: `validator`, `staker`, `set_at`, `set_block`, `set_tx`, `set_tx_url`.
 
 ### staking_withdrawals
 

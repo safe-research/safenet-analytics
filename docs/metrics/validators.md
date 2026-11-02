@@ -155,7 +155,7 @@ Outstanding withdrawal requests per validator now come from `staking_withdrawals
 
 ## Models
 
-All are shared, with `refresh: none`. Raw-log models read `gnosis.logs`, because Consensus and the FROSTCoordinator are not decoded on Dune (see [decoding.md](../decoding.md)).
+All are shared, with `refresh: none`. They read Dune's decoded Consensus and FROSTCoordinator tables; only the Beta part of `validator_staker_history` reads `gnosis.logs` (see [decoding.md](../decoding.md)).
 
 ### validator_epochs
 
@@ -208,17 +208,11 @@ Generated. `kind_row` is `root` or `entry`:
 
 ## Decoding and coverage
 
-- **Gnosis Chain raw logs.**
-  - Consensus from block 48635843 (2026-10-07).
-  - FROSTCoordinator from block 48617821 (2026-10-06).
-  - Beta Consensus `ValidatorStakerSet` from block 45210396 (2026-03-18), in `validator_staker_history` only.
-  - Partition pruning uses `block_date`.
-  - Topic0 values are in `src/safenet.ts` (`VALIDATOR_EVENTS`); `test/validators.test.ts` recomputes them from their signatures.
-- **Migration to decoded tables.** If `check-decoded` shows Consensus and the FROSTCoordinator decoded with full history, switch to decoded tables only under these conditions:
-  - the rows of `validator_epochs`, `validator_membership` and `validator_ceremonies` from decoded tables equal the raw-log versions over identical block ranges (`npm run dune -- decoded-parity`, src/decoded-parity.ts);
-  - the preview reconciliation shows no mismatches.
-
-  Output columns stay the same.
+- **Decoded tables** (since 2026-11-02):
+  - `safe_gnosis.SafenetAegisConsensus_evt_*` (`EpochStaged`, `TransactionAttested`, `ValidatorStakerSet`) from block 48635843 (2026-10-07), filtered to production Consensus.
+  - `safe_gnosis.SafenetAegisFROSTCoordinator_evt_*` (`KeyGenConfirmed`, `Sign`, `SignShared`, `SignCompleted`) from block 48617821 (2026-10-06). The coordinator is shared with the Aegis testnet: ceremonies need a `Sign` with `initiator` = production Consensus, and members a group named by it.
+  - `decoded-parity` showed every decoded event table equal to the raw logs, log by log, from the deploy blocks ([decoding.md](../decoding.md#switches)). Output columns are the same as when the models decoded raw logs.
+- **Raw logs:** Beta Consensus `ValidatorStakerSet` from block 45210396 (2026-03-18), in `validator_staker_history` only, because Beta is not decoded. Its topic0 is in `src/safenet.ts` (`VALIDATOR_STAKER_SET`), recomputed from the signature in the tests.
 
 ## Validation
 

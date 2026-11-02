@@ -5,20 +5,19 @@
 -- (FROSTCoordinator.KeyGenConfirmed(gid, participant, confirmed)). The coordinator is shared with the
 -- Aegis testnet; only groups named by production Consensus (validator_epochs) are kept, so a failed
 -- or testnet key generation never adds a member. This is attestation-set membership, separate from
--- registration in the Ethereum Staking contract.
+-- registration in the Ethereum Staking contract. Reads Dune's decoded FROSTCoordinator tables
+-- (docs/decoding.md).
 
 with
 
 confirmed as (
     select
-        topic1 as group_id,
-        bytearray_substring(data, 13, 20) as validator,
-        min(block_time) as confirmed_at
-    from gnosis.logs
+        gid as group_id,
+        participant as validator,
+        min(evt_block_time) as confirmed_at
+    from safe_gnosis.SafenetAegisFROSTCoordinator_evt_KeyGenConfirmed
     where contract_address = 0xc6b34da4c99c043a093214d58423a8be39585b78
-        and topic0 = 0x2553b3b5476eaf8b6ccc0c1656cd21552f8e85959654fd47d733f6e94bc65202 -- KeyGenConfirmed
-        and block_number >= 48617821
-        and block_date >= date '2026-10-06' -- partition pruning; coordinator deployed on 2026-10-06
+        and evt_block_number >= 48617821
     group by 1, 2
 )
 

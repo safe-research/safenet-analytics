@@ -1,6 +1,6 @@
 # Event decoding
 
-The Safenet production contracts were not decoded on Dune when the first metric was built (2026-10-23), so the metrics read raw logs and traces, and only a few model queries do so. Every other query reads those models through `{{query:...}}` references (`test/safenet.test.ts` enforces this). Since 2026-10-29, `safenet_events` and `safenet_sentinel_texts` read Dune's decoded Safenet tables instead (see [Switches](#switches)). Replacing the decoding of the others changes only these models:
+The Safenet production contracts were not decoded on Dune when the first metric was built (2026-10-23), so the metrics read raw logs and traces, and only a few model queries do so. Every other query reads those models through `{{query:...}}` references (`test/safenet.test.ts` enforces this). Since 2026-10-29, `safenet_events` and `safenet_sentinel_texts` read Dune's decoded Safenet tables instead, and since 2026-11-02 the Validators models, `staking_validator_stakers` and `safenet_reward_events` too (see [Switches](#switches)). The remaining raw-log models:
 
 | Model | Reads | Replace with |
 | --- | --- | --- |
@@ -9,8 +9,6 @@ The Safenet production contracts were not decoded on Dune when the first metric 
 | [`safenet_guard_status`](../dune/queries/safenet_guard_status/query.sql) | Safe `ChangedGuard` logs on the three networks | Dune's decoded Safe tables, which split this event by Safe version |
 | [`safenet_sentinel_failed_calls`](../dune/queries/safenet_sentinel_failed_calls/query.sql) | `gnosis.traces`: reverted SentinelOracle `commit` / `reveal` calls (selectors in `ORACLE_FUNCTIONS`), with the revert reason when it is an `Error(string)` | Dune's decoded call tables of the SentinelOracle (`*_call_commit`, `*_call_reveal` with `call_success = false`) |
 | [`safenet_sentinel_wallet_transfers`](../dune/queries/safenet_sentinel_wallet_transfers/query.sql) | `gnosis.logs` USDC.e `Transfer` logs of Sentinel accounts since 2026-10-07 | a decoded ERC-20 transfer table, with the same parity rule; `verify-sentinels` checks the result against `balanceOf` |
-| [`safenet_sentinel_texts`](../dune/queries/safenet_sentinel_texts/query.sql) | `gnosis.logs` of the SentinelOracle: the strings of `Revealed.reason` and of the arbitrator's context in `DisputeResolved` / `DisputeOutOfScope`. Kept out of `safenet_events` so that model stays small (see below) | Dune's decoded Safenet tables |
-| [`safenet_reward_events`](../dune/queries/safenet_reward_events/query.sql) | `ethereum.logs` of the SAFE rewards distributor (`Claimed`, `MerkelRootUpdated`) | Dune's decoded tables of the distributor (`CumulativeMerkleDrop`), once decoded |
 
 **Query size.** Dune inlines every `{{query:...}}` reference, and every CTE, where it is used. A query that reaches `safenet_events` many times therefore hits Dune's limit on query stages ("too many stages"); `fee_allocation` is close to it. Keep `safenet_events` lean, and have new models read it once (one aggregation, window functions or arrays instead of self-joins). `test/safenet.test.ts` caps the references of the Sentinel queries.
 
@@ -81,19 +79,20 @@ Status on 2026-10-29 (`check-decoded`):
 
 The models still read raw logs until the parity check below holds and each switch passes its preview reconciliations.
 
-**Staking (Ethereum) is decoded on Dune** as `safe_ethereum.Staking_evt_*`, so the staking models read the decoded tables instead of raw logs. All reads go through one query, [`staking_events`](../dune/queries/staking_events/query.sql), which is the only query that names those tables (`test/safenet.test.ts`). The production Consensus is not decoded, so the validator → staker relation (`ValidatorStakerSet`) is decoded from `gnosis.logs` in `staking_validator_stakers`. Coverage of the decoded tables from the deploy block 24585750 is checked by `verify:staking`: each preview compares Dune's results with an RPC replay over the same block range ([metrics/staking.md](metrics/staking.md#validation)).
+**Staking (Ethereum) is decoded on Dune** as `safe_ethereum.Staking_evt_*`, so the staking models read the decoded tables instead of raw logs. All reads go through one query, [`staking_events`](../dune/queries/staking_events/query.sql), which is the only query that names those tables (`test/safenet.test.ts`). The validator → staker relation (`ValidatorStakerSet`) comes from the decoded production Consensus table in `staking_validator_stakers`. Coverage of the decoded tables from the deploy block 24585750 is checked by `verify:staking`: each preview compares Dune's results with an RPC replay over the same block range ([metrics/staking.md](metrics/staking.md#validation)).
 
-The **Validators** models read Consensus (epochs, attestations, staker settings) and the FROSTCoordinator (key generation and signing) from `gnosis.logs` in `validator_epochs`, `validator_membership`, `validator_ceremonies` and `validator_staker_history`. Their sources, coverage and the conditions for moving them to decoded tables are in [metrics/validators.md](metrics/validators.md#decoding-and-coverage).
+The **Validators** models read Consensus (epochs, attestations, staker settings) and the FROSTCoordinator (key generation and signing) from the decoded tables in `validator_epochs`, `validator_membership`, `validator_ceremonies` and `validator_staker_history`. Beta Consensus is not decoded, so `validator_staker_history` still reads its `ValidatorStakerSet` from `gnosis.logs` ([metrics/validators.md](metrics/validators.md#decoding-and-coverage)).
 
-The FROSTCoordinator is shared by production and the Aegis testnet. Even once decoded, its events cannot be attributed to production by address alone.
+The FROSTCoordinator is shared by production and the Aegis testnet. Decoded or not, its events cannot be attributed to production by address alone: the models keep only ceremonies initiated by production Consensus and groups named by it.
 
 ## Switches
 
 | Date | Models | Evidence |
 | --- | --- | --- |
-| 2026-10-29 | `safenet_events`, `safenet_sentinel_texts` | `decoded-parity` in [#9](https://github.com/safe-research/safenet-analytics/pull/9): all 21 Consensus and SentinelOracle events match the raw logs log by log, from the deploy blocks to block 48987090 (for example 584 requests, 1,336 commits and reveals, 14 disputes). The switch's preview reconciliations: see its pull request. |
+| 2026-10-29 | `safenet_events`, `safenet_sentinel_texts` | `decoded-parity` in [#9](https://github.com/safe-research/safenet-analytics/pull/9): all 21 Consensus and SentinelOracle events match the raw logs log by log, from the deploy blocks to block 48987090 (for example 584 requests, 1,336 commits and reveals, 14 disputes). [#10](https://github.com/safe-research/safenet-analytics/pull/10): request recount, Network & revenue and Sentinels reconciliations without mismatches. |
+| 2026-11-02 | `validator_epochs`, `validator_membership`, `validator_ceremonies`, `validator_staker_history` (production part), `staking_validator_stakers`, `safenet_reward_events` | `decoded-parity` in #9 and #10: the Consensus epoch and staker events, all FROSTCoordinator events (for example 2,997 `SignShared`) and both distributor events match the raw logs from the deploy blocks. The switch's preview reconciliations: see its pull request. |
 
-The Validators models (Consensus epochs, FROSTCoordinator key generation and ceremonies, validator stakers) and `safenet_reward_events` have the same parity result, and are switched the same way in later pull requests. `safenet_sentinel_failed_calls` reads call traces, which the parity check does not cover yet.
+`safenet_sentinel_failed_calls` reads call traces, which the parity check does not cover yet; the USDC.e transfer and Safe guard models read contracts that are not decoded under the Safenet namespace.
 
 ## Replacing raw logs with decoded tables
 

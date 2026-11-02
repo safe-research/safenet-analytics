@@ -7,24 +7,34 @@
 -- Beta setting applies until the production start (2026-10-07 13:51:55 UTC); a production setting
 -- from its block on. Each applies until the next setting for the validator in the same era.
 -- Between the production start and a validator's first production setting there is no registered
--- staker (self-stake unknown).
+-- staker (self-stake unknown). Production settings come from Dune's decoded Consensus table; Beta
+-- Consensus is not decoded, so its settings are read from raw logs (docs/decoding.md).
 
 with
 
 sets as (
     select
-        if(contract_address = 0xc855761d619f6002923507ce68b84d7689c2aa96, 'production', 'beta') as era,
-        bytearray_substring(topic1, 13, 20) as validator,
-        bytearray_substring(data, 13, 20) as staker,
-        block_time as valid_from,
+        'production' as era,
+        validator,
+        staker,
+        evt_block_time as valid_from,
+        evt_block_number as block_number,
+        evt_tx_hash as tx_hash,
+        evt_index as log_index
+    from safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet
+    where contract_address = 0xc855761d619f6002923507ce68b84d7689c2aa96 -- production Consensus
+        and evt_block_number >= 48635843
+    union all
+    select
+        'beta',
+        bytearray_substring(topic1, 13, 20),
+        bytearray_substring(data, 13, 20),
+        block_time,
         block_number,
         tx_hash,
-        "index" as log_index
+        "index"
     from gnosis.logs
-    where contract_address in (
-            0x223624cbf099e5a8f8cd5af22afa424a1d1acee9, -- Beta Consensus
-            0xc855761d619f6002923507ce68b84d7689c2aa96  -- production Consensus
-        )
+    where contract_address = 0x223624cbf099e5a8f8cd5af22afa424a1d1acee9 -- Beta Consensus
         and topic0 = 0xf0a005469b11e09422034ffe29da663a2969918f3663a27fae9fd5eed38778bb -- ValidatorStakerSet
         and block_number >= 45210396 -- Beta Consensus deployment
         and block_date >= date '2026-03-18'
