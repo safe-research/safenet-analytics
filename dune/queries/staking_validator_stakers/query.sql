@@ -1,5 +1,5 @@
 -- Each validator's registered staker: the Ethereum account that puts up the validator's own stake,
--- set by the validator with Consensus.setValidatorStaker on the production Consensus (Gnosis Chain,
+-- set by the validator with Consensus.setValidatorStaker on the Aegis Consensus (Gnosis Chain,
 -- 0xc855761d…aa96). One row per validator, the latest setting, from Dune's decoded Consensus table
 -- (ValidatorStakerSet(address indexed validator, address staker); docs/decoding.md).
 -- Self-stake is this staker's stake on its own validator (docs/metrics/staking.md#self-stake); it

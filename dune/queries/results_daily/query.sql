@@ -1,4 +1,4 @@
--- Safenet production: requests of the last 30 days by UTC proposal day and their current status.
+-- Safenet Aegis: requests of the last 30 days by UTC proposal day and their current status.
 -- A status count, not a flow: each request appears once, on the day it was proposed, in its status
 -- as of the latest data; a day's bars change as its requests are decided. Safes on the Charter's
 -- chains only (test traffic on other chains excluded). Definitions:

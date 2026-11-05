@@ -1,4 +1,4 @@
--- Safenet production: Sentinel membership terms from the Sentinel Oracle's own events, one row per
+-- Safenet Aegis: Sentinel membership terms from the Sentinel Oracle's own events, one row per
 -- term. Definitions: docs/metrics/sentinels.md#membership-and-eligibility.
 --
 -- SentinelMap.sol: SentinelScheduled(sentinel, activeAtBlock) starts a term; the Sentinel may

@@ -1,4 +1,4 @@
--- Safenet production: one row per (request, Sentinel) where the Sentinel was eligible to respond
+-- Safenet Aegis: one row per (request, Sentinel) where the Sentinel was eligible to respond
 -- or committed. The shared model behind the Sentinels section; definitions in
 -- docs/metrics/sentinels.md. Amounts are USDC.e base units.
 --

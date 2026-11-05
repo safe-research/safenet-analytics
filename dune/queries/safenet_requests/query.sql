@@ -1,4 +1,4 @@
--- Safenet production: one row per transaction-check request, with its current lifecycle status,
+-- Safenet Aegis: one row per transaction-check request, with its current lifecycle status,
 -- Sentinel votes, attestation and fee accounting. The shared model behind the Network & revenue
 -- section; definitions in docs/metrics/network-and-revenue.md. Amounts are USDC.e base units.
 --

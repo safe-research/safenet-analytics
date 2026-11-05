@@ -1,6 +1,6 @@
 name: "Safenet: Sentinel membership terms"
 description: >
-  Safenet production (Aegis): Sentinel membership terms from SentinelScheduled and SentinelRemoved, with the block from which each Sentinel may commit and its current status.
+  Safenet Aegis: Sentinel membership terms from SentinelScheduled and SentinelRemoved, with the block from which each Sentinel may commit and its current status.
   Read by the Sentinel queries; not shown on the dashboard. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
 private: false

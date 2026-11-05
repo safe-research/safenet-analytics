@@ -5,7 +5,7 @@ import {
   hoursToRuling,
   openHours,
   percentile,
-  PRODUCTION_START,
+  AEGIS_START,
   rateDaily,
   rateWindows,
   resolution,
@@ -94,7 +94,7 @@ describe("arbitration rate by proposal-time window", () => {
     const requests = [
       disputed(NOW - 40 * D, NOW - 2 * H, outcome("DisputeResolved", NOW - H, "approved")), // proposed 40 days ago
       req({ covered: false, proposedAt: NOW - H, disputed: true, disputedAt: NOW - H }), // other chain
-      req({ proposedAt: PRODUCTION_START - D }), // before production
+      req({ proposedAt: AEGIS_START - D }), // before Aegis
     ];
     const rows = rateWindows(requests, NOW);
     assert.equal(rows.find((r) => r.time_window === "Last 30 days")!.arbitrated, 0);
@@ -104,7 +104,7 @@ describe("arbitration rate by proposal-time window", () => {
         ["Last 24 hours", 0, 0],
         ["Last 7 days", 0, 0],
         ["Last 30 days", 0, 0],
-        ["Production, all time", 1, 1],
+        ["Aegis, all time", 1, 1],
       ],
     );
   });

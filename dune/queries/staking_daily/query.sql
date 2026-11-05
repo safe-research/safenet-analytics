@@ -1,4 +1,4 @@
--- Safenet staking per UTC day, all time (Beta and production, one contract), for the history charts.
+-- Safenet staking per UTC day, all time (Beta and Aegis, one contract), for the history charts.
 -- Definitions: docs/metrics/staking.md#staking_daily. Also readable by other queries.
 --
 --   deposits                 SAFE staked that day (StakeIncreased): external inflow
@@ -9,8 +9,8 @@
 --   outstanding_withdrawals  requested, not yet claimed, at the end of the day
 --   net_flow                 deposits - completed withdrawals, cumulative. It differs from active
 --                            stake by exactly the outstanding withdrawals.
--- The *_beta / *_production columns split a series at the production start (2026-10-07, the
--- production Consensus deployment), so the charts colour the two eras. The current day is partial.
+-- The *_beta / *_aegis columns split a series at the Aegis start (2026-10-07, the
+-- Aegis Consensus deployment), so the charts colour the two eras. The current day is partial.
 
 with
 
@@ -57,7 +57,7 @@ series as (
 
 select
     s.day,
-    if(s.day >= date '2026-10-07', 'production', 'beta') as era,
+    if(s.day >= date '2026-10-07', 'aegis', 'beta') as era,
     cast(s.deposits_raw as double) / 1e18 as deposits,
     cast(s.requested_raw as double) / 1e18 as withdrawals_requested,
     cast(s.completed_raw as double) / 1e18 as withdrawals_completed,
@@ -67,9 +67,9 @@ select
     cast(s.net_flow_raw as double) / 1e18 as net_flow,
     -- the boundary day is in both, so the two areas meet
     if(s.day <= date '2026-10-07', cast(s.active_raw as double) / 1e18) as active_stake_beta,
-    if(s.day >= date '2026-10-07', cast(s.active_raw as double) / 1e18) as active_stake_production,
+    if(s.day >= date '2026-10-07', cast(s.active_raw as double) / 1e18) as active_stake_aegis,
     if(s.day < date '2026-10-07', cast(s.requested_raw as double) / 1e18) as withdrawals_requested_beta,
-    if(s.day >= date '2026-10-07', cast(s.requested_raw as double) / 1e18) as withdrawals_requested_production,
+    if(s.day >= date '2026-10-07', cast(s.requested_raw as double) / 1e18) as withdrawals_requested_aegis,
     s.deposit_count,
     s.request_count,
     s.claim_count,

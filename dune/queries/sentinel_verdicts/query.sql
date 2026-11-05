@@ -1,4 +1,4 @@
--- Safenet production: Sentinel responses by kind, per Sentinel, for the last 30 days and all time.
+-- Safenet Aegis: Sentinel responses by kind, per Sentinel, for the last 30 days and all time.
 -- Definitions: docs/metrics/sentinels.md#verdicts.
 --
 -- Eligible rows of safenet_sentinel_responses for requests on the Charter's chains whose response

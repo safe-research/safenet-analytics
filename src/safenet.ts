@@ -1,9 +1,9 @@
-// Safenet production ("Aegis") contracts on Gnosis Chain and the events the metrics use.
+// Safenet Aegis contracts on Gnosis Chain and the events the metrics use.
 // Sources for every value are listed in docs/metrics/transaction-checks.md.
 
 export const GNOSIS_CHAIN_ID = 100;
 
-export const PRODUCTION = {
+export const AEGIS = {
   consensus: {
     address: "0xc855761d619f6002923507ce68b84d7689c2aa96",
     deployBlock: 48635843,
@@ -169,7 +169,7 @@ export const REWARDS_DISTRIBUTOR = {
 export const SAFE_TOKEN = { symbol: "SAFE", address: "0x5afe3855358e112b5647b952709e6165e1c1eeee", decimals: 18 } as const;
 
 // Safenet Staking on Ethereum (safe-research/safenet contracts/src/Staking.sol at 4ed5101; not a
-// proxy). One contract since 2026-03-04, used by Beta and production alike. Dune decodes it as
+// proxy). One contract since 2026-03-04, used by Beta and Aegis alike. Dune decodes it as
 // safe_ethereum.Staking_evt_<Event> (docs/decoding.md); the topic0 values are for the RPC
 // verification (scripts/verify-staking.ts). Definitions: docs/metrics/staking.md.
 export const STAKING = {
@@ -212,7 +212,7 @@ export const STAKING = {
   },
 } as const;
 
-// Consensus.ValidatorStakerSet(address indexed validator, address staker) on the production
+// Consensus.ValidatorStakerSet(address indexed validator, address staker) on the Aegis
 // Consensus (Gnosis Chain): the Ethereum account that puts up the validator's own stake
 // (safenet docs/configuration.md "Staking"). Self-stake is this account's stake on its validator.
 export const VALIDATOR_STAKER_SET = {
@@ -220,32 +220,32 @@ export const VALIDATOR_STAKER_SET = {
   topic0: "0xf0a005469b11e09422034ffe29da663a2969918f3663a27fae9fd5eed38778bb",
 } as const;
 
-// Start of production in the continuous staking history: the production Consensus deployment on
-// Gnosis Chain (PRODUCTION.consensus.deployBlock, mined at this UTC time). Staking before it backed Beta.
-export const PRODUCTION_START_TIME = "2026-10-07 13:51:55";
+// Start of Aegis in the continuous staking history: the Aegis Consensus deployment on
+// Gnosis Chain (AEGIS.consensus.deployBlock, mined at this UTC time). Staking before it backed Beta.
+export const AEGIS_START_TIME = "2026-10-07 13:51:55";
 
 // Validator signing on Gnosis Chain (docs/metrics/validators.md). Sources: safe-research/safenet
 // contracts/src/FROSTCoordinator.sol and interfaces/IConsensus.sol at 4ed5101.
 //
-// The FROSTCoordinator is shared by production and the Aegis testnet, so its events are attributed
-// to production only through production Consensus: groups are the genesis group (the Consensus
+// The FROSTCoordinator is shared by Aegis (mainnet) and the Aegis testnet, so its events are attributed
+// to Aegis only through Aegis Consensus: groups are the genesis group (the Consensus
 // constructor argument, getEpochGroupId(0)) and each EpochStaged groupId; ceremonies are Sign
-// events initiated by production Consensus. A SignShared counts only if its selectionRoot equals the
+// events initiated by Aegis Consensus. A SignShared counts only if its selectionRoot equals the
 // ceremony's SignCompleted selectionRoot (the contract's warning on SignShared).
 export const FROST_COORDINATOR = {
   address: "0xc6b34da4c99c043a093214d58423a8be39585b78",
   deployBlock: 48617821, // 2026-10-06
 } as const;
-// Group of production epoch 0. Its key was generated on 2026-10-14 (KeyGen with context 0), so no
-// production ceremony was possible before then.
+// Group of Aegis epoch 0. Its key was generated on 2026-10-14 (KeyGen with context 0), so no
+// Aegis ceremony was possible before then.
 export const GENESIS_GROUP_ID = "0x965f661dcdfa091ff92d5f6a81877bb714b87aa17507b3270000000000000000";
-// Beta Consensus, read only for the validator → staker history before the production start.
+// Beta Consensus, read only for the validator → staker history before the Aegis start.
 export const BETA_CONSENSUS = { address: "0x223624cbf099e5a8f8cd5af22afa424a1d1acee9", deployBlock: 45210396 } as const;
 
 // Beta signing, for Beta reward participation (validator_beta_participation): the FROST coordinator
 // the Beta Consensus names (getCoordinator(), deployed at block 45210395 on 2026-03-18), and the Beta
-// Consensus TransactionAttested, whose signature differs from production's. The coordinator emits
-// the same Sign / SignShared / SignCompleted events as production's (VALIDATOR_EVENTS). Reward periods
+// Consensus TransactionAttested, whose signature differs from Aegis's. The coordinator emits
+// the same Sign / SignShared / SignCompleted events as Aegis's (VALIDATOR_EVENTS). Reward periods
 // ran from 2026-04-07 to 2026-10-06; logs are read from the day before to two days after.
 export const BETA_COORDINATOR = { address: "0xae27021ceb45316f1efe69d8e362ac07ed3bd7e4", deployBlock: 45210395 } as const;
 export const BETA_TRANSACTION_ATTESTED = {
@@ -270,20 +270,20 @@ export const VALIDATOR_EVENTS = {
   },
 } as const;
 
-// EIP-712 domain separator of the production Consensus: keccak256(abi.encode(
+// EIP-712 domain separator of the Aegis Consensus: keccak256(abi.encode(
 // keccak256("EIP712Domain(uint256 chainId,address verifyingContract)"), 100, Consensus)).
-// Equals Consensus.domainSeparator() on chain. A SafenetGuard bound to production stores it.
+// Equals Consensus.domainSeparator() on chain. A SafenetGuard bound to Aegis stores it.
 export const CONSENSUS_DOMAIN_SEPARATOR = "0x0a60fd26a8c4c3ecdbc033b1ebaf0af39dacc9965079bd37b21f4af2251fb097";
 
 // SentinelOracleRequest.State values used in DisputeResolved.outcome.
 export const ORACLE_STATE = { RESOLVED_APPROVED: 3, RESOLVED_DENIED: 4 } as const;
 
-// Production contracts that may be decoded on Dune (docs/decoding.md). `check-decoded` looks them
+// Aegis contracts that may be decoded on Dune (docs/decoding.md). `check-decoded` looks them
 // up in Dune's contract tables. Addresses: safe-research/safenet docs/configuration.md.
 export const DECODING_CANDIDATES = [
-  { name: "Consensus", chain: "gnosis", address: PRODUCTION.consensus.address },
-  { name: "SentinelOracle", chain: "gnosis", address: PRODUCTION.sentinelOracle.address },
-  // Shared by production and the Aegis testnet; its events cannot be attributed to production alone.
+  { name: "Consensus", chain: "gnosis", address: AEGIS.consensus.address },
+  { name: "SentinelOracle", chain: "gnosis", address: AEGIS.sentinelOracle.address },
+  // Shared by Aegis (mainnet) and the Aegis testnet; its events cannot be attributed to Aegis alone.
   { name: "FROSTCoordinator", chain: "gnosis", address: "0xc6b34da4c99c043a093214d58423a8be39585b78" },
   { name: "Safenet7702Executor", chain: "gnosis", address: "0x4dfe88adf2d7c3fbd2e334ce820b9adfa541215c" },
   // Beta (read from raw logs; listed so the check reports whether Dune has decoded them).

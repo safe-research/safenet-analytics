@@ -1,7 +1,7 @@
--- Safenet production: transaction-check requests, completed checks and attestations per UTC day,
+-- Safenet Aegis: transaction-check requests, completed checks and attestations per UTC day,
 -- for the last 30 days (zero-filled). Definitions, sources and limitations:
 -- docs/metrics/transaction-checks.md and docs/metrics/network-and-revenue.md.
--- Events are decoded once, in safenet_events (production contracts on Gnosis Chain).
+-- Events are decoded once, in safenet_events (Aegis contracts on Gnosis Chain).
 --
 -- Rows are ordered newest first. requests_cumulative on the first row is the all-time request
 -- count shown by the counter, summed over every day before the 30-day window is applied, from the

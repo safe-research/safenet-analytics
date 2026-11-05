@@ -1,7 +1,7 @@
 -- Per completed reward period (Beta and Aegis) and validator: time-weighted stake
 -- (staking_period_stake) and eligibility. Definitions: docs/metrics/staking.md#realized-apr.
 --
---   era                  beta / production (Aegis)
+--   era                  beta / Aegis
 --   avg_stake            average stake while registered in the Staking contract (SAFE)
 --   avg_stake_all        average stake whether registered or not
 --   avg_self_stake       the registered staker's part; avg_delegated_stake = avg_stake - avg_self_stake
@@ -30,7 +30,7 @@ stake as (
 ),
 
 periods as (
-    select distinct period_start, period_end from stake where era = 'production'
+    select distinct period_start, period_end from stake where era = 'aegis'
 ),
 
 -- Settlement (Aegis): the Gnosis block at or before the period end, plus 48 blocks.

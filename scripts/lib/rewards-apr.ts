@@ -24,7 +24,7 @@ export function betaPeriods(): Period[] {
 }
 export const isBeta = (p: Period) => p.to <= 1791244800;
 
-export type StakerSet = { validator: string; staker: string; time: number }; // production ValidatorStakerSet
+export type StakerSet = { validator: string; staker: string; time: number }; // Aegis ValidatorStakerSet
 
 export type PairStake = { staker: string; validator: string; all: bigint; registered: bigint; self: bigint };
 

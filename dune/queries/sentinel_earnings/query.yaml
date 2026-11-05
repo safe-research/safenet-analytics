@@ -1,6 +1,6 @@
 name: "Safenet: Sentinel earnings"
 description: >
-  Safenet production (Aegis): Sentinel transaction-fee rewards in USDC.e (accrued, claimed,
+  Safenet Aegis: Sentinel transaction-fee rewards in USDC.e (accrued, claimed,
   outstanding) and published SAFE subsidies (published, claimed, claimable) per Sentinel, in
   separate columns. Managed in github.com/safe-research/safenet-analytics
   (docs/metrics/sentinels.md).

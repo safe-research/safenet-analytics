@@ -1,6 +1,6 @@
 name: "Safenet: Safes with the SafenetGuard"
 description: >
-  Current transaction guard of every Safe that ever enabled a verified production SafenetGuard on
+  Current transaction guard of every Safe that ever enabled a verified Aegis SafenetGuard on
   Ethereum, Gnosis Chain or Arbitrum One, from the Safes' ChangedGuard events (latest wins).
   Shared model for the Guard-enabled Safes count; not shown on the dashboard. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/network-and-revenue.md).

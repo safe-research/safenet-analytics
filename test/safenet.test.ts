@@ -5,7 +5,7 @@ import { keccak_256 } from "@noble/hashes/sha3.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { DEFAULT_ROOT } from "../src/config.ts";
 import { EXPLORERS, LINK_SQL, STAKING_LINK_SQL } from "../src/links.ts";
-import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, PRODUCTION, PRODUCTION_START_TIME, REWARDS_DISTRIBUTOR, STAKING, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, AEGIS, AEGIS_START_TIME, REWARDS_DISTRIBUTOR, STAKING, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 
 const read = (key: string) => readFile(`${DEFAULT_ROOT}/queries/${key}/query.sql`, "utf8");
 // The shared event model, on Dune's decoded Safenet tables (docs/decoding.md).
@@ -18,7 +18,7 @@ test("every topic0 is the keccak hash of its event signature", () => {
   }
 });
 
-test("the metric SQL reads the production contracts' decoded tables, every event it needs", () => {
+test("the metric SQL reads the Aegis contracts' decoded tables, every event it needs", () => {
   for (const name of ["TransactionProposed", "TransactionAttested"]) assert.ok(sql.includes(decodedTable("Consensus", name)), name);
   for (const name of [
     "NewRequest",
@@ -39,11 +39,11 @@ test("the metric SQL reads the production contracts' decoded tables, every event
     "BondConfigScheduled",
   ])
     assert.ok(sql.includes(decodedTable("SentinelOracle", name)), `${name} missing from safenet_events`);
-  // Each decoded block is restricted to the production contract, and proposals and attestations
-  // to the production oracle.
-  assert.equal((sql.match(new RegExp(`contract_address = ${PRODUCTION.consensus.address}`, "g")) ?? []).length, 2);
-  assert.equal((sql.match(new RegExp(`contract_address = ${PRODUCTION.sentinelOracle.address}`, "g")) ?? []).length, 3);
-  assert.equal((sql.match(new RegExp(`oracle = ${PRODUCTION.sentinelOracle.address}`, "g")) ?? []).length, 2);
+  // Each decoded block is restricted to the Aegis contract, and proposals and attestations
+  // to the Aegis oracle.
+  assert.equal((sql.match(new RegExp(`contract_address = ${AEGIS.consensus.address}`, "g")) ?? []).length, 2);
+  assert.equal((sql.match(new RegExp(`contract_address = ${AEGIS.sentinelOracle.address}`, "g")) ?? []).length, 3);
+  assert.equal((sql.match(new RegExp(`oracle = ${AEGIS.sentinelOracle.address}`, "g")) ?? []).length, 2);
   assert.ok(!/\bgnosis\.logs\b/.test(sql), "no raw logs");
 });
 
@@ -52,7 +52,7 @@ test("the metric SQL does not read Beta, testnet or shared coordinator contracts
     "0x223624cbf099e5a8f8cd5af22afa424a1d1acee9", // Beta Consensus
     "0x73b4bdc3112dfb86085cdd84f26ab908b20a4a84", // Aegis testnet Consensus
     "0xb83c4b66e752d947c1f55fd703b7937e21e401e4", // Aegis testnet SentinelOracle
-    "0xc6b34da4c99c043a093214d58423a8be39585b78", // FROSTCoordinator shared by production and testnet
+    "0xc6b34da4c99c043a093214d58423a8be39585b78", // FROSTCoordinator shared by Aegis and testnet
   ])
     assert.ok(!sql.toLowerCase().includes(other.slice(2)), other);
 });
@@ -108,9 +108,9 @@ test("Sentinel Oracle call selectors match their signatures", () => {
   for (const [name, f] of Object.entries(ORACLE_FUNCTIONS)) assert.equal(hash(f.signature).slice(0, 10), f.selector, name);
 });
 
-test("the Sentinel decoding queries use the production contracts, events and selectors", async () => {
+test("the Sentinel decoding queries use the Aegis contracts, events and selectors", async () => {
   const failed = await read("safenet_sentinel_failed_calls");
-  assert.ok(failed.includes(PRODUCTION.sentinelOracle.address));
+  assert.ok(failed.includes(AEGIS.sentinelOracle.address));
   for (const f of Object.values(ORACLE_FUNCTIONS)) assert.ok(failed.includes(f.selector), f.signature);
   assert.ok(/\bnot success\b/.test(failed), "only reverted calls");
 
@@ -123,7 +123,7 @@ test("the Sentinel decoding queries use the production contracts, events and sel
   for (const name of ["Claimed", "MerkelRootUpdated"]) assert.ok(rewards.includes(`safe_ethereum.CumulativeMerkleDrop_evt_${name}`), name);
 
   const texts = await read("safenet_sentinel_texts");
-  assert.ok(texts.includes(`contract_address = ${PRODUCTION.sentinelOracle.address}`));
+  assert.ok(texts.includes(`contract_address = ${AEGIS.sentinelOracle.address}`));
   for (const name of ["Revealed", "DisputeResolved", "DisputeOutOfScope"]) assert.ok(texts.includes(decodedTable("SentinelOracle", name)), name);
   assert.ok(texts.includes("nullif(text, '')"), "empty text stays null");
 });
@@ -179,19 +179,19 @@ test("staking event signatures match their topic0 values", () => {
   for (const e of [...Object.values(STAKING.events), VALIDATOR_STAKER_SET]) assert.equal(hash(e.signature), e.topic0, e.signature);
 });
 
-test("staking_events reads every decoded Staking table for the production contract from its deployment", async () => {
+test("staking_events reads every decoded Staking table for the Aegis contract from its deployment", async () => {
   const q = (await read("staking_events")).toLowerCase();
   for (const e of Object.values(STAKING.events)) assert.ok(q.includes(e.table.toLowerCase()), e.table);
   assert.equal(q.match(new RegExp(`contract_address = ${STAKING.address}`, "g"))?.length, Object.keys(STAKING.events).length);
   assert.equal(q.match(new RegExp(`evt_block_number >= ${STAKING.deployBlock}`, "g"))?.length, Object.keys(STAKING.events).length);
   assert.ok(q.includes(`date '${STAKING.deployDate}'`));
-  assert.ok(q.includes(`timestamp '${PRODUCTION_START_TIME}'`), "era boundary");
+  assert.ok(q.includes(`timestamp '${AEGIS_START_TIME}'`), "era boundary");
 });
 
-test("staking_validator_stakers reads ValidatorStakerSet from the production Consensus only", async () => {
+test("staking_validator_stakers reads ValidatorStakerSet from the Aegis Consensus only", async () => {
   const q = await read("staking_validator_stakers");
   assert.ok(q.includes("safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet"));
-  assert.ok(q.includes(`contract_address = ${PRODUCTION.consensus.address}`) && q.includes(String(PRODUCTION.consensus.deployBlock)));
+  assert.ok(q.includes(`contract_address = ${AEGIS.consensus.address}`) && q.includes(String(AEGIS.consensus.deployBlock)));
   assert.ok(!q.includes("223624cbf099e5a8f8cd5af22afa424a1d1acee9"), "Beta Consensus");
 });
 

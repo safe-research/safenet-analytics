@@ -1,7 +1,7 @@
-name: "Safenet: validator participation (24h, 7d, 30d, production)"
+name: "Safenet: validator participation (24h, 7d, 30d, Aegis)"
 description: >
   Safenet validators' observed signing participation over the last 24 hours, 7 days, 30 days and all
-  of production, with the reward scripts' basis (signed attested transactions / all attested
+  of Aegis, with the reward scripts' basis (signed attested transactions / all attested
   transactions). Managed in github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
 private: false
 tags: [safenet]

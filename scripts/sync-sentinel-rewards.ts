@@ -6,7 +6,7 @@
 // safenet_sentinel_rewards SQL.
 //
 // Sentinel addresses are the Sentinel labels (dune/data/participants.json) and every address in a
-// production SentinelScheduled event (Gnosis Chain RPC, GNOSIS_RPC_URL or --rpc).
+// Aegis SentinelScheduled event (Gnosis Chain RPC, GNOSIS_RPC_URL or --rpc).
 //
 // Incremental, like sync-validator-rewards: the record is reused and only ENS CIDs not read yet are
 // downloaded. New Sentinel addresses, a new --ref or --full read everything again.
@@ -17,7 +17,7 @@ import { writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { loadParticipants } from "../src/participants.ts";
 import { contenthashHistory, DEFAULT_IPFS_GATEWAYS, fetchRewardsDb } from "../src/rewards-ipfs.ts";
-import { EVENTS, PRODUCTION, REWARDS_DISTRIBUTOR } from "../src/safenet.ts";
+import { EVENTS, AEGIS, REWARDS_DISTRIBUTOR } from "../src/safenet.ts";
 import {
   proofPath,
   REWARDS_INDEX,
@@ -58,9 +58,9 @@ const ref = values.ref!;
 // Sentinel addresses: labels and onchain schedules.
 const rpc = rpcClient(values.rpc!);
 const scheduled = await rpc.getLogs(
-  PRODUCTION.sentinelOracle.address,
+  AEGIS.sentinelOracle.address,
   [EVENTS.SentinelScheduled.topic0],
-  PRODUCTION.sentinelOracle.deployBlock,
+  AEGIS.sentinelOracle.deployBlock,
   await rpc.finalized(),
 );
 const labels = (await loadParticipants()).participants.filter((p) => p.role === "sentinel").map((p) => p.address);

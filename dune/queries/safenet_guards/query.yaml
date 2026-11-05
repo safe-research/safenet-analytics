@@ -1,7 +1,7 @@
 name: "Safenet: SafenetGuard deployments"
 description: >
   SafenetGuard contracts on Ethereum, Gnosis Chain and Arbitrum One, discovered from their
-  constructor event and checked against the production Consensus through their creation trace.
+  constructor event and checked against the Aegis Consensus through their creation trace.
   Shared model for the Guard-enabled Safes count; not shown on the dashboard. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/network-and-revenue.md).
 private: false

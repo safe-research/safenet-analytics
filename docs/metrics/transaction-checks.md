@@ -2,19 +2,19 @@
 
 Query: [`dune/queries/transaction_checks_daily`](../../dune/queries/transaction_checks_daily), reading [`safenet_events`](../../dune/queries/safenet_events) ([decoding](../decoding.md)) · Chart: *Requests and completed results per day (last 30 days)* · Counter: *Requests (all time)* · Table: *Latest requests* ([`latest_requests`](../../dune/queries/latest_requests)) on [dune.com/safe/safenet](https://dune.com/safe/safenet)
 
-The query counts Safenet **production** activity per UTC day. It has three headline numbers: transactions submitted for checking, checks that reached a verdict, and transactions the validators attested. These are three different stages and their counts differ.
+The query counts Safenet **Aegis** activity per UTC day. It has three headline numbers: transactions submitted for checking, checks that reached a verdict, and transactions the validators attested. These are three different stages and their counts differ.
 
 ## Definitions
 
-| Column | Counts | Event (production contracts only) |
+| Column | Counts | Event (Aegis contracts only) |
 | --- | --- | --- |
-| `requests` | Transactions proposed for checking. Each one is a paid Sentinel Oracle request (0.40 USDC.e). | `Consensus.TransactionProposed` with `oracle` = production SentinelOracle (one-to-one with `SentinelOracle.NewRequest`) |
+| `requests` | Transactions proposed for checking. Each one is a paid Sentinel Oracle request (0.40 USDC.e). | `Consensus.TransactionProposed` with `oracle` = Aegis SentinelOracle (one-to-one with `SentinelOracle.NewRequest`) |
 | `completed_checks` | Requests that got a verdict: approved or denied by the Sentinels, or ruled on by the Security Council after a dispute | `SentinelOracle.OracleResult`, `SentinelOracle.DisputeResolved` |
 | `checks_approved` / `checks_denied` | Split of `completed_checks`. A Council ruling of *secure* counts as approved, *insecure* as denied. | `OracleResult.approved`; `DisputeResolved.outcome` (3 approved, 4 denied) |
 | `closed_without_verdict` | Requests that ended without a verdict and were refunded: nobody voted or revealed, the Council declined the dispute, or arbitration timed out. These are **not** completed checks. | `RequestTimedOut`, `DisputeOutOfScope`, `ArbitrationTimedOut` |
-| `attestations` | Transactions the validators signed with the group's threshold (FROST) signature, which lets the Safe execute them | `Consensus.TransactionAttested` with `oracle` = production SentinelOracle |
+| `attestations` | Transactions the validators signed with the group's threshold (FROST) signature, which lets the Safe execute them | `Consensus.TransactionAttested` with `oracle` = Aegis SentinelOracle |
 | `uncovered_chain_*` | The same counts for Safes on chains outside the Charter: likely test traffic, excluded from the columns above | as above |
-| `unmatched_events` | Data-quality check, always expected to be 0: outcomes without a production request, or proposals without an oracle request | |
+| `unmatched_events` | Data-quality check, always expected to be 0: outcomes without an Aegis request, or proposals without an oracle request | |
 
 `requests_cumulative` is the running total of `requests`, and `through_block` is the highest Gnosis block among the events read. Rows are ordered newest first.
 
@@ -33,14 +33,14 @@ So `attestations` ≤ `checks_approved` ≤ `completed_checks` ≤ `requests` ov
 
 ### Why not other events
 
-- **FROSTCoordinator `Sign` / `SignCompleted`** are not used. Production and the Aegis testnet share the same coordinator (`0xC6B34dA4…5B78`, deployed with CREATE2), so these events mix both networks. They also include epoch rollovers and restarted signing ceremonies. `Sign` fires at proposal time, even for checks that are later denied.
+- **FROSTCoordinator `Sign` / `SignCompleted`** are not used. Aegis (mainnet) and the Aegis testnet share the same coordinator (`0xC6B34dA4…5B78`, deployed with CREATE2), so these events mix both networks. They also include epoch rollovers and restarted signing ceremonies. `Sign` fires at proposal time, even for checks that are later denied.
 - **Beta metrics do not apply.** Beta used a different Consensus contract (`0x223624cB…cEE9`) from before the Sentinel Oracle existed. Its events and lifecycle differ, and none of its contracts are read here.
 
 ## Request counter
 
 *Requests (all time)* shows `requests_cumulative` of the newest row:
 
-- **Time range.** All time: from the first production request (2026-10-14) up to the latest execution of the query, which is daily after the refresh, or on demand in previews. The current UTC day is included and partial.
+- **Time range.** All time: from the first Aegis request (2026-10-14) up to the latest execution of the query, which is daily after the refresh, or on demand in previews. The current UTC day is included and partial.
 - **Same source as the chart.** The counter and the daily chart come from the same execution. The query sums every day since launch before it keeps the last 30 days (zero-filled) for the chart, so the counter equals the 30 daily *Requests* bars plus all requests before them. Attestations and the other columns stay in the query results. The chart shows requests and completed results, the *Activity* panel of the [Network & revenue](network-and-revenue.md) section.
 - **Deduplication.** One request per oracle `request_id` (the EIP-712 proposal hash), that is, per proposal and epoch. Every log is counted once. A Safe transaction proposed again in a later epoch is a new paid request and counts again. Completed checks and attestations are separate columns, never added to requests.
 - **Test traffic.** Excluded as described [below](#test-traffic). Only covered-chain requests count. Testnet and other-oracle requests are not read at all, and uncovered-chain requests are reported separately.
@@ -55,32 +55,32 @@ The table lists the 25 most recent requests from [`safenet_requests`](../../dune
 
 ## Sources
 
-Production ("Aegis") contracts on Gnosis Chain:
+Aegis ("Aegis") contracts on Gnosis Chain:
 
 | Contract | Address | Deployed at block |
 | --- | --- | --- |
 | Consensus | [`0xc855761D619f6002923507cE68B84d7689C2aa96`](https://gnosisscan.io/address/0xc855761D619f6002923507cE68B84d7689C2aa96) | 48635843 |
 | SentinelOracle | [`0x4F61B8832978e83b80D69551AEf07557DBE41d03`](https://gnosisscan.io/address/0x4F61B8832978e83b80D69551AEf07557DBE41d03) | 48635850 |
 
-- Addresses: `safe-research/safenet` [`docs/configuration.md`](https://github.com/safe-research/safenet/blob/4ed5101/docs/configuration.md), "Aegis Network". The explorer's production defaults use the same addresses.
+- Addresses: `safe-research/safenet` [`docs/configuration.md`](https://github.com/safe-research/safenet/blob/4ed5101/docs/configuration.md), "Aegis Network". The explorer's Aegis defaults use the same addresses.
 - Deploy blocks: `safe-research/safenet-beta-wallet-extension` `src/constants.ts`.
 - Lifecycle and outcome meanings: `safe-research/safenet` [`docs/transaction-lifecycle.md`](https://github.com/safe-research/safenet/blob/4ed5101/docs/transaction-lifecycle.md).
 - Events: `contracts/src/interfaces/IConsensus.sol`, `contracts/src/SentinelOracle.sol`, `contracts/src/libraries/SentinelOracleRequests.sol`, `contracts/src/interfaces/IOracle.sol`, all at commit `4ed5101`.
-- Checked on-chain: `SentinelOracle.PROPOSER()` is the production Consensus, and both production and testnet Consensus return the same `getCoordinator()`.
+- Checked on-chain: `SentinelOracle.PROPOSER()` is the Aegis Consensus, and both Aegis and testnet Consensus return the same `getCoordinator()`.
 
 `safenet_events` reads raw `gnosis.logs`, because Dune has not decoded these contracts ([decoding.md](../decoding.md)). [`src/safenet.ts`](../../src/safenet.ts) lists every event signature with its topic0. `test/safenet.test.ts` recomputes each topic0 from its signature and checks that the SQL uses exactly those values and none of the Beta, testnet or shared coordinator addresses.
 
 ## Test traffic
 
-- **Testnet** runs on separate Consensus and Oracle contracts, so filtering on the production contracts excludes it.
-- **Other oracles.** `proposeTransaction` accepts any oracle, but validators and the explorer only act on the production Sentinel Oracle. Proposals naming another oracle are excluded (none so far).
+- **Testnet** runs on separate Consensus and Oracle contracts, so filtering on the Aegis contracts excludes it.
+- **Other oracles.** `proposeTransaction` accepts any oracle, but validators and the explorer only act on the Aegis Sentinel Oracle. Proposals naming another oracle are excluded (none so far).
 - **Uncovered chains.** The Charter covers Safes on Ethereum (1), Gnosis Chain (100) and Arbitrum One (42161). A request's Safe chain is the top 12 bytes of `safeId`. Requests for other chains are counted separately as likely tests. So far there is one, on Polygon (137).
-- **Not identified.** There is no list of production test Safes or test accounts. The relayer serves both testnet and production, so the proposer (`NewRequest.sponsor`) cannot separate them either. Requests from Safenet's own operational Safes are included. For example, the Arbitrator Safe `0xc89Ae483…8348` on Gnosis Chain made 7 requests up to 2026-10-23. Requests are made by 5 sponsor addresses.
+- **Not identified.** There is no list of Aegis test Safes or test accounts. The relayer serves both testnet and Aegis, so the proposer (`NewRequest.sponsor`) cannot separate them either. Requests from Safenet's own operational Safes are included. For example, the Arbitrator Safe `0xc89Ae483…8348` on Gnosis Chain made 7 requests up to 2026-10-23. Requests are made by 5 sponsor addresses.
 
 ## Limitations
 
 - **Requests are paid proposals, not distinct Safe transactions.** The same Safe transaction can be proposed again in a later epoch, for example after arbitration, and is then counted again.
-- **Launch period.** The first production requests were on 2026-10-14. All 4 requests that day closed without a verdict.
+- **Launch period.** The first Aegis requests were on 2026-10-14. All 4 requests that day closed without a verdict.
 - **Open requests.** Requests still being voted on, frozen in a dispute, or approved but not yet signed have no outcome yet. They appear in later days' counts once resolved.
 - **Approved but unattested.** An approval that arrives after the validators' signing timeout is never attested, and there is no event for this. It shows only as the gap between `checks_approved` and `attestations`. Disputed transactions ruled secure also make up part of this gap.
 - **Freshness.** The data is as fresh as the last refresh (daily, 05:17 UTC) plus Dune's Gnosis Chain ingestion delay. The current UTC day is partial.
@@ -89,7 +89,7 @@ Production ("Aegis") contracts on Gnosis Chain:
 
 [`scripts/verify-transaction-checks.ts`](../../scripts/verify-transaction-checks.ts) recomputes the table from Gnosis Chain RPC logs, independently of Dune. It checks:
 
-- every production proposal pairs with exactly one oracle request, in the same transaction, after the proposal;
+- every Aegis proposal pairs with exactly one oracle request, in the same transaction, after the proposal;
 - each request has at most one terminal outcome;
 - every attestation follows an approved check of the same safeTxHash and epoch;
 - with `DUNE_API_KEY` set and the query deployed, Dune's latest result matches. The recount stops at the result's `through_block`, so both cover identical block ranges, and every day and column, the counter, and the sum of daily requests must be equal, including the current partial day. Use `--query-id` or `--state` to check a preview query instead.

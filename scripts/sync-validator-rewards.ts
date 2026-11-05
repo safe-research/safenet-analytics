@@ -12,7 +12,7 @@
 // recorded split no longer reproduces its payouts) from the payouts and chain data
 // (scripts/lib/derive-split.ts), and writes dune/data/validator-rewards.json and the generated queries.
 //
-// Validator stakers are every staker in a ValidatorStakerSet on Beta or production Consensus (Gnosis
+// Validator stakers are every staker in a ValidatorStakerSet on Beta or Aegis Consensus (Gnosis
 // Chain RPC, GNOSIS_RPC_URL or --rpc), plus the commission beneficiaries they named in the
 // DelegateRegistry (Ethereum RPC, ETHEREUM_RPC_URL or --eth-rpc).
 //
@@ -25,7 +25,7 @@
 
 import { parseArgs } from "node:util";
 import { contenthashHistory, DEFAULT_IPFS_GATEWAYS, fetchRewardsDb, proofTotals, REWARDS_ENS_NAME, type RewardsProof } from "../src/rewards-ipfs.ts";
-import { BETA_CONSENSUS, DELEGATE_REGISTRY, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { BETA_CONSENSUS, DELEGATE_REGISTRY, AEGIS, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import {
   AEGIS_REWARDS_START,
   BETA_MIN_PAYOUT,
@@ -76,17 +76,17 @@ const ref = values.ref!;
 
 const previous = await loadValidatorRewards().catch(() => undefined);
 
-// Validator stakers, Beta and production, and the commission beneficiaries they named.
+// Validator stakers, Beta and Aegis, and the commission beneficiaries they named.
 const rpc = rpcClient(values.rpc!);
 const head = await rpc.finalized();
 const stakers: ValidatorRewardData["stakers"] = [];
-const stakerSets: StakerSet[] = []; // production, with times, for self-stake and beneficiaries
+const stakerSets: StakerSet[] = []; // Aegis, with times, for self-stake and beneficiaries
 const betaStakerSets: StakerSet[] = []; // Beta Consensus, for the Beta periods
-for (const [era, c] of [["beta", BETA_CONSENSUS], ["production", PRODUCTION.consensus]] as const)
+for (const [era, c] of [["beta", BETA_CONSENSUS], ["aegis", AEGIS.consensus]] as const)
   for (const l of await rpc.getLogs(c.address, [VALIDATOR_STAKER_SET.topic0], c.deployBlock, head)) {
     const s = { validator: topicAddress(l.topics[1]), staker: `0x${l.data.slice(26, 66)}`.toLowerCase() };
     stakers.push({ ...s, era });
-    (era === "production" ? stakerSets : betaStakerSets).push({ ...s, time: await rpc.blockTime(l) });
+    (era === "aegis" ? stakerSets : betaStakerSets).push({ ...s, time: await rpc.blockTime(l) });
   }
 
 // Commission beneficiaries: DelegateRegistry delegates named by validator stakers.

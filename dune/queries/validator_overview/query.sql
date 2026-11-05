@@ -1,15 +1,15 @@
--- Safenet validators now: one row per validator ever in the production attestation set or in the
+-- Safenet validators now: one row per validator ever in the Aegis attestation set or in the
 -- Staking contract. Current snapshot, separate from the history panels. Definitions:
 -- docs/metrics/validators.md#overview.
 --
 --   attestation_set        member of the active epoch's FROST group (validator_membership), or the
 --                          epoch it was last a member of; independent of staking registration
 --   staking_registration   Staking contract registration (staking_validators, as in the Staking section)
---   self / delegated stake staking_validators (registered staker on production Consensus)
+--   self / delegated stake staking_validators (registered staker on Aegis Consensus)
 --   share_of_contract_stake      total_stake / all active stake in the Staking contract
 --   share_of_live_set_stake      total_stake / stake on validators both registered and in the
 --                                current attestation set; null for validators outside it
---   observed_participation_30d   recognised signature shares / completed production ceremonies of
+--   observed_participation_30d   recognised signature shares / completed Aegis ceremonies of
 --                                its groups, last 30 days; null without eligible ceremonies
 --   reward_participation_period  the reward scripts' rate for the current two-week period so far:
 --                                recognised shares on attested transactions / all attested

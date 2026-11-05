@@ -378,7 +378,7 @@ jobs:
               echo "<details><summary>Validators: membership vs contract state, signing recount, stake and rewards</summary>"
               echo
               echo '```json'
-              if [ -f "$T/verification-validators.json" ]; then jq '{block, active_epoch, attestation_set, epochs, ceremonies, participation_production, membership_checks: [.membership_checks[] | {check, ok}], reward_checks, issues, dune}' "$T/verification-validators.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
+              if [ -f "$T/verification-validators.json" ]; then jq '{block, active_epoch, attestation_set, epochs, ceremonies, participation_aegis, membership_checks: [.membership_checks[] | {check, ok}], reward_checks, issues, dune}' "$T/verification-validators.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
               echo '```'
               echo "</details>"
               echo

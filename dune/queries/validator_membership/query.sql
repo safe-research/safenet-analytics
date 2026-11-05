@@ -1,9 +1,9 @@
--- Safenet production attestation set over time: one row per (epoch, validator) for the members of
+-- Safenet Aegis attestation set over time: one row per (epoch, validator) for the members of
 -- the epoch's FROST group. Definitions: docs/metrics/validators.md#validator_membership. Shared model.
 --
 -- Members are the participants that confirmed the group's key generation
 -- (FROSTCoordinator.KeyGenConfirmed(gid, participant, confirmed)). The coordinator is shared with the
--- Aegis testnet; only groups named by production Consensus (validator_epochs) are kept, so a failed
+-- Aegis testnet; only groups named by Aegis Consensus (validator_epochs) are kept, so a failed
 -- or testnet key generation never adds a member. This is attestation-set membership, separate from
 -- registration in the Ethereum Staking contract. Reads Dune's decoded FROSTCoordinator tables
 -- (docs/decoding.md).

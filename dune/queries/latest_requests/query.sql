@@ -1,4 +1,4 @@
--- Safenet production: the 25 most recent transaction-check requests with their current status.
+-- Safenet Aegis: the 25 most recent transaction-check requests with their current status.
 -- Definitions: docs/metrics/network-and-revenue.md. Links: src/links.ts (built in safenet_events).
 -- Onchain addresses and transactions link to their chain's block explorer; the Safe transaction
 -- links to the Safenet explorer. Requests for Safes outside the Charter's chains are included and

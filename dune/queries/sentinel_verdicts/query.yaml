@@ -1,6 +1,6 @@
 name: "Safenet: Sentinel verdicts"
 description: >
-  Safenet production (Aegis): each Sentinel's own responses by kind (secure, insecure, missing
+  Safenet Aegis: each Sentinel's own responses by kind (secure, insecure, missing
   response, no commit) for the last 30 days and all time. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
 private: false

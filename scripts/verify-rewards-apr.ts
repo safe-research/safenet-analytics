@@ -30,7 +30,7 @@ import { DuneClient } from "../src/dune.ts";
 import { addressUrl, txUrl } from "../src/links.ts";
 import { loadParticipants } from "../src/participants.ts";
 import { contenthashHistory, DEFAULT_IPFS_GATEWAYS, fetchRewardsDb, proofTotals } from "../src/rewards-ipfs.ts";
-import { BETA_CONSENSUS, EVENTS, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { BETA_CONSENSUS, EVENTS, AEGIS, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import { loadState } from "../src/state.ts";
 import { AEGIS_REWARDS_START, BETA_MIN_PAYOUT, loadValidatorRewards, periodEnds, periodPayouts, type ValidatorPeriod } from "../src/validator-rewards.ts";
 import { rpcClient, topicAddress } from "./lib/recount.ts";
@@ -116,7 +116,7 @@ for (const r of aegis) {
 
 const events = await fetchStakingEvents(eth, ethHead);
 const stakerSets: StakerSet[] = [];
-for (const l of await gnosis.getLogs(PRODUCTION.consensus.address, [VALIDATOR_STAKER_SET.topic0], PRODUCTION.consensus.deployBlock, gnosisHead))
+for (const l of await gnosis.getLogs(AEGIS.consensus.address, [VALIDATOR_STAKER_SET.topic0], AEGIS.consensus.deployBlock, gnosisHead))
   stakerSets.push({ validator: topicAddress(l.topics[1]), staker: `0x${l.data.slice(26, 66)}`.toLowerCase(), time: await gnosis.blockTime(l) });
 const betaStakerSets: StakerSet[] = [];
 for (const l of await gnosis.getLogs(BETA_CONSENSUS.address, [VALIDATOR_STAKER_SET.topic0], BETA_CONSENSUS.deployBlock, gnosisHead))
@@ -124,7 +124,7 @@ for (const l of await gnosis.getLogs(BETA_CONSENSUS.address, [VALIDATOR_STAKER_S
 
 // The last Gnosis block at or before t (binary search on block timestamps).
 const blockAt = async (t: number) => {
-  let lo: number = PRODUCTION.consensus.deployBlock;
+  let lo: number = AEGIS.consensus.deployBlock;
   let hi = gnosisHead;
   while (lo < hi) {
     const mid = Math.ceil((lo + hi) / 2);

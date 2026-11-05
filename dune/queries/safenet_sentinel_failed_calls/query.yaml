@@ -1,6 +1,6 @@
 name: "Safenet: reverted Sentinel commit and reveal calls"
 description: >
-  Safenet production (Aegis): Sentinel Oracle commit and reveal calls that reverted (late, early or invalid), decoded from gnosis.traces. Temporary until Dune decodes the contracts (docs/decoding.md).
+  Safenet Aegis: Sentinel Oracle commit and reveal calls that reverted (late, early or invalid), decoded from gnosis.traces. Temporary until Dune decodes the contracts (docs/decoding.md).
   Read by the Sentinel queries; not shown on the dashboard. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
 private: false

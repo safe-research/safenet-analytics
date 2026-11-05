@@ -1,6 +1,6 @@
 -- Safenet Staking on Ethereum (0x115E78f160e1E3eF163B05C84562Fa16fA338509, deployed at block
 -- 24585750 on 2026-03-04), one row per event, from Dune's decoded tables (safe_ethereum.Staking_evt_*).
--- One contract for Beta and production; era marks the side of the production start (the production
+-- One contract for Beta and Aegis; era marks the side of the Aegis start (the Aegis
 -- Consensus deployment on Gnosis Chain, 2026-10-07 13:51:55 UTC). Definitions and field reference:
 -- docs/metrics/staking.md#staking_events. Shared model: read by the staking and validator queries.
 --
@@ -82,6 +82,6 @@ select
     cast(amount_raw as double) / 1e18 as amount,
     is_registered,
     new_delay,
-    if(block_time >= timestamp '2026-10-07 13:51:55', 'production', 'beta') as era,
+    if(block_time >= timestamp '2026-10-07 13:51:55', 'aegis', 'beta') as era,
     'https://etherscan.io/tx/0x' || lower(to_hex(tx_hash)) as tx_url
 from events

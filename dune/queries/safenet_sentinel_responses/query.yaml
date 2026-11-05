@@ -1,6 +1,6 @@
 name: "Safenet: Sentinel responses per request"
 description: >
-  Safenet production (Aegis): one row per request and eligible or committed Sentinel, with the response state (secure, insecure, missing response, no commit, pending), fee reward and slash per the contract rules.
+  Safenet Aegis: one row per request and eligible or committed Sentinel, with the response state (secure, insecure, missing response, no commit, pending), fee reward and slash per the contract rules.
   Read by the Sentinel queries; not shown on the dashboard. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
 private: false

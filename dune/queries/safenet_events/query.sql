@@ -1,4 +1,4 @@
--- Safenet production ("Aegis") events on Gnosis Chain: one row per event, from Dune's decoded
+-- Safenet Aegis events on Gnosis Chain: one row per event, from Dune's decoded
 -- Safenet tables (safe_gnosis.SafenetAegisConsensus_evt_*, safe_gnosis.SafenetAegisSentinelOracle_evt_*).
 -- Metric queries read it through a managed query reference (src/config.ts). Until 2026-10-29 it
 -- decoded raw logs; the decoded tables match them log by log from the deploy blocks
@@ -7,7 +7,7 @@
 --   SentinelOracle  0x4F61B8832978e83b80D69551AEf07557DBE41d03 (deployed at block 48635850)
 --
 -- event                one row per
---   request            production proposal: Consensus.TransactionProposed with oracle = production
+--   request            Aegis proposal: Consensus.TransactionProposed with oracle = Aegis
 --                      SentinelOracle, paired with its SentinelOracle.NewRequest (request_id), with
 --                      the request's fee and bond terms from NewRequest
 --   committed          Sentinel commitment (Committed): bond_amount locked
@@ -17,7 +17,7 @@
 --   no_verdict         RequestTimedOut, DisputeOutOfScope, ArbitrationTimedOut (source_event)
 --   dispute            DisputeTriggered (not an outcome; the request continues to one of the above)
 --   claimed            Sentinel claim (Claimed): bond_amount returned, fee_reward paid
---   attestation        Consensus.TransactionAttested with oracle = production SentinelOracle
+--   attestation        Consensus.TransactionAttested with oracle = Aegis SentinelOracle
 --   sentinel_scheduled SentinelScheduled (sentinel, active_at_block); not tied to a request
 --   sentinel_removed   SentinelRemoved (sentinel); not tied to a request
 --   config_scheduled   FeeScheduled, DaoFeeShareScheduled, ProtocolFundsReceiverScheduled,
@@ -26,8 +26,8 @@
 --
 -- Amounts are USDC.e base units (6 decimals). covered_chain: the Safe is on a chain the Charter
 -- covers (Ethereum, Gnosis Chain, Arbitrum One); other chains are likely test traffic. It is null
--- when an event cannot be matched to a production request: a proposal without an oracle request,
--- an oracle event without a production request, and the sentinel and config events.
+-- when an event cannot be matched to an Aegis request: a proposal without an oracle request,
+-- an oracle event without an Aegis request, and the sentinel and config events.
 -- URL columns: see src/links.ts.
 
 with

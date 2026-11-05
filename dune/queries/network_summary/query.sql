@@ -1,5 +1,5 @@
--- Safenet production: network activity and fee totals for the last 24 hours, 7 days, 30 days and
--- all time (production only; Beta is a different network and is not read). Definitions:
+-- Safenet Aegis: network activity and fee totals for the last 24 hours, 7 days, 30 days and
+-- all time (Aegis only; Beta is a different network and is not read). Definitions:
 -- docs/metrics/network-and-revenue.md. One row per window, all time first (the counters read it).
 --
 -- Flows are counted when they happen: requests at proposal, completed results at their verdict,
@@ -28,7 +28,7 @@ responses as (
 windows as (
     select * from (
         values
-            ('All time', 1, timestamp '2026-10-07 00:00:00 UTC'), -- before the first production event
+            ('All time', 1, timestamp '2026-10-07 00:00:00 UTC'), -- before the first Aegis event
             ('Last 30 days', 2, now() - interval '30' day),
             ('Last 7 days', 3, now() - interval '7' day),
             ('Last 24 hours', 4, now() - interval '24' hour)

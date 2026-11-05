@@ -1,4 +1,4 @@
--- Safenet production: requests by the number of valid Sentinel responses (revealed votes) they
+-- Safenet Aegis: requests by the number of valid Sentinel responses (revealed votes) they
 -- received, for the last 30 days and all time. Definitions: docs/metrics/sentinels.md#coverage.
 --
 -- Requests on the Charter's chains whose response window has closed (a verdict, a dispute, a
@@ -7,7 +7,7 @@
 -- explicit 0 bucket. Commits without a reveal do not count. Requests still in their response window
 -- are reported in pending_requests and are in no bucket. Requests come from
 -- safenet_sentinel_responses, so a request is included once any Sentinel was eligible for it
--- (every production request so far; the verification recounts all requests).
+-- (every Aegis request so far; the verification recounts all requests).
 
 with
 

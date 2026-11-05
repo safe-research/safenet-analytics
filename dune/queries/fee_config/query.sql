@@ -1,4 +1,4 @@
--- Safenet production Sentinel Oracle fee terms over time, from what each request actually recorded
+-- Safenet Aegis Sentinel Oracle fee terms over time, from what each request actually recorded
 -- (NewRequest: fee, bondTarget, daoFeeShare, slashAmount) and from governance schedule events
 -- (FeeScheduled, DaoFeeShareScheduled, ProtocolFundsReceiverScheduled, BondConfigScheduled), which
 -- take effect after a delay. One row per distinct set of terms, then one row per schedule event.

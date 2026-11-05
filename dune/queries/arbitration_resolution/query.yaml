@@ -1,6 +1,6 @@
 name: "Safenet: arbitration resolution time"
 description: >
-  Safenet production (Aegis): median and p90 time from the dispute (DisputeTriggered, the freeze)
+  Safenet Aegis: median and p90 time from the dispute (DisputeTriggered, the freeze)
   to the arbitrator's secure or insecure ruling (DisputeResolved), by ruling time, with out-of-scope
   outcomes and arbitration timeouts counted separately; open arbitrations and the oldest one's age.
   Managed in github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).

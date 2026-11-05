@@ -1,4 +1,4 @@
--- Safenet production: daily Sentinel participation for the last 30 UTC days, one row per Sentinel
+-- Safenet Aegis: daily Sentinel participation for the last 30 UTC days, one row per Sentinel
 -- and day, for the participation heatmap. Definitions: docs/metrics/sentinels.md#participation.
 --
 -- A day's population is the requests proposed that day (Charter chains) that the Sentinel was

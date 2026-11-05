@@ -1,8 +1,8 @@
 name: "Safenet: Guard-enabled Safes"
 description: >
-  Safes whose current transaction guard is a SafenetGuard bound to the Safenet production Consensus,
+  Safes whose current transaction guard is a SafenetGuard bound to the Safenet Aegis Consensus,
   by network, from on-chain guard deployments and Safe ChangedGuard events. Null where no
-  production guard exists. Managed in github.com/safe-research/safenet-analytics
+  Aegis guard exists. Managed in github.com/safe-research/safenet-analytics
   (docs/metrics/network-and-revenue.md).
 private: false
 tags: [safenet]
@@ -22,6 +22,6 @@ visualizations:
       columns:
         - { name: network, title: Safe network, type: normal, alignContent: left, isHidden: false }
         - { name: guard_enabled_safes, title: Guard-enabled Safes now, type: normal, alignContent: right, isHidden: false }
-        - { name: verified_production_guards, title: Production guard deployments, type: normal, alignContent: right, isHidden: false }
+        - { name: verified_aegis_guards, title: Aegis guard deployments, type: normal, alignContent: right, isHidden: false }
         - { name: note, title: Note, type: normal, alignContent: left, isHidden: false }
         - { name: sort_order, title: sort_order, type: normal, alignContent: left, isHidden: true }

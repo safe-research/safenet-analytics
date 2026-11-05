@@ -9,10 +9,10 @@ The **Staking** section of [dune.com/safe/safenet](https://dune.com/safe/safenet
 | Data as of | `staking_overview/freshness` | Ethereum block and time of the data |
 | Active stake now, stakers now, outstanding withdrawals now, of which claimable | `staking_overview/*` counters | current state |
 | Flows over 24 hours, 7 days, 30 days and all time | `staking_flow_summary/table` | rolling windows up to the refresh |
-| Active stake history | `staking_daily/active_stake` (area) | all time, Beta grey, production blue |
+| Active stake history | `staking_daily/active_stake` (area) | all time, Beta grey, Aegis blue |
 | Net capital flow | `staking_daily/net_flow` (line, with active stake for comparison) | all time |
 | Deposits and completed withdrawals | `staking_daily/flows` (columns; withdrawals below zero) | all time |
-| Withdrawal requests | `staking_daily/requests` (columns) | all time, Beta grey, production orange |
+| Withdrawal requests | `staking_daily/requests` (columns) | all time, Beta grey, Aegis orange |
 | Outstanding withdrawals | `staking_withdrawals_outstanding/table` | current state, earliest withdrawal first |
 | Stake by validator | `staking_by_validator/bars` (horizontal stacked) and `/table` | current state |
 | Realized APR, latest published period | `staking_rewards_apr/headline` (counter) | latest completed and published reward period |
@@ -28,7 +28,7 @@ The Staking contract is `0x115E78f160e1E3eF163B05C84562Fa16fA338509` on Ethereum
 - **Deployment.** Block 24585750, 2026-03-04 18:00 UTC. The contract is not a proxy; the EIP-1967 implementation slot is empty. The deploy block was found by binary search on the contract code over RPC.
 - **Token.** SAFE `0x5aFE3855358E112B5647B952709E6165e1c1eEEe`, read from `SAFE_TOKEN()`.
 - **Delays.** `withdrawDelay` is 172800 s (2 days) and has not changed since deployment: one `WithdrawDelayChanged`, from the constructor. `CONFIG_TIME_DELAY` is 604800 s.
-- **One contract for Beta and production.** There is no separate Beta staking contract. The history is continuous, and the [production start](#eras) marks where production begins.
+- **One contract for Beta and Aegis.** There is no separate Beta staking contract. The history is continuous, and the [Aegis start](#eras) marks where Aegis begins.
 
 ### Lifecycle
 
@@ -77,7 +77,7 @@ Each withdrawal ID is in exactly one state:
 
 ### Self-stake and delegated stake
 
-Each validator registers a **staker** on the production Consensus on Gnosis Chain with `Consensus.setValidatorStaker`, which emits `ValidatorStakerSet(validator, staker)`. This is the Ethereum account that puts up the validator's own stake (safenet `docs/configuration.md`, section *Staking*).
+Each validator registers a **staker** on the Aegis Consensus on Gnosis Chain with `Consensus.setValidatorStaker`, which emits `ValidatorStakerSet(validator, staker)`. This is the Ethereum account that puts up the validator's own stake (safenet `docs/configuration.md`, section *Staking*).
 
 - **Self-stake** is that account's active stake on its own validator.
 - **Delegated stake** is everyone else's stake on that validator.
@@ -98,7 +98,7 @@ At block 26278309 (2026-10-26), the Staking contract had registered six validato
 
 ### Eras
 
-The **production start** is the deployment of the production Consensus on Gnosis Chain: block 48635843, 2026-10-07 13:51:55 UTC (`PRODUCTION_START_TIME` in `src/safenet.ts`). Events before it are `beta`, events from it on are `production` (`era` in `staking_events`). The daily charts use UTC days, with 2026-10-07 as the first production day. The active stake area includes the boundary day in both series so the two areas meet. Dune charts cannot draw a vertical marker, so the boundary is shown by the change in colour, and the section text names it.
+The **Aegis start** is the deployment of the Aegis Consensus on Gnosis Chain: block 48635843, 2026-10-07 13:51:55 UTC (`AEGIS_START_TIME` in `src/safenet.ts`). Events before it are `beta`, events from it on are `Aegis` (`era` in `staking_events`). The daily charts use UTC days, with 2026-10-07 as the first Aegis day. The active stake area includes the boundary day in both series so the two areas meet. Dune charts cannot draw a vertical marker, so the boundary is shown by the change in colour, and the section text names it.
 
 ## Realized APR
 
@@ -157,7 +157,7 @@ Per validator (`staking_rewards_apr_by_validator`):
 
 Commission is a transfer from delegators to the validator's beneficiary, not a return on stake, so it is in no APR. A **validator staker's published allocation** combines its commission, its own-stake reward and any delegations it holds elsewhere, so it is never treated as a staking yield. Validator stakers get an APR only on their self-stake, from the verified split.
 
-### How rewards are allocated (production)
+### How rewards are allocated (Aegis)
 
 From safe-fndn/safenet-staking-scripts at `8401845` (`src/safenet.ts` `rewards()`, `src/data/staking.ts`), reproduced exactly below:
 
@@ -204,7 +204,7 @@ The payouts identify each validator's reward up to a few base units (10⁻¹⁸ 
 
 Then `safenet_reward_breakdown` has per-validator rows for the period. The pool APR does not need a split.
 
-### First production period: 2026-10-13 to 2026-10-27
+### First Aegis period: 2026-10-13 to 2026-10-27
 
 Published on chain on 2026-11-04. ENS `rewards.safenet-gov.eth` → IPFS `bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em`, root `0xab63…711e`, set on the distributor in Ethereum block 26341873.
 
@@ -253,12 +253,12 @@ One row per Staking contract event. It reads Dune's decoded tables `safe_ethereu
 | `amount_raw`, `amount` | deposits, requests, claims, recovered tokens |
 | `is_registered` | `validator_updated` |
 | `new_delay` | `delay_changed`, in seconds |
-| `era` | `beta` / `production` |
+| `era` | `beta` / `Aegis` |
 | `tx_url` | Etherscan link |
 
 ### staking_validator_stakers
 
-One row per validator: the latest `ValidatorStakerSet` on the production Consensus (`0xc855…aa96`, Gnosis Chain), from Dune's decoded table `safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet` ([decoding.md](../decoding.md#switches)). Fields: `validator`, `staker`, `set_at`, `set_block`, `set_tx`, `set_tx_url`.
+One row per validator: the latest `ValidatorStakerSet` on the Aegis Consensus (`0xc855…aa96`, Gnosis Chain), from Dune's decoded table `safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet` ([decoding.md](../decoding.md#switches)). Fields: `validator`, `staker`, `set_at`, `set_block`, `set_tx`, `set_tx_url`.
 
 ### staking_withdrawals
 
@@ -315,14 +315,14 @@ One row per UTC day from 2026-03-04. It is also a dashboard query, scheduled dai
 | `deposits`, `withdrawals_requested`, `withdrawals_completed` | flows that day |
 | `withdrawals_completed_negative` | completed withdrawals as a negative number, for the chart |
 | `active_stake`, `outstanding_withdrawals`, `net_flow` | end-of-day levels |
-| `active_stake_beta` / `_production`, `withdrawals_requested_beta` / `_production` | the series split by era |
+| `active_stake_beta` / `_aegis`, `withdrawals_requested_beta` / `_aegis` | the series split by era |
 | `deposit_count`, `request_count`, `claim_count` | event counts that day |
 | `*_raw` | exact levels |
 | `through_block`, `as_of_time` | head of Dune's `ethereum.blocks` at execution |
 
 ### staking_period_stake
 
-One row per completed Aegis reward period and (staker, validator) with stake in it, from `staking_events` and production `validator_staker_history`. `refresh: none`.
+One row per completed Aegis reward period and (staker, validator) with stake in it, from `staking_events` and Aegis `validator_staker_history`. `refresh: none`.
 
 | Field | Meaning |
 | --- | --- |
@@ -359,7 +359,7 @@ The per-address payouts (`payouts` in the JSON, about 850 rows per period) are k
 
 - Contract source and semantics: `safe-research/safenet` `contracts/src/Staking.sol`, `contracts/src/Consensus.sol` (`setValidatorStaker`, `getValidatorStaker`) and `docs/configuration.md` §Staking, at `4ed5101`.
 - Decoded tables on Dune: `safe_ethereum.Staking_evt_StakeIncreased`, `_WithdrawalInitiated`, `_WithdrawalClaimed`, `_ValidatorUpdated`, `_WithdrawDelayChanged`, `_TokensRecovered`. The table names are confirmed by the Validate workflow's SQL check, and the coverage by the verification below.
-- Constants and topic0 values are in `src/safenet.ts` (`STAKING`, `VALIDATOR_STAKER_SET`, `PRODUCTION_START_TIME`). `test/safenet.test.ts` recomputes every topic0 and checks that the SQL uses these constants.
+- Constants and topic0 values are in `src/safenet.ts` (`STAKING`, `VALIDATOR_STAKER_SET`, `AEGIS_START_TIME`). `test/safenet.test.ts` recomputes every topic0 and checks that the SQL uses these constants.
 - Names: `safe-fndn/safenet-data` `assets/validator-info.json`, via `safenet_participant_labels`.
 - The separately maintained [safe/safenet-staking](https://dune.com/safe/safenet-staking) dashboard was reference material only. Nothing in it is read or changed.
 

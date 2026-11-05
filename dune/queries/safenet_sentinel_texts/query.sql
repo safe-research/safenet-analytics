@@ -1,4 +1,4 @@
--- Safenet production: text recorded on chain with Sentinel votes and arbitration, one row per event,
+-- Safenet Aegis: text recorded on chain with Sentinel votes and arbitration, one row per event,
 -- from Dune's decoded SentinelOracle tables (docs/decoding.md); kept out of safenet_events so the
 -- shared model stays small. Definitions: docs/metrics/sentinels.md#disputes-and-arbitration.
 --
@@ -29,5 +29,5 @@ select
     evt_block_number as block_number,
     'https://gnosisscan.io/tx/0x' || lower(to_hex(evt_tx_hash)) as tx_url
 from texts
-where contract_address = 0x4f61b8832978e83b80d69551aef07557dbe41d03 -- production SentinelOracle
+where contract_address = 0x4f61b8832978e83b80d69551aef07557dbe41d03 -- Aegis SentinelOracle
     and evt_block_number >= 48635850

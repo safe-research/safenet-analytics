@@ -19,7 +19,7 @@ import { parseArgs } from "node:util";
 import { DuneClient } from "../src/dune.ts";
 import { loadKnownSafes } from "../src/known-traffic.ts";
 import { safeTxUrl, txUrl } from "../src/links.ts";
-import { FEE_TOKEN, PRODUCTION } from "../src/safenet.ts";
+import { FEE_TOKEN, AEGIS } from "../src/safenet.ts";
 import { loadState } from "../src/state.ts";
 import {
   accounting,
@@ -119,7 +119,7 @@ const t = feeTotals(atHead);
 const obligations = t.fee_held + (t.rewards_accrued - t.rewards_claimed) + (t.bonds_locked - t.bonds_returned - t.bonds_slashed) + (t.receiver - t.receiver_out);
 const balanceOnChain = BigInt(
   await rpc.call<string>("eth_call", [
-    { to: FEE_TOKEN.address, data: `0x70a08231${PRODUCTION.sentinelOracle.address.slice(2).padStart(64, "0")}` },
+    { to: FEE_TOKEN.address, data: `0x70a08231${AEGIS.sentinelOracle.address.slice(2).padStart(64, "0")}` },
     `0x${head.toString(16)}`,
   ]),
 );

@@ -1,5 +1,5 @@
 -- Safenet validator signing participation over the last 24 hours, 7 days, 30 days and all of
--- production (rolling windows up to the query run). Definitions:
+-- Aegis (rolling windows up to the query run). Definitions:
 -- docs/metrics/validators.md#observed-signing-participation.
 --
 --   observed_participation   recognised shares / completed ceremonies of the validator's groups
@@ -17,7 +17,7 @@ windows as (
             (1, '24 hours', now() - interval '1' day),
             (2, '7 days', now() - interval '7' day),
             (3, '30 days', now() - interval '30' day),
-            (4, 'Production (since 2026-10-07)', timestamp '2026-10-07 13:51:55 UTC')
+            (4, 'Aegis (since 2026-10-07)', timestamp '2026-10-07 13:51:55 UTC')
     ) as t (sort_order, time_window, since)
 ),
 

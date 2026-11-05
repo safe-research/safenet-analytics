@@ -6,7 +6,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { parse } from "yaml";
 import { DEFAULT_ROOT, inlineSql, loadConfig, referencedColumns, type VisualizationSpec } from "../src/config.ts";
 import { loadParticipants } from "../src/participants.ts";
-import { BETA_CONSENSUS, BETA_COORDINATOR, BETA_REWARD_LOGS, BETA_TRANSACTION_ATTESTED, FROST_COORDINATOR, GENESIS_GROUP_ID, PRODUCTION, VALIDATOR_EVENTS, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { BETA_CONSENSUS, BETA_COORDINATOR, BETA_REWARD_LOGS, BETA_TRANSACTION_ATTESTED, FROST_COORDINATOR, GENESIS_GROUP_ID, AEGIS, VALIDATOR_EVENTS, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import { loadValidatorRewards, validatorRewardsSql, VALIDATOR_REWARDS_SQL_PATH } from "../src/validator-rewards.ts";
 import { VALIDATOR_COLORS } from "../src/validators.ts";
 
@@ -31,23 +31,23 @@ test("validator event signatures match their topic0 values", () => {
   for (const [name, e] of Object.entries(VALIDATOR_EVENTS)) assert.equal(hash(e.signature), e.topic0, name);
 });
 
-test("epochs come from production Consensus: the genesis group and every EpochStaged", async () => {
+test("epochs come from Aegis Consensus: the genesis group and every EpochStaged", async () => {
   const q = await read("validator_epochs");
-  assert.ok(q.includes(`contract_address = ${PRODUCTION.consensus.address}`) && q.includes("safe_gnosis.SafenetAegisConsensus_evt_EpochStaged"));
+  assert.ok(q.includes(`contract_address = ${AEGIS.consensus.address}`) && q.includes("safe_gnosis.SafenetAegisConsensus_evt_EpochStaged"));
   assert.ok(q.includes(GENESIS_GROUP_ID), "genesis group (getEpochGroupId(0))");
-  assert.ok(q.includes(String(PRODUCTION.consensus.deployBlock)));
+  assert.ok(q.includes(String(AEGIS.consensus.deployBlock)));
 });
 
-test("membership and ceremonies read the shared coordinator only through production Consensus", async () => {
+test("membership and ceremonies read the shared coordinator only through Aegis Consensus", async () => {
   const membership = await read("validator_membership");
   assert.ok(membership.includes(`contract_address = ${FROST_COORDINATOR.address}`) && membership.includes("safe_gnosis.SafenetAegisFROSTCoordinator_evt_KeyGenConfirmed"));
   assert.ok(membership.includes(String(FROST_COORDINATOR.deployBlock)));
-  assert.ok(membership.includes("{{query:validator_epochs}}"), "groups named by production Consensus");
+  assert.ok(membership.includes("{{query:validator_epochs}}"), "groups named by Aegis Consensus");
 
   const ceremonies = await read("validator_ceremonies");
   for (const name of ["Sign", "SignShared", "SignCompleted"]) assert.ok(ceremonies.includes(`safe_gnosis.SafenetAegisFROSTCoordinator_evt_${name}`), name);
   assert.equal((ceremonies.match(new RegExp(`contract_address = ${FROST_COORDINATOR.address}`, "g")) ?? []).length, 3, "every coordinator read");
-  assert.ok(ceremonies.includes(`initiator = ${PRODUCTION.consensus.address}`), "Sign initiator = production Consensus");
+  assert.ok(ceremonies.includes(`initiator = ${AEGIS.consensus.address}`), "Sign initiator = Aegis Consensus");
   for (const name of ["TransactionAttested", "EpochStaged"]) assert.ok(ceremonies.includes(`safe_gnosis.SafenetAegisConsensus_evt_${name}`), name);
   assert.ok(ceremonies.includes("{{query:validator_membership}}"));
 });
@@ -70,7 +70,7 @@ test("Beta Consensus is read only for the staker history and the Beta reward par
   assert.ok(b.includes(`block_number between ${BETA_REWARD_LOGS.fromBlock} and ${BETA_REWARD_LOGS.toBlock}`));
   assert.ok(b.includes(`block_date between date '${BETA_REWARD_LOGS.fromDate}' and date '${BETA_REWARD_LOGS.toDate}'`));
   const h = await read("validator_staker_history");
-  assert.ok(h.includes("safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet") && h.includes(`contract_address = ${PRODUCTION.consensus.address}`), "production from the decoded table");
+  assert.ok(h.includes("safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet") && h.includes(`contract_address = ${AEGIS.consensus.address}`), "Aegis from the decoded table");
   assert.ok(h.includes(`contract_address = ${BETA_CONSENSUS.address}`) && h.includes(VALIDATOR_STAKER_SET.topic0), "Beta from raw logs");
 });
 

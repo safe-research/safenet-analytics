@@ -1,4 +1,4 @@
--- Safenet production: Sentinel earnings per Sentinel, all time, with transaction-fee rewards (USDC.e)
+-- Safenet Aegis: Sentinel earnings per Sentinel, all time, with transaction-fee rewards (USDC.e)
 -- and SAFE subsidies in separate columns, never added together. Bonds are not earnings and are in
 -- sentinel_bonds. Definitions: docs/metrics/sentinels.md#earnings.
 --

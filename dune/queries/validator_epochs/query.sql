@@ -1,4 +1,4 @@
--- Safenet production epochs (Gnosis Chain), one row per epoch with the FROST group that attests in it.
+-- Safenet Aegis epochs (Gnosis Chain), one row per epoch with the FROST group that attests in it.
 -- Definitions: docs/metrics/validators.md#validator_epochs. Shared model. Reads Dune's decoded
 -- Consensus tables (docs/decoding.md).
 --

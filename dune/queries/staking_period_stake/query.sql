@@ -12,7 +12,7 @@
 --                          (ValidatorUpdated): the stake the reward scripts count
 --   self_stake_seconds_raw the registered part held by the validator's registered staker at the time
 --                          (ValidatorStakerSet, validator_staker_history: Beta Consensus until the
---                          production start, production Consensus after; the intervals do not overlap)
+--                          Aegis start, Aegis Consensus after; the intervals do not overlap)
 --   avg_*                  stake seconds / period seconds, in SAFE: the average over the period
 -- Stake is counted whether or not the validator met the participation threshold; eligibility is
 -- applied in staking_period_validators.
@@ -38,7 +38,7 @@ periods as (
     from (
         select p_to, 'beta' as era from unnest(sequence(cast(1776729600 as bigint), cast(1791244800 as bigint), cast(1209600 as bigint))) as b (p_to)
         union all
-        select p_to, 'production' from unnest(sequence(cast(1793059200 as bigint), cast(to_unixtime(now()) as bigint), cast(1209600 as bigint))) as a (p_to)
+        select p_to, 'aegis' from unnest(sequence(cast(1793059200 as bigint), cast(to_unixtime(now()) as bigint), cast(1209600 as bigint))) as a (p_to)
     )
 ),
 
@@ -64,7 +64,7 @@ registrations as (
     where event = 'validator_updated'
 ),
 
--- Production registered stakers (Gnosis Chain), as intervals.
+-- Aegis registered stakers (Gnosis Chain), as intervals.
 stakers as (
     select validator, staker, cast(to_unixtime(valid_from) as bigint) as s_from,
         coalesce(cast(to_unixtime(valid_to) as bigint), 9999999999) as s_to

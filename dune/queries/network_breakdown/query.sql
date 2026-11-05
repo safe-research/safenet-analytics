@@ -1,4 +1,4 @@
--- Safenet production activity by the network of the checked Safe (the chain in the proposal's
+-- Safenet Aegis activity by the network of the checked Safe (the chain in the proposal's
 -- safeId), all time. The Sentinel Oracle and Consensus run on Gnosis Chain for every network;
 -- that is not the network shown here. Networks outside the Charter are listed as test traffic and
 -- are not part of the headline totals. Definitions: docs/metrics/network-and-revenue.md.

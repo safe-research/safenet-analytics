@@ -1,19 +1,19 @@
--- Current transaction guard of every Safe that ever set a verified production SafenetGuard, per
+-- Current transaction guard of every Safe that ever set a verified Aegis SafenetGuard, per
 -- chain. Safes emit ChangedGuard(address) on setGuard: Safe 1.3.0 logs the guard in data, 1.4.1
 -- and later as topic1 (same topic0). The latest event per Safe wins, so removing the guard
 -- (address 0) or replacing it with another guard ends Guard-enabled status. Module guards
 -- (ChangedModuleGuard) are ignored: SafenetGuard is a transaction guard only.
--- Guard-enabled means the Safe's current guard is a verified production guard
--- (safenet_guards.verified_production). Using Safenet checks without the guard is not counted.
+-- Guard-enabled means the Safe's current guard is a verified Aegis guard
+-- (safenet_guards.verified_aegis). Using Safenet checks without the guard is not counted.
 
 with
 
 guards as (
     select * from {{query:safenet_guards}}
-    where verified_production
+    where verified_aegis
 ),
 
--- Only from the first production guard's deployment; before it no Safe can have set one. The
+-- Only from the first Aegis guard's deployment; before it no Safe can have set one. The
 -- static bound below keeps the scan bounded even without a verified guard.
 since as (
     select coalesce(cast(min(deployed_at) as date), date '9999-12-31') as first_day from guards
@@ -42,7 +42,7 @@ changes as (
         and block_date >= date '2026-09-01' -- static bound for partition pruning
 ),
 
--- Safes that ever set a production guard, and their latest guard change on that chain.
+-- Safes that ever set an Aegis guard, and their latest guard change on that chain.
 relevant as (
     select distinct c.chain_id, c.safe
     from changes as c

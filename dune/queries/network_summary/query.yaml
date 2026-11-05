@@ -1,6 +1,6 @@
 name: "Safenet: network and fee summary"
 description: >
-  Safenet production (Aegis): requests, unique Safe transactions, Sentinel responses, completed
+  Safenet Aegis: requests, unique Safe transactions, Sentinel responses, completed
   results, attestations, Safes, gross fees and refunds for the last 24 hours, 7 days, 30 days and
   all time, with data freshness. Managed in github.com/safe-research/safenet-analytics
   (docs/metrics/network-and-revenue.md).

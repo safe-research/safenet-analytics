@@ -1,17 +1,17 @@
 -- Safenet staking rewards by reward period, as published (safe-fndn/safenet-data assets/rewards), Beta
--- and production. Definitions: docs/metrics/validators.md#rewards.
+-- and Aegis. Definitions: docs/metrics/validators.md#rewards.
 --
 -- A period ends at a published rewards_until; its allocation is the change in the cumulative
 -- published amounts from the previous period's last root (re-issues of the same period, such as KYC
 -- releases, are merged into it). Amounts include KYC-withheld SAFE.
 --   validator_stakers   addresses registered as a validator's staker during the period (Beta or
---                       production Consensus), and the commission beneficiaries of a verified split
+--                       Aegis Consensus), and the commission beneficiaries of a verified split
 --                       (DelegateRegistry delegates): their commission and own-stake reward together
 --   delegators          everything else allocated in the period, minus Sentinel grants
 --   commission          not in the published files. Shown only from a verified split, derived from the
 --                       published payouts and chain data (safenet_reward_breakdown), Beta and Aegis
--- Production periods (two weeks from 2026-10-13) that have ended but are not published yet are listed
--- with no amounts, never 0. 2026-10-06 to 2026-10-13 is the gap between Beta and production.
+-- Aegis periods (two weeks from 2026-10-13) that have ended but are not published yet are listed
+-- with no amounts, never 0. 2026-10-06 to 2026-10-13 is the gap between Beta and Aegis.
 
 with
 
@@ -36,7 +36,7 @@ periods as (
 ordered as (
     select
         *,
-        -- Production periods start on 2026-10-13 at the earliest: 2026-10-06 to 2026-10-13 is the gap
+        -- Aegis periods start on 2026-10-13 at the earliest: 2026-10-06 to 2026-10-13 is the gap
         if(period_end > timestamp '2026-10-13 00:00:00',
             greatest(coalesce(lag(period_end) over (order by period_end), timestamp '2026-10-13 00:00:00'), timestamp '2026-10-13 00:00:00'),
             coalesce(lag(period_end) over (order by period_end), timestamp '2026-04-07 00:00:00')) as period_start,
@@ -93,7 +93,7 @@ published as (
     select
         o.period_start,
         o.period_end,
-        if(o.period_end <= timestamp '2026-10-07 13:51:55', 'beta', 'production') as era,
+        if(o.period_end <= timestamp '2026-10-07 13:51:55', 'beta', 'aegis') as era,
         'published' as status,
         cast(o.token_total as double) / 1e18 - cast(o.previous_total as double) / 1e18 as total_allocated,
         coalesce(sa.validator_stakers_raw, 0) / 1e18 as validator_stakers,
@@ -110,7 +110,7 @@ published as (
     left join commission as cm on cm.period_end = o.period_end
 ),
 
--- production periods that have ended (two weeks from 2026-10-13) but are not published
+-- Aegis periods that have ended (two weeks from 2026-10-13) but are not published
 expected as (
     select
         date_add('day', -14, e) as period_start,
@@ -120,7 +120,7 @@ expected as (
 
 select
     date_format(period_start, '%Y-%m-%d') || ' – ' || date_format(period_end, '%Y-%m-%d')
-        || if(era = 'beta', ' (Beta)', ' (production)') as period,
+        || if(era = 'beta', ' (Beta)', ' (Aegis)') as period,
     era,
     status,
     period_start,
@@ -142,8 +142,8 @@ select
 from published
 union all
 select
-    date_format(e.period_start, '%Y-%m-%d') || ' – ' || date_format(e.period_end, '%Y-%m-%d') || ' (production)',
-    'production', 'not yet published', e.period_start, e.period_end,
+    date_format(e.period_start, '%Y-%m-%d') || ' – ' || date_format(e.period_end, '%Y-%m-%d') || ' (Aegis)',
+    'aegis', 'not yet published', e.period_start, e.period_end,
     null, null, null, null, null, 'not published', null, null, null, null
 from expected as e
 where not exists (select 1 from periods as p where p.period_end = e.period_end)

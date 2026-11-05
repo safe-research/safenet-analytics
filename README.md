@@ -1,6 +1,6 @@
 # safenet-analytics
 
-Safenet production analytics on Dune, managed from GitHub. The overview is [dune.com/safe/safenet](https://dune.com/safe/safenet), owned by the `safe` team. Each section has its own dashboard, linked from the overview's section boxes and its arbitration counter:
+Safenet Aegis analytics on Dune, managed from GitHub. The overview is [dune.com/safe/safenet](https://dune.com/safe/safenet), owned by the `safe` team. Each section has its own dashboard, linked from the overview's section boxes and its arbitration counter:
 
 | Dashboard | URL | Contents |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ docs/                         documentation
 | Staking models (not displayed, shared with the Validators section): events, validator stakers, withdrawals, positions, validators | `staking_events`, `staking_validator_stakers`, `staking_withdrawals`, `staking_positions`, `staking_validators` | [docs/metrics/staking.md](docs/metrics/staking.md#models) |
 | Validators: overview (attestation set, staking registration, stake and shares, participation, last signature share), stake by status, participation by window and per day, stake history, rewards by period and by staker, withdrawal exposure | `validator_overview`, `validator_stake_status`, `validator_participation_windows`, `validator_participation_daily`, `validator_stake_daily`, `validator_stake_split_daily`, `validator_rewards_periods`, `validator_rewards_by_staker`, `validator_withdrawal_exposure` | [docs/metrics/validators.md](docs/metrics/validators.md) |
 | Validator models (not displayed): epochs, attestation-set membership, signing ceremonies, staker history, published rewards | `validator_epochs`, `validator_membership`, `validator_ceremonies`, `validator_staker_history`, `safenet_validator_rewards` | [docs/metrics/validators.md](docs/metrics/validators.md#models) |
-| Decoded production events (shared, not displayed) | `safenet_events` | [docs/decoding.md](docs/decoding.md) |
+| Decoded Aegis events (shared, not displayed) | `safenet_events` | [docs/decoding.md](docs/decoding.md) |
 | Participant labels (shared, not displayed) | `safenet_participant_labels` | [src/participants.ts](src/participants.ts) |
 
 ## Documentation

@@ -1,10 +1,10 @@
--- Safenet production signing ceremonies: one row per (ceremony, member of its group), with whether
+-- Safenet Aegis signing ceremonies: one row per (ceremony, member of its group), with whether
 -- that member's signature share counted. Definitions: docs/metrics/validators.md#validator_ceremonies.
 -- Shared model.
 --
 -- Ceremonies are FROSTCoordinator.Sign(initiator, gid, message, sid, sequence) with initiator =
--- production Consensus, on a group of validator_membership. The coordinator is shared with the
--- Aegis testnet; the initiator and the group keep only production.
+-- Aegis Consensus, on a group of validator_membership. The coordinator is shared with the
+-- Aegis testnet; the initiator and the group keep only Aegis.
 --   completed   SignCompleted(sid, selectionRoot, signature) exists. Pending ceremonies have no
 --               result yet and are no opportunity in any rate.
 --   signed      the member has a SignShared(sid, selectionRoot, participant, z) with the selectionRoot
@@ -18,8 +18,8 @@
 
 with
 
--- One row per signature id: the ceremony (Sign by production Consensus) and its result. The
--- coordinator is shared with the Aegis testnet; ceremonies need a production Sign.
+-- One row per signature id: the ceremony (Sign by Aegis Consensus) and its result. The
+-- coordinator is shared with the Aegis testnet; ceremonies need an Aegis Sign.
 ceremonies as (
     select
         sid,
@@ -35,7 +35,7 @@ ceremonies as (
             cast(null as bigint) as completed_block, cast(null as varbinary) as completed_tx, 1 as is_sign
         from safe_gnosis.SafenetAegisFROSTCoordinator_evt_Sign
         where contract_address = 0xc6b34da4c99c043a093214d58423a8be39585b78
-            and initiator = 0xc855761d619f6002923507ce68b84d7689c2aa96 -- production Consensus
+            and initiator = 0xc855761d619f6002923507ce68b84d7689c2aa96 -- Aegis Consensus
             and evt_block_number >= 48617821
         union all
         select sid, null, null, selectionRoot, evt_block_time, evt_block_number, evt_tx_hash, 0
@@ -59,7 +59,7 @@ shares as (
         and evt_block_number >= 48617821
 ),
 
--- Signature ids of attested transactions and staged epochs (production Consensus).
+-- Signature ids of attested transactions and staged epochs (Aegis Consensus).
 purposes as (
     select signatureId as sid, 'transaction' as purpose, evt_block_time as attested_at, evt_block_number as attested_block
     from safe_gnosis.SafenetAegisConsensus_evt_TransactionAttested

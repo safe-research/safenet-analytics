@@ -1,4 +1,4 @@
--- Safenet production: every disputed request, with each Sentinel's own vote, the Oracle result and
+-- Safenet Aegis: every disputed request, with each Sentinel's own vote, the Oracle result and
 -- the arbitration status and ruling as separate columns. Definitions:
 -- docs/metrics/sentinels.md#disputes-and-arbitration.
 --

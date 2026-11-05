@@ -1,20 +1,20 @@
--- Each validator's registered staker over time, Beta and production: one row per
+-- Each validator's registered staker over time, Beta and Aegis: one row per
 -- Consensus.ValidatorStakerSet(validator indexed, staker), with the interval in which it applies.
 -- Definitions: docs/metrics/validators.md#validator_staker_history. Shared model, for history only:
--- current self-stake uses staking_validator_stakers (production) as in the Staking section.
+-- current self-stake uses staking_validator_stakers (Aegis) as in the Staking section.
 --
--- Beta (Consensus 0x2236…cEE9) and production (0xc855…aa96) each kept their own registrations. A
--- Beta setting applies until the production start (2026-10-07 13:51:55 UTC); a production setting
+-- Beta (Consensus 0x2236…cEE9) and Aegis (0xc855…aa96) each kept their own registrations. A
+-- Beta setting applies until the Aegis start (2026-10-07 13:51:55 UTC); an Aegis setting
 -- from its block on. Each applies until the next setting for the validator in the same era.
--- Between the production start and a validator's first production setting there is no registered
--- staker (self-stake unknown). Production settings come from Dune's decoded Consensus table; Beta
+-- Between the Aegis start and a validator's first Aegis setting there is no registered
+-- staker (self-stake unknown). Aegis settings come from Dune's decoded Consensus table; Beta
 -- Consensus is not decoded, so its settings are read from raw logs (docs/decoding.md).
 
 with
 
 sets as (
     select
-        'production' as era,
+        'aegis' as era,
         validator,
         staker,
         evt_block_time as valid_from,
@@ -22,7 +22,7 @@ sets as (
         evt_tx_hash as tx_hash,
         evt_index as log_index
     from safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet
-    where contract_address = 0xc855761d619f6002923507ce68b84d7689c2aa96 -- production Consensus
+    where contract_address = 0xc855761d619f6002923507ce68b84d7689c2aa96 -- Aegis Consensus
         and evt_block_number >= 48635843
     union all
     select

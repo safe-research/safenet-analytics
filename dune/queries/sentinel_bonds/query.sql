@@ -1,4 +1,4 @@
--- Safenet production: Sentinel bonds per Sentinel, in USDC.e. Current balances first, then all-time
+-- Safenet Aegis: Sentinel bonds per Sentinel, in USDC.e. Current balances first, then all-time
 -- bond movements. Definitions: docs/metrics/sentinels.md#bonds.
 --
 -- There is no bond account in the Sentinel Oracle: each commit transfers the request's bond

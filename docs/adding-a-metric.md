@@ -2,11 +2,11 @@
 
 1. **Define it first.** Write `docs/metrics/<name>.md` with:
    - what is counted;
-   - which production contracts and events are used, with sources;
+   - which Aegis contracts and events are used, with sources;
    - how test traffic is handled;
    - known limitations.
 
-   Use production contracts only (see [transaction-checks.md](metrics/transaction-checks.md#sources)), and do not reuse Beta definitions. Beta ran different contracts.
+   Use Aegis contracts only (see [transaction-checks.md](metrics/transaction-checks.md#sources)), and do not reuse Beta definitions. Beta ran different contracts.
 2. **Add the query** as `dune/queries/<key>/query.sql`. `<key>` is lowercase with underscores and must stay stable: renaming the directory creates a new Dune query and archives the old one. Use [Dune's SQL](https://docs.dune.com/query-engine/overview). Read events from [`safenet_events`](../dune/queries/safenet_events/query.sql) with `{{query:safenet_events}}` instead of decoding raw logs again ([decoding.md](decoding.md)); add new event types there. References to other managed queries use the same `{{query:<key>}}` form and are remapped per environment ([deployment.md](deployment.md#query-references)). Put constants such as addresses and topic0 values in [`src/safenet.ts`](../src/safenet.ts), and add a test like `test/safenet.test.ts` that checks the SQL uses them. Use the URL columns of `safenet_events` for links, and `safenet_participant_labels` for participant names.
 3. **Describe it** in `dune/queries/<key>/query.yaml`:
 

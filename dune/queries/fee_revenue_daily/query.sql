@@ -1,4 +1,4 @@
--- Safenet production: transaction fees actually collected per UTC day, last 30 days, in USDC.e,
+-- Safenet Aegis: transaction fees actually collected per UTC day, last 30 days, in USDC.e,
 -- with the all-time cumulative total. Gross fees: the fee each request paid into the Sentinel Oracle
 -- (the amount recorded in its NewRequest, equal to the USDC.e transfer in the same transaction;
 -- scripts/verify-network-revenue.ts checks both). Refunds are shown separately on the day they
@@ -28,7 +28,7 @@ refunds as (
     group by 1
 ),
 
--- Fees before the 30-day window, so the running total counts from the first production request.
+-- Fees before the 30-day window, so the running total counts from the first Aegis request.
 before_window as (
     select coalesce(sum(fee), 0) as fee from fees where day < current_date - interval '29' day
 )

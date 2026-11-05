@@ -1,4 +1,4 @@
--- Safenet active stake per validator at the end of each UTC day, all time (Beta and production in one
+-- Safenet active stake per validator at the end of each UTC day, all time (Beta and Aegis in one
 -- Staking contract). Definitions: docs/metrics/validators.md#stake-history. Active stake follows the
 -- Staking section: deposits minus withdrawal requests (staking_events), per validator; the rows of a
 -- day add up to staking_daily.active_stake. The current day is partial.
@@ -35,7 +35,7 @@ labels as (
 
 select
     d.day,
-    if(d.day >= date '2026-10-07', 'production', 'beta') as era,
+    if(d.day >= date '2026-10-07', 'aegis', 'beta') as era,
     coalesce(lb.label, '0x' || lower(to_hex(l.validator))) as validator,
     cast(l.stake_raw as double) / 1e18 as active_stake,
     l.stake_raw as active_stake_raw,

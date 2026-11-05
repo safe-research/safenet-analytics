@@ -1,5 +1,5 @@
--- Safenet production: arbitration rate by request cohort. One row per window: requests proposed in
--- the last 24 hours, 7 days, 30 days and since production start. Definitions:
+-- Safenet Aegis: arbitration rate by request cohort. One row per window: requests proposed in
+-- the last 24 hours, 7 days, 30 days and since Aegis start. Definitions:
 -- docs/metrics/sentinels.md#arbitration-rate-and-resolution-time. Model: scripts/lib/arbitration.ts.
 --
 -- Population: requests for Safes on the Charter's chains, as in Network & revenue (operational
@@ -23,7 +23,7 @@ windows as (
             ('Last 24 hours', 1, now() - interval '24' hour),
             ('Last 7 days', 2, now() - interval '7' day),
             ('Last 30 days', 3, now() - interval '30' day),
-            ('Production, all time', 4, timestamp '2026-10-07 00:00:00 UTC') -- as network_summary
+            ('Aegis, all time', 4, timestamp '2026-10-07 00:00:00 UTC') -- as network_summary
     ) as t (time_window, sort_order, since)
 ),
 

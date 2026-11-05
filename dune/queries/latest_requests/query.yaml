@@ -1,6 +1,6 @@
 name: "Safenet: latest transaction-check requests"
 description: >
-  Safenet production (Aegis, Gnosis Chain): the 25 most recent transaction-check requests with
+  Safenet Aegis (Gnosis Chain): the 25 most recent transaction-check requests with
   outcome and links to the block explorers and the Safenet explorer. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/transaction-checks.md).
 private: false

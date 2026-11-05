@@ -3,7 +3,7 @@
 // at 4ed5101) and the rules of the staking models (docs/metrics/staking.md) in TypeScript, so the
 // Dune results and the contract's own state can be checked against each other.
 
-import { PRODUCTION_START_TIME, STAKING } from "../../src/safenet.ts";
+import { AEGIS_START_TIME, STAKING } from "../../src/safenet.ts";
 import { type Log, type Rpc, day, order, topicAddress, word } from "./recount.ts";
 
 const E = STAKING.events;
@@ -88,7 +88,7 @@ export const withdrawalStatus = (w: Withdrawal, now: number): WithdrawalStatus =
 
 export type StakingDay = {
   day: string;
-  era: "beta" | "production";
+  era: "beta" | "aegis";
   deposits: bigint;
   withdrawals_requested: bigint;
   withdrawals_completed: bigint;
@@ -99,10 +99,10 @@ export type StakingDay = {
 
 export type StakingState = ReturnType<typeof replay>;
 
-// Events are in production from the production Consensus deployment; days from its UTC day.
-const PRODUCTION_START = Date.parse(`${PRODUCTION_START_TIME.replace(" ", "T")}Z`) / 1000;
-export const era = (time: number) => (time >= PRODUCTION_START ? "production" : "beta");
-export const dayEra = (d: string) => (d >= PRODUCTION_START_TIME.slice(0, 10) ? "production" : "beta");
+// Events are in Aegis from the Aegis Consensus deployment; days from its UTC day.
+const AEGIS_START = Date.parse(`${AEGIS_START_TIME.replace(" ", "T")}Z`) / 1000;
+export const era = (time: number) => (time >= AEGIS_START ? "aegis" : "beta");
+export const dayEra = (d: string) => (d >= AEGIS_START_TIME.slice(0, 10) ? "aegis" : "beta");
 
 // Applies the events in order, exactly as the contract does, and returns the state after the last
 // one plus one row per UTC day from the deployment to `untilTime`.
