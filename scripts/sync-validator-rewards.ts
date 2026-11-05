@@ -20,8 +20,10 @@ import { parseArgs } from "node:util";
 import { contenthashHistory, DEFAULT_IPFS_GATEWAYS, fetchRewardsDb, proofTotals, REWARDS_ENS_NAME, type RewardsProof } from "../src/rewards-ipfs.ts";
 import { BETA_CONSENSUS, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import {
+  AEGIS_REWARDS_START,
   BETA_REWARDS_REF,
   loadValidatorRewards,
+  periodEnds,
   periodPayouts,
   proofPath,
   REWARDS_INDEX,
@@ -213,6 +215,16 @@ const data: ValidatorRewardData = {
   split_checks: previous?.split_checks ?? [],
 };
 await writeValidatorRewards(data);
+// Published Aegis periods without a verified split: how to record one (docs/metrics/staking.md#commission-split).
+const ends = periodEnds(roots);
+for (let i = 1; i < ends.length; i++) {
+  const r = ends[i];
+  if (r.rewards_until <= AEGIS_REWARDS_START || data.split_checks!.some((c) => c.rewards_until === r.rewards_until)) continue;
+  console.log(
+    `${r.rewards_until.slice(0, 10)}: no verified commission split. In safenet-staking-scripts: ` +
+      `npx tsx export-split.ts --previousCid=${ends[i - 1].cid ?? "<not pinned by ENS>"} > split.json; then: node scripts/record-reward-split.ts split.json`,
+  );
+}
 console.log(
   `${roots.length} roots (${roots.filter((r) => r.kind === "period").length} periods; ${roots.filter((r) => r.source === "ipfs").length} from IPFS), ` +
     `${entries.length} entries for ${addresses.length} validator stakers and beneficiaries, ${payouts.length} Aegis payouts; ` +

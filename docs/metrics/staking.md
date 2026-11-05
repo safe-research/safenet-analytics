@@ -115,7 +115,7 @@ APR (%) = stake rewards / time-weighted eligible stake × 365 days / period leng
 
 | Term | Definition |
 | --- | --- |
-| **Period** | Two weeks from 2026-10-13 00:00 UTC (`AEGIS_REWARDS_START` in safenet-staking-scripts `src/utils/sep.ts`). The first is 2026-10-13 to 2026-10-27. Beta periods have no APR. |
+| **Period** | Fixed two-week periods, Tuesday 00:00 UTC to Monday 23:59:59 UTC of the second week, from 2026-10-13 (`AEGIS_REWARDS_START` in safenet-staking-scripts `src/utils/sep.ts`). The first is 2026-10-13 to 2026-10-26 inclusive. They are known in advance: stake, participation and eligibility are computed for every period once it has ended, published or not. Published rewards attach to the period with the same start and end. The reward scripts publish exactly one such period per rewards DB, starting where the previous one ended (`src/distribution/export.ts`). The sync rejects a published root that is anything else. Beta periods have no APR. |
 | **Stake rewards** | SAFE allocated in the period minus Sentinel grants. It is the change of the published `tokenTotal − sentinelTokenTotal` from the previous period's last root. It includes every validator's and delegator's staking reward and the commission, and KYC-withheld amounts, which are allocated but not yet claimable. The programme's `unpaidAmount` (rounding dust) is not allocated and not included. |
 | **Sentinel grants** | `sentinelAmount` in the published proofs. They are a subsidy for Sentinels, not a return on stake, and are excluded from every APR. They are shown in the table as *excluded*, so the totals add up to the published amounts. A Sentinel address that also stakes counts only its staking reward. |
 | **Time-weighted stake** | Σ balance × seconds held, ÷ period seconds, per (staker, validator), from every `StakeIncreased` and `WithdrawalInitiated` at its block time (`staking_period_stake`). The balance at the period start is carried in. A withdrawal request leaves at once, as in the contract. This is exact event-time weighting, not daily snapshots. |
@@ -155,7 +155,12 @@ From safe-fndn/safenet-staking-scripts at `8401845` (`src/safenet.ts` `rewards()
 
 The published proofs give one amount per address. A split into staking reward and commission is recorded only from the reward scripts themselves, at a pinned commit, and only if it reproduces the published payout of **every** address exactly:
 
-1. In a checkout of safe-fndn/safenet-staking-scripts at the pinned commit, with safenet-data's `config/aegis.env`, run `npm run cmd:index`. Then run `npx tsx export-split.ts --rewardPeriodStart=<s> --rewardPeriodEnd=<e> > split.json`, with [`scripts/reward-split/export-split.ts`](../../scripts/reward-split/export-split.ts) copied in. It writes the scripts' `rewards()` and `sentinelRewards()` payouts per recipient (as `cmd:rewards --split`), and per validator its stats, participation, reward and commission. It also checks that the per-validator breakdown reproduces `rewards()` per payee.
+1. In a checkout of safe-fndn/safenet-staking-scripts at the commit production used, with safenet-data's `config/aegis.env`, run `npm run cmd:index`. Then copy in [`scripts/reward-split/export-split.ts`](../../scripts/reward-split/export-split.ts) and run `npx tsx export-split.ts --previousCid=<CID> > split.json`. `npm run sync:validator-rewards` prints this command, with the CID, for every published period without a split.
+   - As in the production export, nothing is chosen by hand: the period is the two weeks after the previous rewards DB, which is fetched by CID and verified, and the budget is measured against it, catch-up of earlier unpaid amounts included.
+   - Pinata's public gateway refuses some CIDs, so set `IPFS_GATEWAY_URL=https://ipfs.filebase.io` if needed.
+   - Rerun for 2026-10-27 with only the Beta-final CID, it gives output identical to the recorded split.
+
+   It writes the scripts' `rewards()` and `sentinelRewards()` payouts per recipient (as `cmd:rewards --split`), and per validator its stats, participation, reward and commission. It also checks that the per-validator breakdown reproduces `rewards()` per payee.
 2. `node scripts/record-reward-split.ts split.json`. It records nothing unless:
    - stake reward + commission + Sentinel grant = the published payout for every address;
    - the totals match the change of `tokenTotal` and `sentinelTokenTotal`;

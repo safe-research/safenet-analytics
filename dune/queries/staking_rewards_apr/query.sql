@@ -27,18 +27,18 @@ b as (
 ),
 
 published as (
-    select period_end, merkle_root, stake_rewards_raw, sentinel_raw, payout_raw, kyc_withheld_raw,
+    select period_start, period_end, merkle_root, stake_rewards_raw, sentinel_raw, payout_raw, kyc_withheld_raw,
         kyc_withheld_stake_raw, payout_addresses, commission_raw, scripts_commit
     from b
     where kind_row = 'period'
 ),
 
 split as (
-    select period_end, sum(cast(delegator_reward_raw as double)) / 1e18 as delegator_rewards,
+    select period_start, period_end, sum(cast(delegator_reward_raw as double)) / 1e18 as delegator_rewards,
         sum(cast(self_reward_raw as double)) / 1e18 as self_rewards
     from b
     where kind_row = 'validator'
-    group by 1
+    group by 1, 2
 ),
 
 on_chain as (
@@ -79,8 +79,9 @@ rows_ as (
         x.delegator_rewards,
         365.0 * 86400 / s.period_seconds as annualization
     from stake as s
-    left join published as p on p.period_end = s.period_end
-    left join split as x on x.period_end = s.period_end
+    -- rewards attach to the fixed period with the same start and end, never to another period
+    left join published as p on p.period_start = s.period_start and p.period_end = s.period_end
+    left join split as x on x.period_start = s.period_start and x.period_end = s.period_end
     left join on_chain as c on c.new_root = p.merkle_root
 )
 

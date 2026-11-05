@@ -31,7 +31,7 @@ split as (
 ),
 
 published as (
-    select period_end from b where kind_row = 'period'
+    select period_start, period_end from b where kind_row = 'period'
 ),
 
 rows_ as (
@@ -48,8 +48,9 @@ rows_ as (
         x.scripts_commit,
         365.0 * 86400 / date_diff('second', v.period_start, v.period_end) as annualization
     from v
-    left join published as p on p.period_end = v.period_end
-    left join split as x on x.period_end = v.period_end and x.validator = v.validator_address
+    -- rewards attach to the fixed period with the same start and end, never to another period
+    left join published as p on p.period_start = v.period_start and p.period_end = v.period_end
+    left join split as x on x.period_start = v.period_start and x.period_end = v.period_end and x.validator = v.validator_address
     where v.avg_stake_all > 0
 )
 

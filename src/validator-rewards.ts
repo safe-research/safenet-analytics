@@ -26,9 +26,28 @@ export { proofPath, REWARDS_INDEX, REWARDS_SOURCE } from "./sentinel-rewards.ts"
 
 // Last safenet-data commit that changed assets/rewards (Beta period 13, 2026-10-06; then frozen).
 export const BETA_REWARDS_REF = "276526f6c0b204fa7d5aa4f788c0b7983b08bc7f";
-// Aegis periods: two weeks from 2026-10-13 (safenet-staking-scripts src/utils/sep.ts).
+// Aegis periods: fixed two-week periods from Tuesday 2026-10-13 00:00 UTC, each Tuesday 00:00 to the
+// second-next Tuesday 00:00 (Monday 23:59:59 inclusive), known in advance whether published or not
+// (safenet-staking-scripts src/utils/sep.ts). The reward scripts publish exactly one such period per
+// rewards DB, starting where the previous one ended (src/distribution/export.ts, MerkleDb.distribute).
 export const AEGIS_REWARDS_START = "2026-10-13T00:00:00.000Z";
+export const BETA_REWARDS_UNTIL = "2026-10-06T00:00:00.000Z";
 export const PERIOD_SECONDS = 14 * 86400;
+const unixOf = (iso: string) => Date.parse(iso) / 1000;
+
+// The fixed Aegis period ending at `end` (ISO), or an error why a published root is not one: it
+// must end on the two-week grid and start where the previous published period ended (Beta's last
+// period is followed by the gap week, then the first Aegis period).
+export function aegisPeriodOf(end: string, previousEnd: string): { start: string; end: string } {
+  const e = unixOf(end);
+  const start = e - PERIOD_SECONDS;
+  if ((e - unixOf(AEGIS_REWARDS_START)) % PERIOD_SECONDS !== 0 || e <= unixOf(AEGIS_REWARDS_START))
+    throw new Error(`published rewardsUntil ${end} is not the end of a two-week Aegis period (Tuesday 00:00 UTC from ${AEGIS_REWARDS_START})`);
+  const expectedPrevious = start === unixOf(AEGIS_REWARDS_START) ? unixOf(BETA_REWARDS_UNTIL) : start;
+  if (unixOf(previousEnd) !== expectedPrevious)
+    throw new Error(`published period ending ${end} does not start where the previous one (${previousEnd}) ended: not exactly one two-week Aegis period`);
+  return { start: new Date(start * 1000).toISOString(), end: new Date(e * 1000).toISOString() };
+}
 
 // One published root. kind: "period" ends a new reward period (new rewards_until); "reissue"
 // republishes the same period (for example KYC releases). Roots before the launch reset
@@ -148,6 +167,7 @@ export function periodPayouts(
   for (let i = 1; i < ends.length; i++) {
     const cur = ends[i];
     if (cur.rewards_until <= AEGIS_REWARDS_START) continue;
+    aegisPeriodOf(cur.rewards_until, ends[i - 1].rewards_until); // throws unless exactly one grid period
     const now = proofs.get(cur.merkle_root);
     const before = proofs.get(ends[i - 1].merkle_root);
     if (!now || !before) throw new Error(`payouts for ${cur.rewards_until}: proofs of ${now ? ends[i - 1].merkle_root : cur.merkle_root} missing`);
@@ -227,19 +247,22 @@ export function periodTotals(data: ValidatorRewardData) {
 
 export function rewardBreakdownSql(data: ValidatorRewardData): string {
   const roots = new Map(periodEnds(data.roots).map((r) => [r.rewards_until, r]));
+  const start = (until: string) => ts(new Date(unixOf(until) * 1000 - PERIOD_SECONDS * 1000).toISOString());
   const periods = [...periodTotals(data)].map(([until, t]) => {
     const c = (data.split_checks ?? []).find((x) => x.rewards_until === until);
-    return `    ('period', ${ts(until)}, ${roots.get(until)!.merkle_root}, cast(null as varbinary), cast(null as varbinary), ${u256(t.payout.toString())}, ${u256((t.payout - t.sentinel).toString())}, ${u256(t.sentinel.toString())}, ${u256(t.kycWithheld.toString())}, ${u256(t.kycWithheldStake.toString())}, ${t.addresses}, cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as integer), cast(null as boolean), cast(null as boolean), cast(null as uint256), cast(null as uint256), cast(null as uint256), ${c ? u256(c.commission) : "cast(null as uint256)"}, ${c ? sqlString(c.scripts_commit) : "cast(null as varchar)"})`;
+    return `    ('period', ${start(until)}, ${ts(until)}, ${roots.get(until)!.merkle_root}, cast(null as varbinary), cast(null as varbinary), ${u256(t.payout.toString())}, ${u256((t.payout - t.sentinel).toString())}, ${u256(t.sentinel.toString())}, ${u256(t.kycWithheld.toString())}, ${u256(t.kycWithheldStake.toString())}, ${t.addresses}, cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as integer), cast(null as boolean), cast(null as boolean), cast(null as uint256), cast(null as uint256), cast(null as uint256), ${c ? u256(c.commission) : "cast(null as uint256)"}, ${c ? sqlString(c.scripts_commit) : "cast(null as varchar)"})`;
   });
   const validators = (data.validator_periods ?? []).map(
     (v) =>
-      `    ('validator', ${ts(v.rewards_until)}, ${roots.get(v.rewards_until)!.merkle_root}, ${v.validator}, ${v.beneficiary}, cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as integer), ${u256(v.avg_stake)}, ${u256(v.avg_self_stake)}, ${v.signed}, ${v.transactions}, ${v.eligible}, ${v.commission_charged}, ${u256(v.reward)}, ${u256(v.self_reward)}, ${u256(v.delegator_reward)}, ${u256(v.commission)}, ${sqlString(v.scripts_commit)})`,
+      `    ('validator', ${start(v.rewards_until)}, ${ts(v.rewards_until)}, ${roots.get(v.rewards_until)!.merkle_root}, ${v.validator}, ${v.beneficiary}, cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as integer), ${u256(v.avg_stake)}, ${u256(v.avg_self_stake)}, ${v.signed}, ${v.transactions}, ${v.eligible}, ${v.commission_charged}, ${u256(v.reward)}, ${u256(v.self_reward)}, ${u256(v.delegator_reward)}, ${u256(v.commission)}, ${sqlString(v.scripts_commit)})`,
   );
   return `-- Aegis reward periods as published, and verified per-validator rewards. Generated by
 -- \`npm run sync:validator-rewards\` and scripts/record-reward-split.ts; do not edit by hand.
 -- src/validator-rewards.ts, docs/metrics/staking.md#realized-apr
 ${header(data)}.
 --
+-- Periods are the fixed two-week Aegis periods [period_start, period_end): Tuesday 00:00 UTC to the
+-- second-next Tuesday 00:00, from 2026-10-13. The sync rejects a published root that is not exactly one.
 -- kind_row = 'period': one row per published Aegis period, summed over the per-address payouts (the
 --   change of every address's published amounts from the previous period's last root; base units):
 --     payout_raw              everything allocated in the period (= change of tokenTotal)
@@ -255,14 +278,14 @@ ${header(data)}.
 --     commission_charged                  avg self-stake >= 3.5M SAFE (5% of delegated rewards)
 --     reward_raw = self_reward_raw + delegator_reward_raw (net) + commission_raw (to beneficiary)
 
-select kind_row, period_end, merkle_root, validator, beneficiary, payout_raw, stake_rewards_raw, sentinel_raw,
+select kind_row, period_start, period_end, merkle_root, validator, beneficiary, payout_raw, stake_rewards_raw, sentinel_raw,
     kyc_withheld_raw, kyc_withheld_stake_raw, payout_addresses, avg_stake_raw, avg_self_stake_raw, signed,
     transactions, eligible, commission_charged, reward_raw, self_reward_raw, delegator_reward_raw,
     commission_raw, scripts_commit
 from (
     values
-${[...periods, ...validators].join(",\n") || "    ('none', cast(null as timestamp), cast(null as varbinary), cast(null as varbinary), cast(null as varbinary), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as integer), cast(null as boolean), cast(null as boolean), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as varchar))"}
-) as t (kind_row, period_end, merkle_root, validator, beneficiary, payout_raw, stake_rewards_raw, sentinel_raw,
+${[...periods, ...validators].join(",\n") || "    ('none', cast(null as timestamp), cast(null as timestamp), cast(null as varbinary), cast(null as varbinary), cast(null as varbinary), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as integer), cast(null as boolean), cast(null as boolean), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as varchar))"}
+) as t (kind_row, period_start, period_end, merkle_root, validator, beneficiary, payout_raw, stake_rewards_raw, sentinel_raw,
     kyc_withheld_raw, kyc_withheld_stake_raw, payout_addresses, avg_stake_raw, avg_self_stake_raw, signed,
     transactions, eligible, commission_charged, reward_raw, self_reward_raw, delegator_reward_raw,
     commission_raw, scripts_commit)

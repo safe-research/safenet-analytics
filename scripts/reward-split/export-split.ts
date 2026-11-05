@@ -6,22 +6,31 @@
 //   git checkout <commit> && npm ci
 //   cp <this repo>/scripts/reward-split/export-split.ts . && set -a && . <safenet-data>/config/aegis.env && set +a
 //   DATABASE_FILE=/tmp/safenet.aegis.db npm run cmd:index
-//   DATABASE_FILE=/tmp/safenet.aegis.db npx tsx export-split.ts --rewardPeriodStart=<s> --rewardPeriodEnd=<e> > split.json
+//   DATABASE_FILE=/tmp/safenet.aegis.db IPFS_GATEWAY_URL=https://ipfs.filebase.io \
+//     npx tsx export-split.ts --previousCid=<CID of the rewards DB before the period> > split.json
 //
+// `npm run sync:validator-rewards` prints the command for every published period without a split.
 // Output: the scripts' rewards() and sentinelRewards() payouts per recipient (the same as
 // `cmd:rewards --split`), and per validator its validatorStats, participation and the formula's
 // intermediate values (src/safenet.ts rewards()). The per-validator breakdown is recomputed here from
 // the public stats; `reproduced` reports whether it gives exactly the scripts' payouts per payee.
 // scripts/record-reward-split.ts then checks everything against the published payouts.
 //
-// The budget is the first-period formula, 5M SAFE × period / 52 weeks, unless --totalRewards (SAFE)
-// is given: later periods add the catch-up of unpaid amounts (src/utils/args.ts totalRewardsAmount
-// with the previous rewards DB), so pass the amount `cmd:verify` reports for them.
+// As in the production export (src/distribution/export.ts), nothing is chosen by the caller: the
+// period is the two weeks starting where the previous rewards DB ends (nextRewardsStart), and the
+// budget is the Aegis default measured against the previous rewards DB (totalRewardsAmount), which
+// includes the catch-up of earlier unpaid amounts. The previous DB is fetched by CID and verified.
 
 import { execSync } from "node:child_process";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { CID } from "multiformats/cid";
 import { parseUnits } from "viem";
 import { z } from "zod";
 import { AEGIS_PARAMETERS } from "./src/config/aegis.js";
+import { fetchRewardsDb } from "./src/distribution/previous.js";
+import { MerkleDb, nextRewardsStart } from "./src/merkledb/index.js";
 import { Safenet } from "./src/safenet.js";
 import { main, rewardsPeriod, sentinelRewardsAmount, totalRewardsAmount } from "./src/utils/args.js";
 
@@ -40,15 +49,25 @@ const COMMISSION_BPS = 500n;
 
 main(
   {
-    rewardPeriodStart: z.coerce.bigint(),
-    rewardPeriodEnd: z.coerce.bigint(),
-    totalRewards: z.string().transform((v) => parseUnits(v, 18)).optional(),
+    previousCid: z.string().min(1),
+    ipfsGatewayUrl: z.string().optional(),
   },
   async (args) => {
+    const dir = await mkdtemp(join(tmpdir(), "previous-rewards-db-"));
+    let previous: Awaited<ReturnType<typeof fetchRewardsDb>>;
+    try {
+      // Verified against the CID before anything is read (unpackCar).
+      previous = await fetchRewardsDb(CID.parse(args.previousCid), { ipfsGatewayUrl: args.ipfsGatewayUrl }, join(dir, "db"));
+    } catch (e) {
+      await rm(dir, { recursive: true, force: true });
+      throw e;
+    }
+    const period = rewardsPeriod({ rewardPeriodStart: nextRewardsStart(previous.rewardsUntil) });
+    const periodArgs = { rewardPeriodStart: period.fromTimestamp, rewardPeriodEnd: period.toTimestamp };
+    const budget = await totalRewardsAmount(periodArgs, new MerkleDb({ root: previous.dir }));
+    await rm(dir, { recursive: true, force: true });
+    const perSentinel = sentinelRewardsAmount(periodArgs);
     const safenet = await Safenet.create({ ...args, ...AEGIS_PARAMETERS });
-    const period = rewardsPeriod(args);
-    const budget = await totalRewardsAmount(args);
-    const perSentinel = sentinelRewardsAmount(args);
     const stats = await safenet.validatorStats(period);
     const participation = await safenet.participation(period);
     const official = await safenet.rewards(period, budget, 0n);
@@ -106,6 +125,7 @@ main(
     const s = (v: bigint) => v.toString();
     const out = {
       scripts_commit: execSync("git rev-parse HEAD").toString().trim(),
+      previous_cid: args.previousCid,
       period: { start: Number(period.fromTimestamp), end: Number(period.toTimestamp) },
       budget: s(budget),
       unpaid: s(official.unpaid),

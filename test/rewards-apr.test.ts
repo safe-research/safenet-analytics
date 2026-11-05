@@ -19,6 +19,7 @@ import {
   rewardsDbFromCar,
 } from "../src/rewards-ipfs.ts";
 import {
+  aegisPeriodOf,
   loadValidatorRewards,
   periodEnds,
   periodPayouts,
@@ -167,6 +168,28 @@ test("period payouts are changes from the previous period's last root; KYC relea
   );
   proofs.set("p2", new Map([[A, p("90")], ["0xb", p("0", "30", "30")]]));
   assert.throws(() => periodPayouts(roots, proofs), /decreased/);
+});
+
+test("published Aegis roots must be exactly one fixed two-week period, Tuesday to Tuesday", () => {
+  assert.deepEqual(aegisPeriodOf("2026-10-27T00:00:00.000Z", "2026-10-06T00:00:00.000Z"), { start: "2026-10-13T00:00:00.000Z", end: "2026-10-27T00:00:00.000Z" });
+  assert.deepEqual(aegisPeriodOf("2026-11-10T00:00:00.000Z", "2026-10-27T00:00:00.000Z").start, "2026-10-27T00:00:00.000Z");
+  assert.equal(new Date("2026-10-27T00:00:00Z").getUTCDay(), 2, "periods end on a Tuesday 00:00 UTC");
+  // a root covering two periods
+  assert.throws(() => aegisPeriodOf("2026-11-24T00:00:00.000Z", "2026-10-27T00:00:00.000Z"), /does not start where the previous one/);
+  // off the grid
+  assert.throws(() => aegisPeriodOf("2026-11-11T00:00:00.000Z", "2026-10-28T00:00:00.000Z"), /not the end of a two-week Aegis period/);
+  // a period skipped in the published history
+  const p = (c: string) => ({ cumulativeAmount: c, kycAmount: "0" });
+  const roots = [root("2026-10-06T00:00:00.000Z", "beta"), root("2026-11-10T00:00:00.000Z", "x")];
+  assert.throws(() => periodPayouts(roots, new Map([["beta", new Map([[A, p("1")]])], ["x", new Map([[A, p("2")]])]])), /does not start where/);
+});
+
+test("APR attaches published rewards to the fixed period with the same start and end", async () => {
+  for (const key of ["staking_rewards_apr", "staking_rewards_apr_by_validator"]) {
+    const q = await read(key);
+    assert.match(q, /on p\.period_start = [sv]\.period_start and p\.period_end = [sv]\.period_end/, key);
+  }
+  assert.match(rewardBreakdownSql(await loadValidatorRewards()), /\('period', timestamp '2026-10-13 00:00:00', timestamp '2026-10-27 00:00:00'/);
 });
 
 // ---------------------------------------------------------------------------------------------

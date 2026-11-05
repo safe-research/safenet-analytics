@@ -4,7 +4,8 @@
 //
 // It records nothing unless every check passes:
 //   - the export reproduced the scripts' own rewards() per payee (`reproduced`);
-//   - the period is a published Aegis period: same end, and starting where the previous one ended;
+//   - the period is a published Aegis period: same end, two weeks, starting where the previous one
+//     ended, and (previous_cid) computed on the previous published rewards DB;
 //   - for every address, stake reward + commission + Sentinel grant = the published payout, exactly,
 //     and no address is paid in the split but not published, or the other way round;
 //   - stake rewards + commission + unpaid = the budget; Sentinel grants = the change of
@@ -18,6 +19,7 @@ import { AEGIS_REWARDS_START, loadValidatorRewards, periodEnds, writeValidatorRe
 
 type Export = {
   scripts_commit: string;
+  previous_cid?: string;
   period: { start: number; end: number };
   budget: string;
   unpaid: string;
@@ -61,6 +63,8 @@ const cur = ends[i];
 const prev = ends[i - 1];
 const expectedStart = prev.rewards_until < AEGIS_REWARDS_START ? AEGIS_REWARDS_START : prev.rewards_until;
 check(iso(x.period.start) === expectedStart, `period start ${iso(x.period.start)} is not ${expectedStart}`);
+check(x.period.end - x.period.start === 14 * 86400, "not a two-week period");
+if (x.previous_cid !== undefined && prev.cid) check(x.previous_cid === prev.cid, `built on ${x.previous_cid}, but the previous published DB is ${prev.cid}`);
 
 const payouts = (data.payouts ?? []).filter((p) => p.rewards_until === until);
 const published = new Map(payouts.map((p) => [p.address, p]));
