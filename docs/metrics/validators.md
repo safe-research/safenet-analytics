@@ -126,7 +126,7 @@ Registrations are by era: `ValidatorStakerSet` on the Beta Consensus `0x2236…c
 
 ### Rewards
 
-`npm run sync:validator-rewards` copies the published rewards into `dune/data/validator-rewards.json` and the `safenet_validator_rewards` and `safenet_reward_breakdown` queries. There are two sources:
+`npm run sync:validator-rewards` is incremental: it reuses what is recorded and downloads only rewards DBs whose CID is new, with the previous period's DB to compare against. A run without a new ENS contenthash downloads nothing and leaves every file unchanged. A new validator staker or beneficiary, or `--full`, reads everything again. It copies the published rewards into `dune/data/validator-rewards.json` and the `safenet_validator_rewards` and `safenet_reward_breakdown` queries. There are two sources:
 
 - **Beta:** [safenet-data `assets/rewards`](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards), at its last rewards commit `276526f` (`BETA_REWARDS_REF`). The mirror is frozen and will not be updated.
 - **Aegis:** the source of truth on chain. The resolver's `ContenthashChanged` history for the ENS name `rewards.safenet-gov.eth` pins each rewards DB on IPFS, which is fetched as a CAR (`src/rewards-ipfs.ts`). Every block is verified against its CID, and the root CID must equal the contenthash. The first pinned DB is the Beta-final one (root `0x6689…`, the same as git). The second is the first Aegis period. Gateways are tried in order (`IPFS_GATEWAY_URL`, default Filebase then Pinata), because Pinata's public gateway refuses content not pinned with it.

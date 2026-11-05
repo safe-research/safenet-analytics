@@ -4,12 +4,27 @@
   "ens": {
     "name": "rewards.safenet-gov.eth",
     "resolver": "0xf29100983e058b709f3d539b0c765937b804ac15",
-    "through_block": 26349003,
+    "through_block": 26349099,
     "cids": [
       "bafybeiczeo7uiupwte7dfa3yaus6dogwauxbookpvcgmxebbga5jtp7afq",
       "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em"
     ]
   },
+  "addresses": [
+    "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+    "0x702cacafa54b88e9c54449563fb2e496e85c78b7",
+    "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
+    "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+    "0x888614448eb7c766864fafb1dd20ff0b47988a87",
+    "0x913299b22960464a0bf55dd0a9ccce17a41f6f3b",
+    "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
+    "0xafb08a3e32e6b049fe434d9e7453c11efd0aa56d",
+    "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+    "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+    "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+    "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+    "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c"
+  ],
   "stakers": [
     {
       "validator": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",

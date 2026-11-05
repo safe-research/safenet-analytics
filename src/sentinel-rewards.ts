@@ -33,6 +33,7 @@ export type SentinelRewardData = {
   source: string;
   ref: string;
   addresses: string[]; // Sentinel addresses looked up: labels and every onchain SentinelScheduled
+  cids?: string[]; // ENS-pinned rewards DBs already read (incremental sync)
   roots: RewardRoot[]; // oldest first
   entries: RewardEntry[];
 };

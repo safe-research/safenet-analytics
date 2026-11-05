@@ -166,6 +166,9 @@ test("period payouts are changes from the previous period's last root; KYC relea
       ["2026-11-10", "0xb", "15", "15", "15"],
     ],
   );
+  // incremental: only the periods asked for, and only their DBs needed (here p1b and p2, not beta)
+  const only = periodPayouts(roots, new Map([...proofs].filter(([k]) => k !== "beta")), (u) => u === "2026-11-10T00:00:00.000Z");
+  assert.deepEqual(only, out.filter((x) => x.rewards_until === "2026-11-10T00:00:00.000Z"));
   proofs.set("p2", new Map([[A, p("90")], ["0xb", p("0", "30", "30")]]));
   assert.throws(() => periodPayouts(roots, proofs), /decreased/);
 });

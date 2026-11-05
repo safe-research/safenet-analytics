@@ -8,7 +8,10 @@
 // Sentinel addresses are the Sentinel labels (dune/data/participants.json) and every address in a
 // production SentinelScheduled event (Gnosis Chain RPC, GNOSIS_RPC_URL or --rpc).
 //
-//   node scripts/sync-sentinel-rewards.ts [--ref <commit>] [--rpc URL] [--eth-rpc URL] [--gateway URLS]
+// Incremental, like sync-validator-rewards: the record is reused and only ENS CIDs not read yet are
+// downloaded. New Sentinel addresses, a new --ref or --full read everything again.
+//
+//   node scripts/sync-sentinel-rewards.ts [--ref <commit>] [--rpc URL] [--eth-rpc URL] [--gateway URLS] [--full]
 
 import { writeFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
@@ -19,6 +22,7 @@ import {
   proofPath,
   REWARDS_INDEX,
   REWARDS_SOURCE,
+  loadSentinelRewards,
   SENTINEL_REWARDS_PATH,
   SENTINEL_REWARDS_SQL_PATH,
   sentinelRewardsSql,
@@ -36,6 +40,7 @@ const { values } = parseArgs({
     rpc: { type: "string", default: process.env.GNOSIS_RPC_URL || "https://rpc.gnosischain.com" },
     "eth-rpc": { type: "string", default: process.env.ETHEREUM_RPC_URL || DEFAULT_ETH_RPC },
     gateway: { type: "string", default: process.env.IPFS_GATEWAY_URL || DEFAULT_IPFS_GATEWAYS },
+    full: { type: "boolean", default: false },
   },
 });
 
@@ -61,10 +66,16 @@ const scheduled = await rpc.getLogs(
 const labels = (await loadParticipants()).participants.filter((p) => p.role === "sentinel").map((p) => p.address);
 const addresses = [...new Set([...labels, ...scheduled.map((l) => topicAddress(l.topics[1]))])].sort();
 
-// Every commit that changed the rewards index, oldest first, up to ref.
+const previous = await loadSentinelRewards().catch(() => undefined);
+const reuse = !!previous && !values.full && previous.ref === ref && JSON.stringify(previous.addresses) === JSON.stringify(addresses) && !!previous.cids;
+const roots: RewardRoot[] = reuse ? structuredClone(previous!.roots) : [];
+const entries: RewardEntry[] = reuse ? [...previous!.entries] : [];
+const read = new Set(reuse ? previous!.cids : []);
+
+// Every commit that changed the rewards index, oldest first, up to ref (frozen; skipped when reused).
 type Commit = { sha: string; commit: { committer: { date: string } } };
 const commits: Commit[] = [];
-for (let page = 1; ; page++) {
+for (let page = 1; !reuse; page++) {
   const batch = (await get(
     `https://api.github.com/repos/${REWARDS_SOURCE}/commits?sha=${ref}&path=${REWARDS_INDEX}&per_page=100&page=${page}`,
   )) as Commit[];
@@ -73,8 +84,6 @@ for (let page = 1; ; page++) {
 }
 commits.reverse();
 
-const roots: RewardRoot[] = [];
-const entries: RewardEntry[] = [];
 for (const c of commits) {
   const index = (await raw(c.sha, REWARDS_INDEX)) as { merkleRoot?: string; rewardsUntil?: string };
   const root = index.merkleRoot?.toLowerCase();
@@ -93,8 +102,12 @@ for (const c of commits) {
 // Aegis: the rewards DBs pinned by ENS, oldest first. A root already mirrored in git is skipped.
 const eth = rpcClient(values["eth-rpc"]!);
 const ens = await contenthashHistory(eth, { fromBlock: REWARDS_DISTRIBUTOR.deployBlock, toBlock: await eth.finalized() });
+let downloaded = 0;
 for (const h of ens.history) {
+  if (read.has(h.cid)) continue;
   const db = await fetchRewardsDb(h.cid, values.gateway);
+  downloaded++;
+  read.add(h.cid);
   const root = db.index.merkleRoot.toLowerCase();
   if (roots.some((r) => r.merkle_root === root)) continue;
   roots.push({ commit: h.cid, published_at: new Date(h.time * 1000).toISOString(), rewards_until: db.index.rewardsUntil, merkle_root: root });
@@ -104,9 +117,9 @@ for (const h of ens.history) {
   }
 }
 
-const data: SentinelRewardData = { source: REWARDS_SOURCE, ref, addresses, roots, entries };
+const data: SentinelRewardData = { source: REWARDS_SOURCE, ref, addresses, cids: [...read], roots, entries };
 await writeFile(SENTINEL_REWARDS_PATH, `${JSON.stringify(data, null, 2)}\n`);
 await writeFile(SENTINEL_REWARDS_SQL_PATH, sentinelRewardsSql(data));
 console.log(
-  `${roots.length} published roots (${ens.history.length} ENS CIDs), ${entries.length} Sentinel entries for ${addresses.length} addresses from ${REWARDS_SOURCE}@${ref.slice(0, 7)} and IPFS`,
+  `${reuse ? `incremental: ${downloaded} rewards DB${downloaded === 1 ? "" : "s"} downloaded; ` : "full read; "}${roots.length} published roots (${ens.history.length} ENS CIDs), ${entries.length} Sentinel entries for ${addresses.length} addresses from ${REWARDS_SOURCE}@${ref.slice(0, 7)} and IPFS`,
 );

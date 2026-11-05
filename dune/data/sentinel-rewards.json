@@ -9,6 +9,10 @@
     "0xb28eb357bfa420c17bae3e6bfdb50094fb5babf2",
     "0xc84a0928632382e75c543acced101b9525027362"
   ],
+  "cids": [
+    "bafybeiczeo7uiupwte7dfa3yaus6dogwauxbookpvcgmxebbga5jtp7afq",
+    "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em"
+  ],
   "roots": [
     {
       "commit": "748a991a778d74809d5277cd671b04a8851cf6bb",

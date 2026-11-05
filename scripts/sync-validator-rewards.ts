@@ -16,7 +16,12 @@
 // Chain RPC, GNOSIS_RPC_URL or --rpc), plus the commission beneficiaries they named in the
 // DelegateRegistry (Ethereum RPC, ETHEREUM_RPC_URL or --eth-rpc).
 //
-//   node scripts/sync-validator-rewards.ts [--ref <commit>] [--rpc URL] [--eth-rpc URL] [--gateway URL] [--rederive]
+// Incremental: what is already recorded is reused. Only rewards DBs whose CID is not recorded yet are
+// downloaded, with the previous period's DB each new period is compared with; a day without a new
+// ENS contenthash downloads nothing. A new validator staker or beneficiary, a new --ref or --full
+// reads everything again.
+//
+//   node scripts/sync-validator-rewards.ts [--ref <commit>] [--rpc URL] [--eth-rpc URL] [--gateway URL] [--rederive] [--full]
 
 import { parseArgs } from "node:util";
 import { contenthashHistory, DEFAULT_IPFS_GATEWAYS, fetchRewardsDb, proofTotals, REWARDS_ENS_NAME, type RewardsProof } from "../src/rewards-ipfs.ts";
@@ -49,6 +54,7 @@ const { values } = parseArgs({
     "eth-rpc": { type: "string", default: process.env.ETHEREUM_RPC_URL || DEFAULT_ETH_RPC },
     gateway: { type: "string", default: process.env.IPFS_GATEWAY_URL || DEFAULT_IPFS_GATEWAYS },
     rederive: { type: "boolean", default: false }, // derive every Aegis period's split again
+    full: { type: "boolean", default: false }, // read every source again instead of only what is new
   },
 });
 
@@ -88,8 +94,15 @@ for (const l of await eth.getLogs(R.address, [[R.events.SetDelegate.topic0, R.ev
   delegations.push({ staker: topicAddress(l.topics[1]), delegate: l.topics[0] === R.events.SetDelegate.topic0 ? topicAddress(l.topics[3]) : null, time: await eth.blockTime(l) });
 const addresses = [...new Set([...stakers.map((s) => s.staker), ...delegations.flatMap((d) => (d.delegate ? [d.delegate] : []))])].sort();
 
+const reuse =
+  !!previous && !values.full && previous.ref === ref && JSON.stringify(previous.addresses ?? null) === JSON.stringify(addresses);
+const roots: ValidatorRewardRoot[] = reuse ? structuredClone(previous!.roots) : [];
+const entries: ValidatorRewardEntry[] = reuse ? [...previous!.entries] : [];
+const kindOf = (rewardsUntil: string) => (roots.at(-1)?.rewards_until === rewardsUntil ? "reissue" : "period");
+
 // ---------------------------------------------------------------------------------------------
-// Beta: safenet-data git history up to ref.
+// Beta: safenet-data git history up to ref (frozen; read again only without a reusable record).
+if (!reuse) {
 
 type Commit = { sha: string; commit: { committer: { date: string } } };
 const commits: Commit[] = [];
@@ -109,9 +122,6 @@ for (const c of commits) indexes.push({ c, index: (await raw(c.sha, REWARDS_INDE
 const start = indexes.findLastIndex(({ index }) => index.tokenTotal === "0");
 if (start < 0) throw new Error("no launch reset (tokenTotal 0) found in the rewards index history");
 
-const roots: ValidatorRewardRoot[] = [];
-const entries: ValidatorRewardEntry[] = [];
-const kindOf = (rewardsUntil: string) => (roots.at(-1)?.rewards_until === rewardsUntil ? "reissue" : "period");
 for (const { c, index } of indexes.slice(start + 1)) {
   const root = index.merkleRoot?.toLowerCase();
   if (!root || !index.rewardsUntil || roots.some((r) => r.merkle_root === root)) continue;
@@ -143,19 +153,27 @@ for (const { c, index } of indexes.slice(start + 1)) {
     });
   }
 }
+}
 
 // ---------------------------------------------------------------------------------------------
 // Aegis: ENS contenthash history, rewards DBs from IPFS.
 
 const ens = await contenthashHistory(eth, { fromBlock: REWARDS_DISTRIBUTOR.deployBlock, toBlock: ethHead });
 const proofs = new Map<string, Map<string, RewardsProof>>(); // full proofs by merkle root
-for (const h of ens.history) {
-  const db = await fetchRewardsDb(h.cid, values.gateway);
-  const root = db.index.merkleRoot.toLowerCase();
+const load = async (cid: string) => {
+  const db = await fetchRewardsDb(cid, values.gateway);
   const t = proofTotals(db);
   if (t.cumulative + t.kyc !== BigInt(db.index.tokenTotal))
-    throw new Error(`${h.cid}: proofs add up to ${t.cumulative + t.kyc}, not tokenTotal ${db.index.tokenTotal}`);
-  proofs.set(root, db.proofs);
+    throw new Error(`${cid}: proofs add up to ${t.cumulative + t.kyc}, not tokenTotal ${db.index.tokenTotal}`);
+  proofs.set(db.index.merkleRoot.toLowerCase(), db.proofs);
+  return db;
+};
+let downloaded = 0;
+for (const h of ens.history) {
+  if (roots.some((r) => r.cid === h.cid)) continue; // recorded already (reuse)
+  const db = await load(h.cid);
+  downloaded++;
+  const root = db.index.merkleRoot.toLowerCase();
   const known = roots.find((r) => r.merkle_root === root);
   if (known) {
     // Same DB as mirrored in git: the published amounts must be the same.
@@ -191,6 +209,16 @@ for (const h of ens.history) {
   }
 }
 
+// A period whose last root is new is compared with the previous period's last root: load that too.
+const ends0 = periodEnds(roots);
+for (let i = 1; i < ends0.length; i++) {
+  if (ends0[i].rewards_until <= AEGIS_REWARDS_START || !proofs.has(ends0[i].merkle_root) || proofs.has(ends0[i - 1].merkle_root)) continue;
+  const cid = ends0[i - 1].cid;
+  if (!cid) throw new Error(`${ends0[i - 1].rewards_until}: the previous rewards DB is not pinned by ENS; run with --full`);
+  await load(cid);
+  downloaded++;
+}
+
 // On-chain root: the latest DB must be the one the distributor uses (resolvePreviousRewardsDb in the
 // reward scripts requires the same). A newer ENS DB whose root is not set yet is reported.
 const onChainRoot = (await eth.call<string>("eth_call", [{ to: REWARDS_DISTRIBUTOR.address, data: "0x2eb4a7ab" }, `0x${ethHead.toString(16)}`])).toLowerCase();
@@ -198,7 +226,9 @@ const onChainRoot = (await eth.call<string>("eth_call", [{ to: REWARDS_DISTRIBUT
 // Latest root: every proof file, summed (IPFS: already checked above; git: the tree).
 const latest = roots.at(-1)!;
 let latestCheck: ValidatorRewardData["latest_check"];
-if (proofs.has(latest.merkle_root)) {
+if (reuse && !proofs.has(latest.merkle_root) && previous!.latest_check.merkle_root === latest.merkle_root) {
+  latestCheck = previous!.latest_check;
+} else if (proofs.has(latest.merkle_root)) {
   const t = proofTotals({ cid: latest.cid!, index: { merkleRoot: latest.merkle_root, rewardsUntil: latest.rewards_until, tokenTotal: latest.token_total }, proofs: proofs.get(latest.merkle_root)! });
   latestCheck = { merkle_root: latest.merkle_root, addresses: t.addresses, sum_cumulative: t.cumulative.toString(), sum_kyc: t.kyc.toString(), token_total: latest.token_total };
 } else {
@@ -215,7 +245,12 @@ if (proofs.has(latest.merkle_root)) {
   latestCheck = { merkle_root: latest.merkle_root, addresses: files.length, sum_cumulative: c.toString(), sum_kyc: k.toString(), token_total: latest.token_total };
 }
 
-const payouts = periodPayouts(roots, proofs);
+// Payouts of the periods whose DBs were loaded; earlier ones as recorded.
+const fresh = periodPayouts(roots, proofs, (until) => proofs.has(periodEnds(roots).find((r) => r.rewards_until === until)!.merkle_root));
+const freshPeriods = new Set(fresh.map((x) => x.rewards_until));
+const payouts = [...(reuse ? (previous!.payouts ?? []).filter((x) => !freshPeriods.has(x.rewards_until)) : []), ...fresh].sort((a, b) =>
+  a.rewards_until === b.rewards_until ? (a.address < b.address ? -1 : 1) : a.rewards_until < b.rewards_until ? -1 : 1,
+);
 
 // ---------------------------------------------------------------------------------------------
 // Commission split, derived from the payouts and chain data (no reward scripts).
@@ -315,7 +350,9 @@ splitChecks.sort((a, b) => (a.rewards_until < b.rewards_until ? -1 : 1));
 const data: ValidatorRewardData = {
   source: REWARDS_SOURCE,
   ref,
-  ens: { name: REWARDS_ENS_NAME, resolver: ens.resolver, through_block: ethHead, cids: ens.history.map((h) => h.cid) },
+  // The block only moves with new data, so an unchanged sync leaves the files unchanged (no daily PR).
+  ens: { name: REWARDS_ENS_NAME, resolver: ens.resolver, through_block: reuse && downloaded === 0 && previous!.ens ? previous!.ens.through_block : ethHead, cids: ens.history.map((h) => h.cid) },
+  addresses,
   stakers,
   roots,
   entries,
@@ -328,7 +365,7 @@ const data: ValidatorRewardData = {
 await writeValidatorRewards(data);
 for (const n of derivedNotes) console.log(n);
 console.log(
-  `${roots.length} roots (${roots.filter((r) => r.kind === "period").length} periods; ${roots.filter((r) => r.source === "ipfs").length} from IPFS), ` +
+  `${reuse ? `incremental: ${downloaded} rewards DB${downloaded === 1 ? "" : "s"} downloaded; ` : "full read; "}${roots.length} roots (${roots.filter((r) => r.kind === "period").length} periods; ${roots.filter((r) => r.source === "ipfs").length} from IPFS), ` +
     `${entries.length} entries for ${addresses.length} validator stakers and beneficiaries, ${payouts.length} Aegis payouts; ` +
     `latest root ${latest.merkle_root} (${latest.rewards_until.slice(0, 10)}): ${latestCheck.addresses} proofs, cumulative + KYC ` +
     `${BigInt(latestCheck.sum_cumulative) + BigInt(latestCheck.sum_kyc)} vs tokenTotal ${latest.token_total}; ` +

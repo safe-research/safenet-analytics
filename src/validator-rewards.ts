@@ -146,6 +146,7 @@ export type ValidatorRewardData = {
   source: string;
   ref: string;
   ens?: { name: string; resolver: string; through_block: number; cids: string[] };
+  addresses?: string[]; // validator stakers and beneficiaries whose entries were read (incremental sync)
   stakers: { validator: string; staker: string; era: "beta" | "production" }[]; // ValidatorStakerSet
   roots: ValidatorRewardRoot[]; // oldest first
   entries: ValidatorRewardEntry[];
@@ -173,12 +174,13 @@ export function periodEnds(roots: ValidatorRewardRoot[]) {
 export function periodPayouts(
   roots: ValidatorRewardRoot[],
   proofs: Map<string, Map<string, { cumulativeAmount: string; kycAmount?: string; sentinelAmount?: string }>>,
+  include: (rewardsUntil: string) => boolean = () => true, // the periods to compute (incremental sync)
 ): RewardPayout[] {
   const ends = periodEnds(roots);
   const out: RewardPayout[] = [];
   for (let i = 1; i < ends.length; i++) {
     const cur = ends[i];
-    if (cur.rewards_until <= AEGIS_REWARDS_START) continue;
+    if (cur.rewards_until <= AEGIS_REWARDS_START || !include(cur.rewards_until)) continue;
     aegisPeriodOf(cur.rewards_until, ends[i - 1].rewards_until); // throws unless exactly one grid period
     const now = proofs.get(cur.merkle_root);
     const before = proofs.get(ends[i - 1].merkle_root);

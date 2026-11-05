@@ -27,6 +27,7 @@
 *Sync rewards* (`.github/workflows/sync-rewards.yml`) runs daily at 04:47 UTC and by hand.
 
 - It syncs the published staking rewards: the ENS name `rewards.safenet-gov.eth` → IPFS for Aegis, frozen safenet-data git for Beta.
+- Both syncs are incremental: a day without a new ENS contenthash downloads no rewards data and changes no file, so no pull request is opened.
 - When the generated data changes, it pushes `rewards-sync/<rewardsUntil>-<root>` and opens a pull request, then dispatches Validate and Preview for it.
 - It uses `GITHUB_TOKEN` and pushes only that branch. It needs no deploy key, deliberately: every write deploy key bypasses `main`'s ruleset (step 4 above).
 
