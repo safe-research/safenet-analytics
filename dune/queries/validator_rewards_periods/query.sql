@@ -9,7 +9,7 @@
 --                       (DelegateRegistry delegates): their commission and own-stake reward together
 --   delegators          everything else allocated in the period, minus Sentinel grants
 --   commission          not in the published files. Shown only from a verified split, derived from the
---                       published payouts and chain data (safenet_reward_breakdown); Beta periods: not published
+--                       published payouts and chain data (safenet_reward_breakdown), Beta and Aegis
 -- Production periods (two weeks from 2026-10-13) that have ended but are not published yet are listed
 -- with no amounts, never 0. 2026-10-06 to 2026-10-13 is the gap between Beta and production.
 
@@ -131,9 +131,9 @@ select
     sentinel_grants,
     commission,
     case
-        when era = 'beta' then 'not published'
-        when split_source is null then 'split not verified'
-        else 'verified: ' || split_source
+        when split_source is not null then 'verified: ' || split_source
+        when era = 'beta' then 'Beta: split not derivable'
+        else 'split not verified'
     end as commission_status,
     unpaid_carried,
     reissues,

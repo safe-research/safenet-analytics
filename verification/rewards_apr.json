@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-05T14:04:35.983Z",
-  "ethereum_block": 26349035,
-  "gnosis_block": 49123394,
+  "generated_at": "2026-11-05T19:27:25.529Z",
+  "ethereum_block": 26350629,
+  "gnosis_block": 49127221,
   "ens": {
     "name": "rewards.safenet-gov.eth",
     "cid": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em",
@@ -133,7 +133,7 @@
       "check": "distributor merkleRoot() = latest published root",
       "ok": true,
       "detail": {
-        "block": 26349035,
+        "block": 26350629,
         "root": "0xab638c08ac00981fb708a6d9e0c4667605579aa945629231313ba6c87d1d711e"
       }
     },
@@ -143,7 +143,7 @@
       "detail": "https://etherscan.io/tx/0x19d4cfd896f0a72343ebb88b7260addf7c6803849fce7fd4922147c837c3ce4f"
     },
     {
-      "check": "per-address payouts recomputed from IPFS = recorded",
+      "check": "Aegis per-address payouts recomputed from IPFS = recorded",
       "ok": true,
       "detail": {
         "rows": 846

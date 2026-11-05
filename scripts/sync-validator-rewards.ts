@@ -28,7 +28,10 @@ import { contenthashHistory, DEFAULT_IPFS_GATEWAYS, fetchRewardsDb, proofTotals,
 import { BETA_CONSENSUS, DELEGATE_REGISTRY, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import {
   AEGIS_REWARDS_START,
+  BETA_MIN_PAYOUT,
+  BETA_PERIOD_REWARDS,
   BETA_REWARDS_REF,
+  BETA_REWARDS_START,
   loadValidatorRewards,
   PERIOD_SECONDS,
   periodBudget,
@@ -78,11 +81,12 @@ const rpc = rpcClient(values.rpc!);
 const head = await rpc.finalized();
 const stakers: ValidatorRewardData["stakers"] = [];
 const stakerSets: StakerSet[] = []; // production, with times, for self-stake and beneficiaries
+const betaStakerSets: StakerSet[] = []; // Beta Consensus, for the Beta periods
 for (const [era, c] of [["beta", BETA_CONSENSUS], ["production", PRODUCTION.consensus]] as const)
   for (const l of await rpc.getLogs(c.address, [VALIDATOR_STAKER_SET.topic0], c.deployBlock, head)) {
     const s = { validator: topicAddress(l.topics[1]), staker: `0x${l.data.slice(26, 66)}`.toLowerCase() };
     stakers.push({ ...s, era });
-    if (era === "production") stakerSets.push({ ...s, time: await rpc.blockTime(l) });
+    (era === "production" ? stakerSets : betaStakerSets).push({ ...s, time: await rpc.blockTime(l) });
   }
 
 // Commission beneficiaries: DelegateRegistry delegates named by validator stakers.
@@ -94,6 +98,7 @@ for (const l of await eth.getLogs(R.address, [[R.events.SetDelegate.topic0, R.ev
   delegations.push({ staker: topicAddress(l.topics[1]), delegate: l.topics[0] === R.events.SetDelegate.topic0 ? topicAddress(l.topics[3]) : null, time: await eth.blockTime(l) });
 const addresses = [...new Set([...stakers.map((s) => s.staker), ...delegations.flatMap((d) => (d.delegate ? [d.delegate] : []))])].sort();
 
+const proofs = new Map<string, Map<string, RewardsProof>>(); // full proofs by merkle root
 const reuse =
   !!previous && !values.full && previous.ref === ref && JSON.stringify(previous.addresses ?? null) === JSON.stringify(addresses);
 const roots: ValidatorRewardRoot[] = reuse ? structuredClone(previous!.roots) : [];
@@ -155,11 +160,32 @@ for (const { c, index } of indexes.slice(start + 1)) {
 }
 }
 
+// Every proof of each Beta period's last root, for the Beta payouts and their split (read once: the
+// mirror is frozen, and the result is reused).
+if (!reuse) {
+  for (const r of periodEnds(roots)) {
+    const tree = (await get(`https://api.github.com/repos/${REWARDS_SOURCE}/git/trees/${r.commit}?recursive=1`)) as { tree: { path: string; type: string }[]; truncated: boolean };
+    if (tree.truncated) throw new Error(`rewards tree listing truncated at ${r.commit}`);
+    const files = tree.tree.filter((t) => t.type === "blob" && /^assets\/rewards\/proofs\/.*\.json$/.test(t.path)).map((t) => t.path);
+    const m = new Map<string, RewardsProof>();
+    for (let i = 0; i < files.length; i += 24)
+      await Promise.all(
+        files.slice(i, i + 24).map(async (f) => {
+          const p = (await raw(r.commit, f)) as RewardsProof;
+          if (p.merkleRoot.toLowerCase() !== r.merkle_root) throw new Error(`${r.commit} ${f}: proof under another root`);
+          m.set(f.split("/").pop()!.replace(".json", "").toLowerCase(), p);
+        }),
+      );
+    const sum = [...m.values()].reduce((a, p) => a + BigInt(p.cumulativeAmount) + BigInt(p.kycAmount ?? "0"), 0n);
+    if (sum !== BigInt(r.token_total)) throw new Error(`${r.rewards_until}: Beta proofs add up to ${sum}, not tokenTotal ${r.token_total}`);
+    proofs.set(r.merkle_root, m);
+  }
+}
+
 // ---------------------------------------------------------------------------------------------
 // Aegis: ENS contenthash history, rewards DBs from IPFS.
 
 const ens = await contenthashHistory(eth, { fromBlock: REWARDS_DISTRIBUTOR.deployBlock, toBlock: ethHead });
-const proofs = new Map<string, Map<string, RewardsProof>>(); // full proofs by merkle root
 const load = async (cid: string) => {
   const db = await fetchRewardsDb(cid, values.gateway);
   const t = proofTotals(db);
@@ -246,7 +272,12 @@ if (reuse && !proofs.has(latest.merkle_root) && previous!.latest_check.merkle_ro
 }
 
 // Payouts of the periods whose DBs were loaded; earlier ones as recorded.
-const fresh = periodPayouts(roots, proofs, (until) => proofs.has(periodEnds(roots).find((r) => r.rewards_until === until)!.merkle_root));
+const endsNow = periodEnds(roots);
+const loaded = (until: string) => {
+  const i = endsNow.findIndex((r) => r.rewards_until === until);
+  return proofs.has(endsNow[i].merkle_root) && (i === 0 || proofs.has(endsNow[i - 1].merkle_root));
+};
+const fresh = periodPayouts(roots, proofs, loaded);
 const freshPeriods = new Set(fresh.map((x) => x.rewards_until));
 const payouts = [...(reuse ? (previous!.payouts ?? []).filter((x) => !freshPeriods.has(x.rewards_until)) : []), ...fresh].sort((a, b) =>
   a.rewards_until === b.rewards_until ? (a.address < b.address ? -1 : 1) : a.rewards_until < b.rewards_until ? -1 : 1,
@@ -272,33 +303,42 @@ const drop = (until: string) => {
     for (let k = list.length - 1; k >= 0; k--) if (list[k].rewards_until === until) list.splice(k, 1);
 };
 const todo = ends.filter(
-  (r, i) => i > 0 && r.rewards_until > AEGIS_REWARDS_START && (values.rederive || !splitChecks.some((c) => c.rewards_until === r.rewards_until) || !stillMatches(r.rewards_until)),
+  (r) => payouts.some((x) => x.rewards_until === r.rewards_until) && (values.rederive || !splitChecks.some((c) => c.rewards_until === r.rewards_until) || !stillMatches(r.rewards_until)),
 );
+// A period's unpaid amount as first published: a KYC re-issue may record 0 (Beta).
+const firstUnpaid = (until: string) => BigInt(roots.find((r) => r.rewards_until === until)!.unpaid_amount);
 const derivedNotes: string[] = [];
 if (todo.length) {
   const events = await fetchStakingEvents(eth, ethHead);
   for (const r of todo) {
     const i = ends.indexOf(r);
     const until = r.rewards_until;
+    const beta = until <= AEGIS_REWARDS_START;
     const to = Date.parse(until) / 1000;
-    const pairs = periodStake(events, { from: to - PERIOD_SECONDS, to }, stakerSets);
+    // Aegis: the fixed two-week grid (after the gap week); Beta: from the previous period's end.
+    const from = !beta ? to - PERIOD_SECONDS : i === 0 ? Date.parse(BETA_REWARDS_START) / 1000 : Date.parse(ends[i - 1].rewards_until) / 1000;
+    const sets = beta ? betaStakerSets : stakerSets;
+    const pairs = periodStake(events, { from, to }, sets);
     // The validator's staker at the period end, and the delegate it named then (else itself).
     const stakerAt = new Map<string, string>();
-    for (const x of [...stakerSets].sort((a, b) => a.time - b.time)) if (x.time <= to) stakerAt.set(x.validator, x.staker);
+    for (const x of [...sets].sort((a, b) => a.time - b.time)) if (x.time <= to) stakerAt.set(x.validator, x.staker);
     const beneficiaries = new Map<string, string>();
     for (const [v, st] of stakerAt) {
       const last = delegations.filter((d) => d.staker === st && d.time <= to).sort((a, b) => a.time - b.time).at(-1);
       beneficiaries.set(v, last?.delegate ?? st);
     }
-    const budget = periodBudget(until, ends[i - 1]);
+    // Beta: 1-SAFE minimum payout; its unpaidAmount was recorded inconsistently, so the validator
+    // rewards are checked against the base plus at most the previous recorded unpaid amount.
+    const budget = beta ? BETA_PERIOD_REWARDS : periodBudget(until, ends[i - 1]);
     const d = deriveSplit({
-      periodSeconds: BigInt(PERIOD_SECONDS),
+      periodSeconds: BigInt(to - from),
       pairs,
       payouts: new Map(payouts.filter((x) => x.rewards_until === until).map((x) => [x.address, { payout: BigInt(x.payout), sentinel: BigInt(x.sentinel) }])),
       beneficiaries,
       stakers: stakerAt,
       budget,
-      unpaid: BigInt(r.unpaid_amount),
+      unpaid: beta ? firstUnpaid(until) : BigInt(r.unpaid_amount),
+      ...(beta ? { minPayout: BETA_MIN_PAYOUT, budgetCheck: "rewards" as const, carryMax: i === 0 ? 0n : firstUnpaid(ends[i - 1].rewards_until) } : {}),
     });
     if (!d.ok) {
       const why = `${until.slice(0, 10)}: commission split not derivable: ${d.problems.slice(0, 5).join("; ")}${d.problems.length > 5 ? ` (+${d.problems.length - 5} more)` : ""}`;
@@ -366,7 +406,7 @@ await writeValidatorRewards(data);
 for (const n of derivedNotes) console.log(n);
 console.log(
   `${reuse ? `incremental: ${downloaded} rewards DB${downloaded === 1 ? "" : "s"} downloaded; ` : "full read; "}${roots.length} roots (${roots.filter((r) => r.kind === "period").length} periods; ${roots.filter((r) => r.source === "ipfs").length} from IPFS), ` +
-    `${entries.length} entries for ${addresses.length} validator stakers and beneficiaries, ${payouts.length} Aegis payouts; ` +
+    `${entries.length} entries for ${addresses.length} validator stakers and beneficiaries, ${payouts.length} payouts (Beta and Aegis); ` +
     `latest root ${latest.merkle_root} (${latest.rewards_until.slice(0, 10)}): ${latestCheck.addresses} proofs, cumulative + KYC ` +
     `${BigInt(latestCheck.sum_cumulative) + BigInt(latestCheck.sum_kyc)} vs tokenTotal ${latest.token_total}; ` +
     `distributor root ${onChainRoot === latest.merkle_root ? "= latest" : `${onChainRoot} (latest not set on chain yet)`}`,

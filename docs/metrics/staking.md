@@ -170,6 +170,17 @@ The published proofs give one amount per address, with no split into staking rew
    - A period that was verified and no longer derives fails the sync instead of losing its split.
    - A re-issue that changes a period's payouts is derived again.
 
+**Beta periods too.** The 13 Beta periods (2026-04-07 to 2026-10-06) are derived the same way. Their inputs are:
+- the published payouts from the frozen safenet-data git history;
+- self-stake from the Beta Consensus `ValidatorStakerSet`.
+
+The Beta reward scripts (safenet-staking-scripts before Aegis, e.g. `c04d176`) applied the same rules, with one difference: payouts below **1 SAFE** were dropped and stayed unpaid.
+- Such zero payouts carry no information about a validator's reward, and are expected below the minimum.
+- A validator whose delegators all also stake elsewhere is solved from such a staker's payout, once the other validators' shares are known.
+- Beta's `unpaidAmount` was recorded inconsistently: sometimes cumulative, and 0 after a KYC re-issue. So the Beta check is that the derived validator rewards lie between the period base (346,153.846… SAFE) and the base plus the previous recorded unpaid amount.
+
+Every Beta period reproduces all its published payouts within 2 base units (most exactly), across 98–186 recipients per period. The Beta payouts are read once and kept, since the mirror is frozen.
+
 The payouts identify each validator's reward up to a few base units (10⁻¹⁸ SAFE): a staker on two validators lets one base unit move between them without changing any payout. Per address, the split is exact: commission is derived, and the staking reward is the rest of the published payout.
 
 **Checked against the reward scripts.** For 2026-10-13 to 2026-10-27, the safe-fndn/safenet-staking-scripts `rewards()` split at `8401845` was run once and kept as a test fixture (`test/fixtures/split-2026-10-27-scripts.json`). The derived split equals it for all 846 recipients, field by field. Per validator, the rewards agree within 2 base units, the commissions exactly, and the ineligible validators are exactly 0. All 893 addresses with stake or a payout are reproduced with a difference of 0 base units.

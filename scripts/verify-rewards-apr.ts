@@ -97,8 +97,10 @@ const rootLogs = await eth.getLogs(REWARDS_DISTRIBUTOR.address, [EVENTS.MerkelRo
 const setRoots = new Map(rootLogs.map((l) => [`0x${l.data.slice(66, 130)}`, l]));
 const aegis = periodEnds(data.roots).filter((r) => r.rewards_until > AEGIS_REWARDS_START);
 for (const r of aegis) check(`${r.rewards_until.slice(0, 10)}: root set on chain`, setRoots.has(r.merkle_root), setRoots.get(r.merkle_root) ? txUrl(1, setRoots.get(r.merkle_root)!.transactionHash) : null);
-const recomputed = periodPayouts(data.roots, proofs);
-check("per-address payouts recomputed from IPFS = recorded", JSON.stringify(recomputed) === JSON.stringify(data.payouts ?? []), { rows: recomputed.length });
+// Aegis periods (on IPFS); Beta payouts come from the frozen git mirror and are checked by the sync.
+const aegisOnly = (u: string) => u > AEGIS_REWARDS_START;
+const recomputed = periodPayouts(data.roots, proofs, aegisOnly);
+check("Aegis per-address payouts recomputed from IPFS = recorded", JSON.stringify(recomputed) === JSON.stringify((data.payouts ?? []).filter((x) => aegisOnly(x.rewards_until))), { rows: recomputed.length });
 
 const BETA_TOKEN_TOTAL = 4499987774807670271201970n;
 const BUDGET = 5_000_000n * 10n ** 18n;
@@ -386,7 +388,8 @@ if (key) {
     for (const check of data.split_checks ?? []) {
       const d = c.rows.find((x) => day(x.period_end) === check.rewards_until.slice(0, 10));
       compare(`reward periods ${check.rewards_until.slice(0, 10)}`, "commission", safe(BigInt(check.commission)), d?.commission);
-      compare(`reward periods ${check.rewards_until.slice(0, 10)}`, "period_start", AEGIS_REWARDS_START.slice(0, 10), day(d?.period_start));
+      if (check.rewards_until > AEGIS_REWARDS_START)
+        compare(`reward periods ${check.rewards_until.slice(0, 10)}`, "period_start", day(new Date(Date.parse(check.rewards_until) - 14 * 86400_000).toISOString()), day(d?.period_start));
     }
     compared.push("validator_rewards_periods");
   }

@@ -146,9 +146,8 @@ Registrations are by era: `ValidatorStakerSet` on the Beta Consensus `0x2236…c
   | Delegators | the rest, minus Sentinel grants |
   | Sentinel grants | from `sentinelTokenTotal`; none in Beta |
 
-- **Commission.** Not published. The sync derives the split from the published payouts and chain data, and records it only if it reproduces every published payout ([staking.md](staking.md#commission-split)).
+- **Commission.** Not published. The sync derives the split from the published payouts and chain data, and records it only if it reproduces every published payout ([staking.md](staking.md#commission-split)). This covers Beta and Aegis: all 13 Beta periods are derived, with Beta's 1-SAFE minimum payout. A period whose payouts cannot be reproduced reads *split not verified* (Beta: *Beta: split not derivable*).
   - 2026-10-13 to 2026-10-27 is derived with every payout reproduced exactly, and equals the reward scripts' own split for all 846 recipients (test fixture). Commission is 5,574.52 SAFE. The per-validator rewards and APR are in [staking.md](staking.md#first-production-period-2026-10-13-to-2026-10-27).
-  - Beta reads *not published*; older Beta parameters are not assumed to apply.
   - A later period without a verified split reads *split not verified*.
 - **Claimed / claimable.**
   - Claims are the distributor's `Claimed(account, amount)` events (`safenet_reward_events`), attributed by **address only**.

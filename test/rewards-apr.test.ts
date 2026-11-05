@@ -155,7 +155,9 @@ test("period payouts are changes from the previous period's last root; KYC relea
     ["p2", new Map([[A, p("160")], ["0xb", p("0", "30", "30")]])],
   ]);
   assert.deepEqual(periodEnds(roots).map((r) => r.merkle_root), ["beta", "p1b", "p2"]);
-  const out = periodPayouts(roots, proofs);
+  // the first period (Beta here) is paid from zero
+  assert.deepEqual(periodPayouts(roots, proofs, (u) => u === "2026-10-06T00:00:00.000Z").map((x) => [x.address, x.payout]), [[A, "100"]]);
+  const out = periodPayouts(roots, proofs, (u) => u > "2026-10-13");
   assert.deepEqual(
     out.map((x) => [x.rewards_until.slice(0, 10), x.address, x.payout, x.kyc_change, x.sentinel]),
     [
@@ -170,7 +172,7 @@ test("period payouts are changes from the previous period's last root; KYC relea
   const only = periodPayouts(roots, new Map([...proofs].filter(([k]) => k !== "beta")), (u) => u === "2026-11-10T00:00:00.000Z");
   assert.deepEqual(only, out.filter((x) => x.rewards_until === "2026-11-10T00:00:00.000Z"));
   proofs.set("p2", new Map([[A, p("90")], ["0xb", p("0", "30", "30")]]));
-  assert.throws(() => periodPayouts(roots, proofs), /decreased/);
+  assert.throws(() => periodPayouts(roots, proofs, (u) => u > "2026-10-13"), /decreased/);
 });
 
 test("published Aegis roots must be exactly one fixed two-week period, Tuesday to Tuesday", () => {
@@ -297,10 +299,11 @@ test("recorded splits reproduce the published payouts of every address exactly",
     }
     const ends = periodEnds(data.roots);
     const i = ends.findIndex((r) => r.rewards_until === c.rewards_until);
-    const delta = (k: "token_total" | "sentinel_token_total") => BigInt(ends[i][k] ?? "0") - BigInt(ends[i - 1][k] ?? "0");
+    const delta = (k: "token_total" | "sentinel_token_total") => BigInt(ends[i][k] ?? "0") - BigInt(i === 0 ? "0" : (ends[i - 1][k] ?? "0"));
     assert.equal(BigInt(c.stake_rewards) + BigInt(c.commission) + BigInt(c.sentinel_grants), delta("token_total"));
     assert.equal(BigInt(c.sentinel_grants), delta("sentinel_token_total"));
-    assert.equal(BigInt(c.stake_rewards) + BigInt(c.commission) + BigInt(c.unpaid), BigInt(c.budget));
+    // Aegis: payouts + unpaid = budget exactly (Beta's unpaidAmount was recorded inconsistently).
+    if (c.rewards_until > "2026-10-13") assert.equal(BigInt(c.stake_rewards) + BigInt(c.commission) + BigInt(c.unpaid), BigInt(c.budget));
     const vs = (data.validator_periods ?? []).filter((v) => v.rewards_until === c.rewards_until);
     assert.equal(vs.reduce((a, v) => a + BigInt(v.commission), 0n), BigInt(c.commission));
     for (const v of vs) assert.equal(v.eligible, BigInt(v.reward) > 0n, v.validator);
@@ -323,7 +326,9 @@ test("the reward breakdown query is generated from dune/data/validator-rewards.j
   // exact amounts: stake rewards = payouts minus Sentinel grants
   assert.ok(sql.includes("cast('192307692307692307691807' as uint256)"));
   assert.ok(sql.includes("cast('30769230769230769230768' as uint256)"));
-  assert.ok(sql.length < 100_000, "the generated query stays small (per-address payouts stay in the JSON)");
+  // Per-address payouts stay in the JSON: the query grows by a few rows per period, not by addresses.
+  const periods = new Set((data.payouts ?? []).map((x) => x.rewards_until)).size;
+  assert.ok(sql.length < 8_000 * periods + 10_000, `generated query: ${sql.length} characters for ${periods} periods`);
 });
 
 test("APR uses staking rewards only: Sentinel grants are excluded from every numerator", async () => {
@@ -375,7 +380,7 @@ import type { PairStake } from "../scripts/lib/rewards-apr.ts";
 
 const E18 = 10n ** 18n;
 // A synthetic period paid with the reward scripts' rounding (src/safenet.ts rewards()).
-function synthetic({ bps = 500n, threshold = 3_500_000n * E18 } = {}) {
+function synthetic({ bps = 500n, threshold = 3_500_000n * E18, minPayout = 0n, tiny = false } = {}) {
   const L = 1209600n;
   const pair = (staker: string, validator: string, avg: bigint, self = 0n): PairStake => ({ staker, validator, all: avg * L, registered: avg * L, self: self * L });
   const pairs = [
@@ -387,6 +392,7 @@ function synthetic({ bps = 500n, threshold = 3_500_000n * E18 } = {}) {
     pair("0xd3", "0xv2", 2_345_678n * E18 + 1n),
     pair("0xm", "0xv2", 700_000n * E18 + 9n),
     pair("0xd4", "0xv3", 3_000_000n * E18), // v3: ineligible
+    ...(tiny ? [pair("0xtiny", "0xv1", 5n * E18)] : []), // paid below the minimum payout
   ];
   const R = new Map([["0xv1", 40_000n * E18 + 123_456_789n], ["0xv2", 30_000n * E18 + 987_654_321n], ["0xv3", 0n]]);
   const beneficiaries = new Map([["0xv1", "0xbenef"], ["0xv2", "0xs2"]]); // v1's staker named a delegate
@@ -408,6 +414,7 @@ function synthetic({ bps = 500n, threshold = 3_500_000n * E18 } = {}) {
     add(p.staker, gross - c);
     if (c > 0n) add(beneficiaries.get(p.validator)!, c);
   }
+  for (const [a, x] of pay) if (x < minPayout) pay.delete(a); // dropped, stays unpaid
   const paid = [...pay.values()].reduce((a, b) => a + b, 0n);
   const input: SplitInput = {
     periodSeconds: L,
@@ -415,8 +422,9 @@ function synthetic({ bps = 500n, threshold = 3_500_000n * E18 } = {}) {
     payouts: new Map([...pay].map(([a, x]) => [a, { payout: x, sentinel: 0n }])),
     beneficiaries,
     stakers: new Map([["0xv1", "0xs1"], ["0xv2", "0xs2"]]),
-    budget: paid + 77n,
-    unpaid: 77n,
+    // as the reward scripts: budget = validator rewards + dust; unpaid = budget − payouts (dropped ones included)
+    budget: [...R.values()].reduce((a, b) => a + b, 0n) + 77n,
+    unpaid: [...R.values()].reduce((a, b) => a + b, 0n) + 77n - paid,
   };
   return { input, R, pay };
 }
@@ -446,7 +454,7 @@ test("a change of the reward rules gives no split rather than a wrong one", () =
     assert.equal(d.ok, false, JSON.stringify(changed, (_, x) => (typeof x === "bigint" ? x.toString() : x)));
   }
   const { input } = synthetic();
-  input.unpaid += 1n; // published unpaidAmount inconsistent with the budget
+  input.unpaid += 1n; // published unpaidAmount inconsistent with the budget (Aegis: exact)
   assert.equal(deriveSplit(input).ok, false);
 });
 
@@ -478,4 +486,30 @@ test("the derived split of 2026-10-13 – 10-27 equals the reward scripts' own s
   const c = data.split_checks!.find((y) => y.rewards_until === until)!;
   assert.equal(c.max_diff, "0");
   assert.equal(c.budget, f.budget);
+});
+
+test("with a minimum payout (Beta), dropped payouts below it do not break the derivation", () => {
+  const { input, R } = synthetic({ minPayout: E18, tiny: true });
+  assert.equal(input.payouts.has("0xtiny"), false, "the tiny payout was dropped");
+  const rewards = [...R.values()].reduce((a, b) => a + b, 0n);
+  const d = deriveSplit({ ...input, minPayout: E18, budgetCheck: "rewards", budget: rewards, carryMax: 77n });
+  assert.ok(d.ok, d.problems.join("; "));
+  assert.equal(d.max_diff, 0n);
+  assert.equal(d.recipients.has("0xtiny"), false);
+  // without knowing the minimum, the dropped payout (0) contradicts the other delegators: no split
+  assert.equal(deriveSplit(input).ok, false);
+});
+
+test("every Beta period has a derived split that reproduces its published payouts", async () => {
+  const data = await loadValidatorRewards();
+  const beta = periodEnds(data.roots).filter((r) => r.rewards_until <= "2026-10-06T00:00:00.000Z");
+  assert.equal(beta.length, 13);
+  for (const r of beta) {
+    const c = data.split_checks!.find((x) => x.rewards_until === r.rewards_until);
+    assert.ok(c, `${r.rewards_until}: no split`);
+    assert.ok(BigInt(c!.max_diff) <= 2n, `${r.rewards_until}: max difference ${c!.max_diff}`);
+    // the validator stakers' and beneficiaries' commission is the whole commission
+    const v = data.validator_periods!.filter((x) => x.rewards_until === r.rewards_until);
+    assert.equal(v.reduce((a, x) => a + BigInt(x.commission), 0n), BigInt(c!.commission));
+  }
 });

@@ -37,6 +37,12 @@ export const PERIOD_SECONDS = 14 * 86400;
 export const AEGIS_VALIDATOR_REWARDS = 5_000_000n * 10n ** 18n;
 export const AEGIS_REWARDS_DURATION = 52n * 7n * 86400n;
 export const BETA_TOKEN_TOTAL = 4499987774807670271201970n;
+// Beta: 4.5M SAFE over 13 two-week periods from 2026-04-07 (346,153.846… each), plus earlier unpaid
+// amounts, and payouts below 1 SAFE dropped (safenet-staking-scripts before Aegis, src/safenet.ts
+// rewards() MIN_PAYOUT; safenet-data reward PRs #20–#39).
+export const BETA_REWARDS_START = "2026-04-07T00:00:00.000Z";
+export const BETA_PERIOD_REWARDS = 346153846153846153846153n;
+export const BETA_MIN_PAYOUT = 10n ** 18n;
 
 // The validator budget of the Aegis period ending at `end`, given the previous period's last root:
 // the programme amount due through `end`, minus what earlier roots already allocated to staking
@@ -169,8 +175,9 @@ export function periodEnds(roots: ValidatorRewardRoot[]) {
   return [...last.values()];
 }
 
-// Per-address payouts of every Aegis period, from the full proofs of each period's last root and of
-// the previous period's last root. `proofs` maps a merkle root to { address → amounts }.
+// Per-address payouts of every reward period, Beta and Aegis, from the full proofs of each period's
+// last root and of the previous period's last root (the first Beta period: from zero, after the launch
+// reset). `proofs` maps a merkle root to { address → amounts }.
 export function periodPayouts(
   roots: ValidatorRewardRoot[],
   proofs: Map<string, Map<string, { cumulativeAmount: string; kycAmount?: string; sentinelAmount?: string }>>,
@@ -178,12 +185,12 @@ export function periodPayouts(
 ): RewardPayout[] {
   const ends = periodEnds(roots);
   const out: RewardPayout[] = [];
-  for (let i = 1; i < ends.length; i++) {
+  for (let i = 0; i < ends.length; i++) {
     const cur = ends[i];
-    if (cur.rewards_until <= AEGIS_REWARDS_START || !include(cur.rewards_until)) continue;
-    aegisPeriodOf(cur.rewards_until, ends[i - 1].rewards_until); // throws unless exactly one grid period
+    if (!include(cur.rewards_until)) continue;
+    if (cur.rewards_until > AEGIS_REWARDS_START) aegisPeriodOf(cur.rewards_until, ends[i - 1].rewards_until); // exactly one grid period
     const now = proofs.get(cur.merkle_root);
-    const before = proofs.get(ends[i - 1].merkle_root);
+    const before = i === 0 ? new Map() : proofs.get(ends[i - 1].merkle_root);
     if (!now || !before) throw new Error(`payouts for ${cur.rewards_until}: proofs of ${now ? ends[i - 1].merkle_root : cur.merkle_root} missing`);
     const amount = (p?: { cumulativeAmount: string; kycAmount?: string }) => (p ? BigInt(p.cumulativeAmount) + BigInt(p.kycAmount ?? "0") : 0n);
     for (const a of [...before.keys()]) if (!now.has(a)) throw new Error(`${cur.rewards_until}: ${a} dropped from the published proofs`);
