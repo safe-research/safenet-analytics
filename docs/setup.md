@@ -22,6 +22,18 @@
    - The layout looks as intended. The 6-column grid in `src/config.ts` is taken from the official CLI's examples and is not documented by Dune. If widths look wrong, adjust `GRID_COLUMNS` and the positions in `dune/dashboards/`.
    - Move new dashboards into the safe team's **Safenet** folder (one-time UI step; the API cannot assign folders, see [dune-api.md](dune-api.md)).
 
+## Rewards sync
+
+*Sync rewards* (`.github/workflows/sync-rewards.yml`) runs daily at 04:47 UTC and by hand.
+
+- It syncs the published staking rewards: the ENS name `rewards.safenet-gov.eth` → IPFS for Aegis, frozen safenet-data git for Beta.
+- When the generated data changes, it pushes `rewards-sync/<rewardsUntil>-<root>` and opens a pull request, then dispatches Validate and Preview for it.
+- It uses `GITHUB_TOKEN` and pushes only that branch. It needs no deploy key, deliberately: every write deploy key bypasses `main`'s ruleset (step 4 above).
+
+One-time setup: under *Settings → Actions → General*, enable **Allow GitHub Actions to create and approve pull requests**. Optional secrets `GNOSIS_RPC_URL` and `ETHEREUM_RPC_URL` are used if set.
+
+The commission split is not run in CI. The pull request lists the command for every new period without one ([staking.md](metrics/staking.md#commission-split)). Pushing the recorded split to the branch also starts the normal pull-request workflows. Pushes made with `GITHUB_TOKEN` start none, so if `main`'s ruleset requires checks from `pull_request` runs, push any commit to the branch, or close and reopen the pull request.
+
 ## Local use
 
 Requires Node.js 22.18 or later (`.nvmrc`); Node runs the TypeScript sources directly.

@@ -20,3 +20,7 @@ After refreshing, the workflow recomputes the request metric (`verify:transactio
 So the schedule lives in this repository and runs on GitHub Actions. To add another schedule (for example hourly), add it to `REFRESH_SCHEDULES` in `src/config.ts` and a cron entry in `.github/workflows/refresh.yml` that runs `npm run refresh -- --schedule hourly`.
 
 GitHub disables scheduled workflows in repositories without activity for 60 days. If the dashboard stops updating, check that *Refresh* is still enabled.
+
+## Published rewards
+
+Rewards data is generated into the repository, not read live: a new Merkle root changes nothing on Dune until it is synced and merged. *Sync rewards* ([setup.md](setup.md#rewards-sync)) checks daily, before Refresh, and opens a pull request when the ENS name `rewards.safenet-gov.eth` pins a new rewards DB. Until it is merged, Refresh's `verify:rewards-apr` and `verify:sentinels` fail on purpose, because the distributor's root is newer than the repository's. The realized APR shows the new period as *not yet published*, with its stake.
