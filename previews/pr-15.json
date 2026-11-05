@@ -1,39 +1,39 @@
 {
   "dashboards": {
     "arbitration": {
-      "desired": "a8ad2f7481c1ac9e",
+      "desired": "acbffc5c9a3cafe1",
       "id": 222904,
-      "remote": "7cf40b143ac4b04e",
+      "remote": "ea21e3e516708ac0",
       "url": "https://dune.com/safe/safenet-arbitration-preview-pr-15"
     },
     "network-revenue": {
-      "desired": "ee75b603d1b46abd",
+      "desired": "787d33a493a59a70",
       "id": 222905,
-      "remote": "7ad7544c60ab318a",
+      "remote": "24827dac6ade5b41",
       "url": "https://dune.com/safe/safenet-network-revenue-preview-pr-15"
     },
     "overview": {
-      "desired": "03317dc3fbab60ec",
+      "desired": "cba9ecfd7d9c020b",
       "id": 222903,
-      "remote": "1b0403038b51e83c",
+      "remote": "220f970247417b15",
       "url": "https://dune.com/safe/safenet-preview-pr-15"
     },
     "sentinels": {
-      "desired": "b447cbd45e9e6684",
+      "desired": "2c41379327440622",
       "id": 222906,
-      "remote": "1be596a50d729827",
+      "remote": "c88dcf1c8a6e539a",
       "url": "https://dune.com/safe/safenet-sentinels-preview-pr-15"
     },
     "staking": {
-      "desired": "eec4c024d7658e19",
+      "desired": "37aa2570852052b1",
       "id": 222907,
-      "remote": "e91e759bf95478b9",
+      "remote": "bc0d352726b5f3c2",
       "url": "https://dune.com/safe/safenet-staking-preview-pr-15"
     },
     "validators": {
-      "desired": "b06cf68f2a038195",
+      "desired": "a9abd95831a0a385",
       "id": 222908,
-      "remote": "004b419ceaa63733",
+      "remote": "e016b30e9257b1b8",
       "url": "https://dune.com/safe/safenet-validators-preview-pr-15"
     }
   },
@@ -207,18 +207,18 @@
       "sql": "6ee829bbe29a942c"
     },
     "staking_rewards_apr": {
-      "credits": 1.5625,
-      "ended_at": "2026-11-05T13:52:24.707227684Z",
-      "execution_id": "01M6NZNZAN4429DV3TYMHDCVCS",
+      "credits": 1.054264706,
+      "ended_at": "2026-11-05T14:37:33.228998448Z",
+      "execution_id": "01M6P28ZXFC140JRNPA7G3BDQ0",
       "query_id": 9076757,
-      "sql": "dacabbace7fcb785"
+      "sql": "cbac32b89b558b91"
     },
     "staking_rewards_apr_by_validator": {
-      "credits": 1.90132353,
-      "ended_at": "2026-11-05T13:52:47.150282627Z",
-      "execution_id": "01M6NZPYGHPYA3BV08CGA246B1",
+      "credits": 1.153088236,
+      "ended_at": "2026-11-05T14:37:53.602989436Z",
+      "execution_id": "01M6P29MK3K41V74NC0AEYJRGK",
       "query_id": 9076758,
-      "sql": "ea3316e8be209db7"
+      "sql": "f57bd97282d135ed"
     },
     "staking_withdrawals_outstanding": {
       "credits": 0.394588237,
@@ -256,18 +256,18 @@
       "sql": "e75dd0ded7da3c48"
     },
     "validator_rewards_by_staker": {
-      "credits": 0.115794118,
-      "ended_at": "2026-11-05T13:53:31.981948615Z",
-      "execution_id": "01M6NZRRJT5HBCRB7SQP0CG6B1",
+      "credits": 0.082970589,
+      "ended_at": "2026-11-05T14:38:02.341772564Z",
+      "execution_id": "01M6P2A9EQTV21P6XVEGBDBXE4",
       "query_id": 9076764,
-      "sql": "e24dd231da4d4bd5"
+      "sql": "0671b3825777baf4"
     },
     "validator_rewards_periods": {
-      "credits": 0.113441177,
-      "ended_at": "2026-11-05T13:53:44.156432461Z",
-      "execution_id": "01M6NZS33P93V24JFTT19SYK4A",
+      "credits": 0.076617648,
+      "ended_at": "2026-11-05T14:38:07.076705876Z",
+      "execution_id": "01M6P2AERD77N4ZDEB9ZGYB7G6",
       "query_id": 9076765,
-      "sql": "6ea7bcb8a2c490c3"
+      "sql": "575957923e2ff38e"
     },
     "validator_stake_daily": {
       "credits": 0.180000001,
@@ -428,9 +428,9 @@
       "remote": "04717b38b00fd3d2"
     },
     "safenet_reward_breakdown": {
-      "desired": "4e93ade4570a56e4",
+      "desired": "6e6643d2315b5960",
       "id": 9076727,
-      "remote": "4e93ade4570a56e4"
+      "remote": "6e6643d2315b5960"
     },
     "safenet_reward_events": {
       "desired": "2ab6b255466278f8",
@@ -468,9 +468,9 @@
       "remote": "f9c8384064cc9cca"
     },
     "safenet_validator_rewards": {
-      "desired": "84bf3528a88580b2",
+      "desired": "bc86a6607e60f879",
       "id": 9076732,
-      "remote": "84bf3528a88580b2"
+      "remote": "bc86a6607e60f879"
     },
     "sentinel_bonds": {
       "desired": "807934e0b5d5ac1b",
@@ -558,14 +558,14 @@
       "remote": "15a2ee95d6db00de"
     },
     "staking_rewards_apr": {
-      "desired": "808cf812e41947ea",
+      "desired": "990b0c884ef548b1",
       "id": 9076757,
-      "remote": "808cf812e41947ea"
+      "remote": "990b0c884ef548b1"
     },
     "staking_rewards_apr_by_validator": {
-      "desired": "e54f11fab9e6063a",
+      "desired": "3bfda5af22e9276b",
       "id": 9076758,
-      "remote": "e54f11fab9e6063a"
+      "remote": "3bfda5af22e9276b"
     },
     "staking_validator_stakers": {
       "desired": "7ce94e719da23efd",
@@ -628,9 +628,9 @@
       "remote": "e6f17a8da6c0e94f"
     },
     "validator_rewards_periods": {
-      "desired": "7b6cf759bc292b0a",
+      "desired": "3b298e3e485e31bb",
       "id": 9076765,
-      "remote": "7b6cf759bc292b0a"
+      "remote": "3b298e3e485e31bb"
     },
     "validator_stake_daily": {
       "desired": "954fb6219a2563d6",
