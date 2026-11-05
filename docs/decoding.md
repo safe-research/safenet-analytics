@@ -83,6 +83,12 @@ The models still read raw logs until the parity check below holds and each switc
 
 The **Validators** models read Consensus (epochs, attestations, staker settings) and the FROSTCoordinator (key generation and signing) from the decoded tables in `validator_epochs`, `validator_membership`, `validator_ceremonies` and `validator_staker_history`. Beta Consensus is not decoded, so `validator_staker_history` still reads its `ValidatorStakerSet` from `gnosis.logs` ([metrics/validators.md](metrics/validators.md#decoding-and-coverage)).
 
+**Beta signing** (`validator_beta_participation`) reads raw `gnosis.logs`, like the Beta staker history:
+- the Beta FROST coordinator `0xae27…d7e4`: `SignShared`, `SignCompleted`, with the same signatures as production's;
+- the Beta Consensus `0x2236…cEE9`: `TransactionAttested`, whose Beta signature differs (`BETA_TRANSACTION_ATTESTED` in `src/safenet.ts`).
+
+Dune has decoded the Beta Consensus as *SafenetBetaConsensus*. Both contracts are listed for `check-decoded`, so the preview comment reports their tables. A switch to decoded tables follows the steps below, with a parity check of the raw and decoded events.
+
 The FROSTCoordinator is shared by production and the Aegis testnet. Decoded or not, its events cannot be attributed to production by address alone: the models keep only ceremonies initiated by production Consensus and groups named by it.
 
 **Mixing raw logs with decoded tables.** Dune's decoded tables can trail its raw logs by a minute or so. A model that combines raw logs with decoded events must therefore end at the decoded events' last block. `safenet_fee_flows` and `safenet_sentinel_wallet_transfers` drop USDC.e transfers after the last block of `safenet_events`, the `through_block` the fee allocation and the Sentinel figures report. They take that bound from the read of `safenet_events` they already make, so no read is added (`test/safenet.test.ts`). Without the cap, a Sentinel claim inside that minute made available and locked bond end at different blocks (Refresh of 2026-11-02, OpenCover, Candide and BlockSec, 800.133333 USDC.e each).

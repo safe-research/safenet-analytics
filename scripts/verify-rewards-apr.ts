@@ -30,11 +30,11 @@ import { DuneClient } from "../src/dune.ts";
 import { addressUrl, txUrl } from "../src/links.ts";
 import { loadParticipants } from "../src/participants.ts";
 import { contenthashHistory, DEFAULT_IPFS_GATEWAYS, fetchRewardsDb, proofTotals } from "../src/rewards-ipfs.ts";
-import { EVENTS, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { BETA_CONSENSUS, EVENTS, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import { loadState } from "../src/state.ts";
-import { AEGIS_REWARDS_START, loadValidatorRewards, periodEnds, periodPayouts, type ValidatorPeriod } from "../src/validator-rewards.ts";
+import { AEGIS_REWARDS_START, BETA_MIN_PAYOUT, loadValidatorRewards, periodEnds, periodPayouts, type ValidatorPeriod } from "../src/validator-rewards.ts";
 import { rpcClient, topicAddress } from "./lib/recount.ts";
-import { apr, byValidator, completedPeriods, type Period, periodStake, rewardParticipation, type StakerSet } from "./lib/rewards-apr.ts";
+import { apr, betaPeriods, byValidator, completedPeriods, isBeta, type Period, periodStake, rewardParticipation, type StakerSet } from "./lib/rewards-apr.ts";
 import { DEFAULT_ETH_RPC, fetchStakingEvents } from "./lib/staking.ts";
 import { build, fetchValidatorLogs } from "./lib/validators.ts";
 
@@ -118,6 +118,9 @@ const events = await fetchStakingEvents(eth, ethHead);
 const stakerSets: StakerSet[] = [];
 for (const l of await gnosis.getLogs(PRODUCTION.consensus.address, [VALIDATOR_STAKER_SET.topic0], PRODUCTION.consensus.deployBlock, gnosisHead))
   stakerSets.push({ validator: topicAddress(l.topics[1]), staker: `0x${l.data.slice(26, 66)}`.toLowerCase(), time: await gnosis.blockTime(l) });
+const betaStakerSets: StakerSet[] = [];
+for (const l of await gnosis.getLogs(BETA_CONSENSUS.address, [VALIDATOR_STAKER_SET.topic0], BETA_CONSENSUS.deployBlock, gnosisHead))
+  betaStakerSets.push({ validator: topicAddress(l.topics[1]), staker: `0x${l.data.slice(26, 66)}`.toLowerCase(), time: await gnosis.blockTime(l) });
 
 // The last Gnosis block at or before t (binary search on block timestamps).
 const blockAt = async (t: number) => {
@@ -131,9 +134,10 @@ const blockAt = async (t: number) => {
   return lo;
 };
 
-const periods = completedPeriods(Date.now() / 1000);
+// Beta periods (participation not recounted: the Beta Consensus is not decoded), then Aegis.
+const periods = [...betaPeriods(), ...completedPeriods(Date.now() / 1000)];
 const settlements = new Map<number, number>();
-for (const p of periods) {
+for (const p of periods.filter((x) => !isBeta(x))) {
   const b = (await blockAt(p.to)) + 48;
   if (b <= gnosisHead) settlements.set(p.to, b);
 }
@@ -162,14 +166,19 @@ const representative: Record<string, unknown>[] = [];
 for (const p of periods) {
   const until = iso(p.to);
   const L = BigInt(p.to - p.from);
-  const pairs = periodStake(events, p, stakerSets);
+  const beta = isBeta(p);
+  const pairs = periodStake(events, p, beta ? betaStakerSets : stakerSets);
   const perValidator = byValidator(pairs);
   const settlement = settlements.get(p.to);
-  const part = state && settlement ? rewardParticipation(state.ceremonies, times, p, settlement) : null;
-  const eligible = (v: string) => !!part && part.transactions > 0 && (part.signed.get(v) ?? 0) / part.transactions >= 0.75;
+  const part = !beta && state && settlement ? rewardParticipation(state.ceremonies, times, p, settlement) : null;
+  const recorded = (data.validator_periods ?? []).filter((v) => v.rewards_until === until);
+  // Aegis: participation ≥ 75%, recounted here. Beta: paid by the derived split. Dune derives Beta
+  // eligibility from participation (validator_beta_participation), so comparing the two checks that
+  // the signing events and the payouts agree.
+  const eligible = (v: string) =>
+    beta ? !!recorded.find((r) => r.validator === v)?.eligible : !!part && part.transactions > 0 && (part.signed.get(v) ?? 0) / part.transactions >= 0.75;
   const root = ends.find((r) => r.rewards_until === until);
   const payouts = new Map((data.payouts ?? []).filter((x) => x.rewards_until === until).map((x) => [x.address, x]));
-  const recorded = (data.validator_periods ?? []).filter((v) => v.rewards_until === until);
   const verified = recorded.length > 0;
 
   let eligibleSeconds = 0n;
@@ -201,11 +210,12 @@ for (const p of periods) {
         self: safe(v.self / L),
         diff_base_units: [dStake.toString(), dSelf.toString()],
       });
-      // 3. Participation = the scripts'.
-      // 3. Participation rebuilt from signing events: eligible exactly where the derived split pays.
+      // 3. Participation rebuilt from signing events (Aegis): eligible exactly where the derived split pays.
       if (part) check(`${until.slice(0, 10)} ${nameOf(v.validator)}: participation ${part.signed.get(v.validator) ?? 0}/${part.transactions} ${eligible(v.validator) ? "≥" : "<"} 75%, as the derived reward says`, eligible(v.validator) === r.eligible && r.eligible === BigInt(r.reward) > 0n);
     }
-    // 4. The formula on the replay gives the recorded per-validator rewards.
+    // 4. The formula on the replay gives the recorded per-validator rewards (Aegis: it needs the
+    // participation, which is not recounted for Beta).
+    if (!beta) {
     const budget = recorded.reduce((a, v) => a + BigInt(v.reward), 0n) + BigInt(root?.unpaid_amount ?? "0");
     const vs = recorded.map((v) => v.validator);
     const total = (v: string) => (perValidator.get(v)?.registered ?? 0n) / L;
@@ -234,6 +244,7 @@ for (const p of periods) {
     const rewardsTotal = budget - BigInt(root?.unpaid_amount ?? "0");
     check(`${until.slice(0, 10)}: staking payouts + unpaid = budget`, paidOut + BigInt(root?.unpaid_amount ?? "0") === periodBudget, { budget: periodBudget.toString(), unpaid: root?.unpaid_amount });
     check(`${until.slice(0, 10)}: validator rewards cover the payouts up to rounding`, rewardsTotal >= paidOut && rewardsTotal - paidOut < 10n ** 6n, { dust_base_units: (rewardsTotal - paidOut).toString() });
+    }
     // Per address: payout re-derived from the recorded rewards and the replayed stake.
     const expected = new Map<string, bigint>();
     const add = (a: string, x: bigint) => expected.set(a, (expected.get(a) ?? 0n) + x);
@@ -250,6 +261,8 @@ for (const p of periods) {
       add(pr.staker, dr - c);
       add(r.beneficiary, c);
     }
+    // Beta dropped payouts below 1 SAFE (they stayed unpaid).
+    if (beta) for (const [a, e] of expected) if (e < BETA_MIN_PAYOUT) expected.set(a, 0n);
     let worst = 0n;
     let worstAddress = "";
     let count = 0;
@@ -282,11 +295,12 @@ for (const p of periods) {
     }
     const unpaidEligible = [...byStaker].filter(([a, s]) => s.elig / L > 10n ** 12n && !paid(a)).map(([a]) => a);
     const paidIneligible = [...byStaker].filter(([a, s]) => s.elig === 0n && s.inelig > 0n && paid(a) && !recorded.some((v) => v.beneficiary === a)).map(([a]) => a);
-    check(`${until.slice(0, 10)}: every staker with eligible stake is paid (none excluded, e.g. sanctioned)`, unpaidEligible.length === 0, unpaidEligible);
+    // Aegis (Beta's tiny stakers were legitimately not paid; the re-derivation above covers them).
+    if (!beta) check(`${until.slice(0, 10)}: every staker with eligible stake is paid (none excluded, e.g. sanctioned)`, unpaidEligible.length === 0, unpaidEligible);
     check(`${until.slice(0, 10)}: stakers only on ineligible validators are not paid`, paidIneligible.length === 0, paidIneligible);
 
-    // Representative cases
-    if (!representative.length) {
+    // Representative cases (Aegis)
+    if (!representative.length && !beta) {
       const inPeriod = events.filter((e) => e.time >= p.from && e.time < p.to);
       const dep = inPeriod.find((e) => e.event === "deposit" && eligible(e.validator!));
       const req = inPeriod.find((e) => e.event === "withdrawal_requested" && eligible(e.validator!));
@@ -316,6 +330,7 @@ for (const p of periods) {
   const delegatorRewards = recorded.reduce((a, v) => a + BigInt(v.delegator_reward), 0n);
   const row = {
     period: `${until.slice(0, 10)}`,
+    programme: beta ? "Beta" : "Aegis",
     status: root ? "published" : "not yet published",
     settlement_block: settlement ?? null,
     stake_rewards: root ? safe(stakeRewards) : null,
@@ -379,7 +394,7 @@ if (key) {
       }
       for (const c of ["avg_stake", "avg_self_stake", "gross_apr", "delegator_apr", "self_stake_apr", "commission", "eligible"] as const)
         compare(`by validator ${r.period} ${r.validator}`, c, r[c] as number | boolean | null, d[c]);
-      compare(`by validator ${r.period} ${r.validator}`, "participation", r.participation as string, `${d.signed}/${d.transactions}`);
+      if (r.participation !== null) compare(`by validator ${r.period} ${r.validator}`, "participation", r.participation as string, `${d.signed}/${d.transactions}`);
     }
     compared.push("staking_rewards_apr_by_validator");
   }

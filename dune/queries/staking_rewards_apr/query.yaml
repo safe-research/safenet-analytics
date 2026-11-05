@@ -1,6 +1,7 @@
 name: "Safenet: realized staking APR by reward period"
 description: >
-  Realized, non-compounded staking APR of each completed Safenet Aegis reward period: published
+  Realized, non-compounded staking APR of each completed Safenet reward period, Beta and Aegis, each
+  marked with its programme (they had different budgets): published
   staking rewards (Sentinel grants excluded) over the time-weighted stake on validators that met
   the participation threshold, annualized with 365 days. Also on all stake, and net of commission
   for delegators where the commission split is verified. Historical only; not a projection.
@@ -15,17 +16,19 @@ visualizations:
     name: Realized staking APR, latest published period (%)
     type: counter
     description: >
-      Latest completed reward period whose rewards are published (its dates are the first row of the
-      table): stake rewards / time-weighted eligible stake × 365 days / period length. Before
+      Latest completed Aegis reward period whose rewards are published (its dates are the first row
+      of the table): stake rewards / time-weighted eligible stake × 365 days / period length. Before
       commission; delegators' net rate is in the table. Not a projection.
     options: { counterColName: pool_apr, rowNumber: 1, stringDecimal: 2, stringSuffix: "%", counterLabel: "Realized APR, latest published period (eligible stake, non-compounded)" }
   history:
-    name: Realized staking APR by reward period (%)
+    name: Realized staking APR by reward period, Beta and Aegis (%)
     type: chart
     description: >
-      Completed Aegis periods only. Pool: all stake rewards over eligible stake. Delegators: net of
-      commission, verified split only. All stake: including stake on ineligible validators. A
-      period without bars is not published yet, not 0.
+      Completed periods. Beta (grey, 2026-04-07 – 2026-10-06) and Aegis (colour, from 2026-10-13) were
+      separate programmes with different budgets (Beta 4.5M SAFE over 26 weeks, Aegis 5M over 52), so
+      their levels are not a trend. Pool: all stake rewards over eligible stake. Delegators: net of
+      commission. All stake: including stake on ineligible validators. A period without bars is not
+      published yet, not 0.
     options:
       globalSeriesType: column
       sortX: true
@@ -35,13 +38,19 @@ visualizations:
         - title: { text: "APR (%)" }
       columnMapping:
         period: x
-        pool_apr: y
-        delegator_apr: y
-        apr_all_stake: y
+        pool_apr_beta: y
+        delegator_apr_beta: y
+        apr_all_stake_beta: y
+        pool_apr_aegis: y
+        delegator_apr_aegis: y
+        apr_all_stake_aegis: y
       seriesOptions:
-        pool_apr: { type: column, yAxis: 0, zIndex: 0, name: "Pool (eligible stake, before commission)", color: "#184f95" }
-        delegator_apr: { type: column, yAxis: 0, zIndex: 1, name: "Delegators (net of commission)", color: "#6da7ec" }
-        apr_all_stake: { type: column, yAxis: 0, zIndex: 2, name: "All stake (incl. ineligible validators)", color: "#b5b3ab" }
+        pool_apr_beta: { type: column, yAxis: 0, zIndex: 0, name: "Beta: pool (eligible stake)", color: "#6f6e69" }
+        delegator_apr_beta: { type: column, yAxis: 0, zIndex: 1, name: "Beta: delegators (net)", color: "#a3a19a" }
+        apr_all_stake_beta: { type: column, yAxis: 0, zIndex: 2, name: "Beta: all stake", color: "#d3d1ca" }
+        pool_apr_aegis: { type: column, yAxis: 0, zIndex: 3, name: "Aegis: pool (eligible stake, before commission)", color: "#184f95" }
+        delegator_apr_aegis: { type: column, yAxis: 0, zIndex: 4, name: "Aegis: delegators (net of commission)", color: "#6da7ec" }
+        apr_all_stake_aegis: { type: column, yAxis: 0, zIndex: 5, name: "Aegis: all stake (incl. ineligible validators)", color: "#8fb8a8" }
   table:
     name: Realized staking APR by reward period (table)
     type: table
@@ -52,6 +61,7 @@ visualizations:
       itemsPerPage: 25
       columns:
         - { name: period, title: Period, type: normal, alignContent: left, isHidden: false }
+        - { name: programme, title: Programme, type: normal, alignContent: left, isHidden: false }
         - { name: status, title: Status, type: normal, alignContent: left, isHidden: false }
         - { name: root_on_chain, title: Root set on chain, type: normal, alignContent: left, isHidden: false }
         - { name: pool_apr, title: "APR, eligible stake (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
@@ -75,3 +85,9 @@ visualizations:
         - { name: validators_with_stake, title: validators_with_stake, type: normal, alignContent: left, isHidden: true }
         - { name: payout_addresses, title: payout_addresses, type: normal, alignContent: left, isHidden: true }
         - { name: settlement_block, title: settlement_block, type: normal, alignContent: left, isHidden: true }
+        - { name: apr_all_stake_beta, title: apr_all_stake_beta, type: normal, alignContent: left, isHidden: true }
+        - { name: delegator_apr_beta, title: delegator_apr_beta, type: normal, alignContent: left, isHidden: true }
+        - { name: pool_apr_beta, title: pool_apr_beta, type: normal, alignContent: left, isHidden: true }
+        - { name: apr_all_stake_aegis, title: apr_all_stake_aegis, type: normal, alignContent: left, isHidden: true }
+        - { name: delegator_apr_aegis, title: delegator_apr_aegis, type: normal, alignContent: left, isHidden: true }
+        - { name: pool_apr_aegis, title: pool_apr_aegis, type: normal, alignContent: left, isHidden: true }

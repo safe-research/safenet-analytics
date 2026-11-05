@@ -120,7 +120,7 @@ test("APR pages show the latest published period and leave unpublished periods b
     "f",
   );
   assert.deepEqual(pages.map((p) => p[0]), ["staking_apr", "staking_apr_by_validator"]);
-  assert.match(pages[0][1], /latest published period: 2026-10-13 – 2026-10-27/);
+  assert.match(pages[0][1], /latest published Aegis period: 2026-10-13 – 2026-10-27/);
   assert.match(pages[0][1], />8\.89%<\/div>/, "APR counters keep two decimals, as on Dune");
   assert.match(pages[0][1], />8\.49%<\/div>/);
   assert.ok(!/>0<\/td>/.test(pages[0][1].split("not yet published")[1] ?? ""), "unpublished APR rendered as 0");

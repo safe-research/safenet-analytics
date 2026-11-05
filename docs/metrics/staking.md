@@ -102,7 +102,7 @@ The **production start** is the deployment of the production Consensus on Gnosis
 
 ## Realized APR
 
-What staking earned in each **completed** Aegis reward period, from the published rewards and the stake that earned them. It is historical. There is no projected or current APR on the dashboard, and none is implied: future rates depend on future stake, participation and rewards.
+What staking earned in each **completed** reward period, from the published rewards and the stake that earned them: the 13 **Beta** periods (2026-04-07 to 2026-10-06) and the **Aegis** periods (from 2026-10-13), always labelled with their programme. It is historical. There is no projected or current APR on the dashboard, and none is implied: future rates depend on future stake, participation and rewards.
 
 ### Formula
 
@@ -121,6 +121,23 @@ APR (%) = stake rewards / time-weighted eligible stake × 365 days / period leng
 | **Time-weighted stake** | Σ balance × seconds held, ÷ period seconds, per (staker, validator), from every `StakeIncreased` and `WithdrawalInitiated` at its block time (`staking_period_stake`). The balance at the period start is carried in. A withdrawal request leaves at once, as in the contract. This is exact event-time weighting, not daily snapshots. |
 | **Eligible stake** | Time-weighted stake on validators that met the 75% reward participation threshold, counted only while the validator was registered in the Staking contract. It is the stake the rewards were paid on. Stakers the reward scripts exclude (sanctioned) would be removed. There are none so far, and the verification checks it. |
 | **Reward participation** | The reward scripts' rate (`src/data/attestations.ts`). It counts recognised signature shares on transaction ceremonies completed in the period (both ends included) whose `TransactionAttested` is no later than the **settlement block** (the last Gnosis block at or before the period end, + 48). The denominator is all such ceremonies, member or not (`staking_period_validators`). |
+
+**Beta and Aegis.** Both programmes are in the same panels and are always told apart:
+- every period label ends in *(Beta)* or *(Aegis)*, and the tables have a *Programme* column;
+- the history chart draws Beta in greys and Aegis in colour, as the stake charts do;
+- the headline is the latest published Aegis period.
+
+The programmes had different budgets: Beta 4.5M SAFE over 13 periods (26 weeks), Aegis 5M over 52 weeks. Beta also ran on less stake. Their rates are therefore not a trend: Beta ran from 39% in its first period, on 23M SAFE of eligible stake, to about 12%; Aegis started at 8.89%.
+
+Differences in method for Beta:
+- **Participation** is recounted from Beta's own signing contracts (`validator_beta_participation`):
+  - the Beta FROST coordinator (`0xae27…d7e4`, named by the Beta Consensus `getCoordinator()`);
+  - the Beta Consensus `TransactionAttested`, which has its own signature.
+
+  The rule is the Beta reward scripts' (e.g. `c04d176`): recognised shares on attested transaction ceremonies completed in the period, out of all of them. There was no settlement block yet.
+- **Self-stake** uses the Beta Consensus `ValidatorStakerSet`.
+
+Three independent routes agree for Beta. For 2026-07-14 – 07-28, participation was recounted from 528,371 coordinator logs over RPC: 65,741 attested ceremonies, every validator ≥ 75% (Core Contributors 79.1%). Beta's allocation formula, given that participation and the replayed stake, reproduces the reward split derived from the payouts to nine decimals for every validator. The verification compares Dune's participation-based eligibility with who the split paid in every Beta period.
 
 Three rates per period (`staking_rewards_apr`):
 
@@ -313,6 +330,10 @@ One row per completed Aegis reward period and (staker, validator) with stake in 
 | `stake_seconds_all_raw`, `stake_seconds_raw`, `self_stake_seconds_raw` | balance × seconds in the period (base units × s): all, while the validator was registered, and the registered part held by its registered staker |
 | `avg_stake_all`, `avg_stake`, `avg_self_stake` | the same ÷ period seconds, in SAFE |
 
+### validator_beta_participation
+
+One row per Beta reward period and validator with recognised shares: `signed`, `transactions`, `participation`. It reads raw `gnosis.logs` of the Beta coordinator and the Beta Consensus in one scan, bounded to blocks 45525872 – 48643007 (2026-04-06 – 2026-10-08). `refresh: none`.
+
 ### staking_period_validators
 
 One row per completed period and validator with stake. Fields: `avg_stake`, `avg_stake_all`, `avg_self_stake`, `avg_delegated_stake`, `stakers`, `signed`, `transactions`, `participation`, `eligible`, `settlement_block`, `settlement_time`. `refresh: none`.
@@ -421,6 +442,8 @@ The Dune comparison runs in the pull request's preview comment.
 - **Decoding lag.** If Dune's decoded tables lag behind `ethereum.blocks`, an event in that gap is missing from a result that reports a later `through_block`. The verification would show it as a mismatch.
 - **No USD values.**
 - **APR is realized, not projected.** It covers completed and published periods only. A period that has ended but whose rewards are not published shows its stake and *not yet published*, with no APR.
+- **Beta and Aegis are different programmes.** Their budgets differ, so the Beta rates are not a baseline for Aegis.
+- **Beta participation is checked against the payouts, not recounted in CI.** About 7 million Beta signing logs are too many to replay over public RPC on every run. CI checks that Dune's Beta eligibility matches who the derived split paid, and one period was recounted in full (above).
 - **Per-validator rewards and commission need a verified split.** The sync derives it ([Commission split](#commission-split)). If the published payouts cannot be reproduced, for example after a change of the reward rules, the period shows only the pool APR and the APR on all stake.
 - **Reward rules are restated in code.** The derivation uses the 5% commission, the 3.5M SAFE self-stake threshold and the beneficiary rule of the reward scripts. The exact-match check makes a wrong rule visible as *split not verified*, not as wrong numbers.
 - **Rewards are published on chain**, through the ENS contenthash of `rewards.safenet-gov.eth` and IPFS. [safenet-data](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards) was a mirror and is no longer updated after Beta. The sync needs an IPFS gateway that serves the content (`IPFS_GATEWAY_URL`; default Filebase, then Pinata). Every CAR is verified against its CID, so a gateway can withhold data but not alter it.

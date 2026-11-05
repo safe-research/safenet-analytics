@@ -724,11 +724,11 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
     const head = a[0];
     pages.push([
       "staking_apr",
-      `${countersHtml(`Realized staking APR, latest published period: ${head.period}`, [
+      `${countersHtml(`Realized staking APR, latest published Aegis period: ${head.period}`, [
         { label: "Realized APR, eligible stake", value: head.pool_apr, decimals: 2, suffix: "%" },
         { label: "Delegators, net of commission", value: head.delegator_apr, decimals: 2, suffix: "%" },
         { label: "On all stake", value: head.apr_all_stake, decimals: 2, suffix: "%" },
-      ], footer)}${tableHtml("Realized staking APR by reward period (completed periods only)", a.map((r) => ({
+      ], footer)}${tableHtml("Realized staking APR by reward period, Beta and Aegis (completed periods only)", a.map((r) => ({
         ...r,
         pool_apr: round2(r.pool_apr),
         delegator_apr: round2(r.delegator_apr),
@@ -739,6 +739,7 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
         total_stake: round0(r.total_stake),
       })), [
         ["period", "Period"],
+        ["programme", "Programme"],
         ["status", "Status"],
         ["pool_apr", "APR eligible (%)"],
         ["delegator_apr", "Delegators net (%)"],
@@ -749,7 +750,7 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
         ["total_stake", "Avg total stake"],
         ["ineligible_validators", "Ineligible"],
         ["split_status", "Commission split"],
-      ], `${footer} A period without APR is not published yet, which is not 0.`)}`,
+      ], `${footer} Beta and Aegis had different budgets (Beta 4.5M SAFE over 26 weeks, Aegis 5M over 52): not a trend. A period without APR is not published yet, which is not 0.`)}`,
       1448,
       420 + rowsHeight(a.length),
     ]);
@@ -770,6 +771,7 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
         commission: round2(r.commission),
       })), [
         ["period", "Period"],
+        ["programme", "Programme"],
         ["validator", "Validator"],
         ["status", "Status"],
         ["participation", "Participation (%)"],

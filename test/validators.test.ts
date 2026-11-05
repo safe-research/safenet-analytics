@@ -6,7 +6,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { parse } from "yaml";
 import { DEFAULT_ROOT, inlineSql, loadConfig, referencedColumns, type VisualizationSpec } from "../src/config.ts";
 import { loadParticipants } from "../src/participants.ts";
-import { BETA_CONSENSUS, FROST_COORDINATOR, GENESIS_GROUP_ID, PRODUCTION, VALIDATOR_EVENTS, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { BETA_CONSENSUS, BETA_COORDINATOR, BETA_REWARD_LOGS, BETA_TRANSACTION_ATTESTED, FROST_COORDINATOR, GENESIS_GROUP_ID, PRODUCTION, VALIDATOR_EVENTS, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import { loadValidatorRewards, validatorRewardsSql, VALIDATOR_REWARDS_SQL_PATH } from "../src/validator-rewards.ts";
 import { VALIDATOR_COLORS } from "../src/validators.ts";
 
@@ -14,7 +14,7 @@ const read = (key: string) => readFile(`${DEFAULT_ROOT}/queries/${key}/query.sql
 const meta = async (key: string) => parse(await readFile(`${DEFAULT_ROOT}/queries/${key}/query.yaml`, "utf8"));
 const hash = (s: string) => `0x${bytesToHex(keccak_256(new TextEncoder().encode(s)))}`;
 
-const MODELS = ["validator_epochs", "validator_membership", "validator_ceremonies", "validator_staker_history", "safenet_validator_rewards"];
+const MODELS = ["validator_epochs", "validator_membership", "validator_ceremonies", "validator_staker_history", "validator_beta_participation", "safenet_validator_rewards"];
 const PANELS = [
   "validator_overview",
   "validator_stake_status",
@@ -58,11 +58,17 @@ test("a signature share counts only under the completed signature's selection ro
   assert.match(q, /completed_at is not null as completed/);
 });
 
-test("Beta Consensus is read only for the staker history", async () => {
+test("Beta Consensus is read only for the staker history and the Beta reward participation", async () => {
   for (const key of await readdir(`${DEFAULT_ROOT}/queries`)) {
     const q = (await read(key)).toLowerCase();
-    assert.equal(q.includes(BETA_CONSENSUS.address.slice(2)), key === "validator_staker_history", key);
+    assert.equal(q.includes(BETA_CONSENSUS.address.slice(2)), ["validator_staker_history", "validator_beta_participation"].includes(key), key);
   }
+  const b = await read("validator_beta_participation");
+  for (const t of [VALIDATOR_EVENTS.SignShared.topic0, VALIDATOR_EVENTS.SignCompleted.topic0, BETA_TRANSACTION_ATTESTED.topic0]) assert.ok(b.includes(t), `topic ${t}`);
+  assert.equal(hash(BETA_TRANSACTION_ATTESTED.signature), BETA_TRANSACTION_ATTESTED.topic0);
+  assert.ok(b.includes(BETA_COORDINATOR.address) && b.includes(BETA_CONSENSUS.address));
+  assert.ok(b.includes(`block_number between ${BETA_REWARD_LOGS.fromBlock} and ${BETA_REWARD_LOGS.toBlock}`));
+  assert.ok(b.includes(`block_date between date '${BETA_REWARD_LOGS.fromDate}' and date '${BETA_REWARD_LOGS.toDate}'`));
   const h = await read("validator_staker_history");
   assert.ok(h.includes("safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet") && h.includes(`contract_address = ${PRODUCTION.consensus.address}`), "production from the decoded table");
   assert.ok(h.includes(`contract_address = ${BETA_CONSENSUS.address}`) && h.includes(VALIDATOR_STAKER_SET.topic0), "Beta from raw logs");

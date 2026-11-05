@@ -1,14 +1,16 @@
--- Realized staking APR per completed Aegis reward period: published staking rewards over the
--- time-weighted stake that earned them, annualized without compounding. Historical, never a
--- projection. Definitions: docs/metrics/staking.md#realized-apr.
+-- Realized staking APR per completed reward period, Beta (2026-04-07 – 2026-10-06) and Aegis (from
+-- 2026-10-13): published staking rewards over the time-weighted stake that earned them, annualized
+-- without compounding. Historical, never a projection. Definitions: docs/metrics/staking.md#realized-apr.
+-- Beta and Aegis had different reward budgets (Beta 4.5M SAFE over 26 weeks, Aegis 5M over 52), so
+-- their rates are not comparable as a trend; every row and series says which programme it is.
 --
 --   APR = stake rewards / average eligible stake × 365 days / period length × 100
 --
 --   stake_rewards     SAFE allocated in the period minus Sentinel grants (safenet_reward_breakdown):
 --                     every validator's and delegator's staking reward and the commission, KYC-
 --                     withheld amounts included. Sentinel grants are not a return on stake.
---   eligible_stake    average stake on validators that met the 75% participation threshold, while
---                     registered (staking_period_validators): the stake the rewards were paid on
+--   eligible_stake    average stake on validators with at least 75% reward participation, while
+--                     registered (staking_period_validators; Beta: validator_beta_participation)
 --   pool_apr          stake_rewards / eligible_stake, annualized: the average over eligible stake,
 --                     before commission. Rates differ by validator (by_validator).
 --   apr_all_stake     stake_rewards / all average stake in the contract, ineligible included
@@ -50,7 +52,9 @@ stake as (
     select
         period_start,
         period_end,
-        max(period) as period,
+        max(period_label) as period,
+        max(era) as era,
+        count_if(eligible is null and avg_stake > 0) as unknown_eligibility,
         sum(avg_stake_all) as total_stake,
         sum(avg_stake) as registered_stake,
         sum(if(eligible, avg_stake, 0)) as eligible_stake,
@@ -87,7 +91,8 @@ rows_ as (
 )
 
 select
-    period || ' (Aegis)' as period,
+    period,
+    if(era = 'beta', 'Beta', 'Aegis') as programme,
     period_start,
     period_end,
     if(is_published, 'published', 'not yet published') as status,
@@ -105,15 +110,24 @@ select
     eligible_validators,
     validators_with_stake,
     ineligible as ineligible_validators,
-    if(is_published and eligible_stake > 0, 100 * stake_rewards / eligible_stake * annualization) as pool_apr,
+    if(is_published and unknown_eligibility = 0 and eligible_stake > 0, 100 * stake_rewards / eligible_stake * annualization) as pool_apr,
     if(is_published and total_stake > 0, 100 * stake_rewards / total_stake * annualization) as apr_all_stake,
     if(delegator_rewards is not null and eligible_delegated_stake > 0,
         100 * delegator_rewards / eligible_delegated_stake * annualization) as delegator_apr,
-    'stake rewards / time-weighted eligible stake × 365 d / ' || cast(period_seconds / 86400 as varchar)
+    -- the chart's series, one per programme: Beta in greys, Aegis in colour
+    if(era <> 'beta' and is_published and unknown_eligibility = 0 and eligible_stake > 0, 100 * stake_rewards / eligible_stake * annualization) as pool_apr_aegis,
+    if(era <> 'beta' and delegator_rewards is not null and eligible_delegated_stake > 0, 100 * delegator_rewards / eligible_delegated_stake * annualization) as delegator_apr_aegis,
+    if(era <> 'beta' and is_published and total_stake > 0, 100 * stake_rewards / total_stake * annualization) as apr_all_stake_aegis,
+    if(era = 'beta' and is_published and unknown_eligibility = 0 and eligible_stake > 0, 100 * stake_rewards / eligible_stake * annualization) as pool_apr_beta,
+    if(era = 'beta' and delegator_rewards is not null and eligible_delegated_stake > 0, 100 * delegator_rewards / eligible_delegated_stake * annualization) as delegator_apr_beta,
+    if(era = 'beta' and is_published and total_stake > 0, 100 * stake_rewards / total_stake * annualization) as apr_all_stake_beta,
+    if(era = 'beta', 'Beta programme (4.5M SAFE over 26 weeks); ', 'Aegis programme (5M SAFE over 52 weeks); ') || 'eligible = participation >= 75%; '
+        || 'stake rewards / time-weighted eligible stake × 365 d / ' || cast(period_seconds / 86400 as varchar)
         || ' d; non-compounded; Sentinel grants excluded' as basis,
     payout_addresses,
     settlement_block,
     merkle_root
 from rows_
--- Published periods first, newest first: the headline counter reads the first row.
-order by is_published desc, period_end desc
+-- Aegis first, then published first, newest first: the headline counter reads the first row, the
+-- latest published Aegis period.
+order by era = 'beta', is_published desc, period_end desc

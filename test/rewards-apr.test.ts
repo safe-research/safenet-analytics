@@ -346,12 +346,24 @@ test("APR uses staking rewards only: Sentinel grants are excluded from every num
 
 test("stake is time-weighted from events, never daily snapshots", async () => {
   const q = await read("staking_period_stake");
+  assert.ok(q.includes("cast(1776729600 as bigint), cast(1791244800 as bigint)"), "the 13 Beta periods, 2026-04-21 to 2026-10-06");
   assert.ok(q.includes("{{query:staking_events}}"));
   assert.ok(!q.includes("staking_daily") && !q.includes("validator_stake_daily"));
   assert.ok(q.includes("cast(1793059200 as bigint)") && q.includes("1209600"), "two-week periods from 2026-10-13");
   const v = await read("staking_period_validators");
   assert.ok(v.includes("boundary_block + 48"), "settlement 48 Gnosis blocks after the period end");
   assert.ok(v.includes(">= 0.75"), "participation threshold");
+});
+
+test("Beta and Aegis are told apart in every APR panel", async () => {
+  const apr = await meta("staking_rewards_apr");
+  const series = apr.visualizations.history.options.seriesOptions as Record<string, { name: string }>;
+  for (const [k, v] of Object.entries(series)) assert.match(v.name, k.endsWith("_beta") ? /^Beta: / : /^Aegis: /, k);
+  assert.ok((await read("staking_period_validators")).includes("if(s.era = 'beta', ' (Beta)', ' (Aegis)') as period_label"));
+  for (const key of ["staking_rewards_apr", "staking_rewards_apr_by_validator"]) {
+    assert.ok((await read(key)).includes("if(era = 'beta', 'Beta', 'Aegis') as programme"), key);
+    assert.ok(JSON.stringify((await meta(key)).visualizations.table.options.columns).includes('"programme"'), key);
+  }
 });
 
 test("APR panels are scheduled, the models are not, and the headline reads the latest published period", async () => {
@@ -361,7 +373,8 @@ test("APR panels are scheduled, the models are not, and the headline reads the l
   assert.equal(h.type, "counter");
   assert.equal(h.options.counterColName, "pool_apr");
   assert.equal(h.options.rowNumber, 1);
-  assert.ok((await read("staking_rewards_apr")).includes("order by is_published desc, period_end desc"));
+  // Aegis first, so the headline is never a Beta period; then published, newest first.
+  assert.ok((await read("staking_rewards_apr")).includes("order by era = 'beta', is_published desc, period_end desc"));
 });
 
 test("the APR panels are on the Staking and Validators dashboards, never on safe/safenet-staking", async () => {

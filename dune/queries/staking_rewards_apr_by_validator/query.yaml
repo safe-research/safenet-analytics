@@ -1,6 +1,7 @@
 name: "Safenet: realized staking APR by validator"
 description: >
-  Realized, non-compounded staking APR per completed Safenet Aegis reward period and validator:
+  Realized, non-compounded staking APR per completed Safenet reward period, Beta and Aegis (each
+  marked), and validator:
   gross, for delegators net of commission and on self-stake, with time-weighted stake, reward
   participation, eligibility, reward and commission. Rewards per validator from a verified split of
   the reward scripts only. Historical only; not a projection. Managed in
@@ -12,12 +13,13 @@ performance: medium
 
 visualizations:
   bars:
-    name: Realized delegator APR by validator and reward period (%)
+    name: Realized delegator APR by validator and reward period, Beta and Aegis (%)
     type: chart
     description: >
-      What a delegation to each validator earned in each completed period, net of commission. 0% for
-      a validator below the 75% participation threshold. No bar: not published or split not
-      verified, not 0.
+      What a delegation to each validator earned in each completed period, net of commission. Periods
+      marked (Beta) are the Beta programme (4.5M SAFE over 26 weeks), (Aegis) the Aegis programme (5M
+      over 52 weeks): different budgets, not a trend. 0% for an ineligible validator. No bar: not
+      published or split not verified, not 0.
     options:
       globalSeriesType: column
       sortX: true
@@ -47,6 +49,7 @@ visualizations:
       itemsPerPage: 25
       columns:
         - { name: period, title: Period, type: normal, alignContent: left, isHidden: false }
+        - { name: programme, title: Programme, type: normal, alignContent: left, isHidden: false }
         - { name: validator, title: Validator, type: normal, alignContent: left, isHidden: false }
         - { name: status, title: Status, type: normal, alignContent: left, isHidden: false }
         - { name: participation, title: Reward participation, type: normal, alignContent: right, isHidden: false, numberFormat: "0.00%" }

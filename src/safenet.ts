@@ -242,6 +242,18 @@ export const GENESIS_GROUP_ID = "0x965f661dcdfa091ff92d5f6a81877bb714b87aa17507b
 // Beta Consensus, read only for the validator → staker history before the production start.
 export const BETA_CONSENSUS = { address: "0x223624cbf099e5a8f8cd5af22afa424a1d1acee9", deployBlock: 45210396 } as const;
 
+// Beta signing, for Beta reward participation (validator_beta_participation): the FROST coordinator
+// the Beta Consensus names (getCoordinator(), deployed at block 45210395 on 2026-03-18), and the Beta
+// Consensus TransactionAttested, whose signature differs from production's. The coordinator emits
+// the same Sign / SignShared / SignCompleted events as production's (VALIDATOR_EVENTS). Reward periods
+// ran from 2026-04-07 to 2026-10-06; logs are read from the day before to two days after.
+export const BETA_COORDINATOR = { address: "0xae27021ceb45316f1efe69d8e362ac07ed3bd7e4", deployBlock: 45210395 } as const;
+export const BETA_TRANSACTION_ATTESTED = {
+  signature: "TransactionAttested(bytes32,uint256,address,uint64,bytes32,((uint256,uint256),uint256))",
+  topic0: "0x72272729e643703db011cc155474c30d652f1a68712d921cc263a881efd7bce6",
+} as const;
+export const BETA_REWARD_LOGS = { fromBlock: 45525872, toBlock: 48643007, fromDate: "2026-04-06", toDate: "2026-10-08" } as const;
+
 export const VALIDATOR_EVENTS = {
   EpochStaged: {
     signature: "EpochStaged(uint64,uint64,uint64,bytes32,(uint256,uint256),bytes32,((uint256,uint256),uint256))",
@@ -274,6 +286,9 @@ export const DECODING_CANDIDATES = [
   // Shared by production and the Aegis testnet; its events cannot be attributed to production alone.
   { name: "FROSTCoordinator", chain: "gnosis", address: "0xc6b34da4c99c043a093214d58423a8be39585b78" },
   { name: "Safenet7702Executor", chain: "gnosis", address: "0x4dfe88adf2d7c3fbd2e334ce820b9adfa541215c" },
+  // Beta (read from raw logs; listed so the check reports whether Dune has decoded them).
+  { name: "BetaConsensus", chain: "gnosis", address: BETA_CONSENSUS.address },
+  { name: "BetaFROSTCoordinator", chain: "gnosis", address: BETA_COORDINATOR.address },
   { name: "Staking", chain: "ethereum", address: STAKING.address },
   { name: "CumulativeMerkleDrop (SAFE rewards)", chain: "ethereum", address: REWARDS_DISTRIBUTOR.address },
 ] as const;

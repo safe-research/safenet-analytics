@@ -1,0 +1,11 @@
+name: "Safenet: Beta reward participation"
+description: >
+  Safenet Beta (2026-04-07 – 2026-10-06): reward participation per Beta reward period and
+  validator, as the Beta reward scripts counted it: recognised signature shares on attested
+  transaction ceremonies of the Beta FROST coordinator, out of all of them. From raw logs. Shared
+  model for the realized APR; not shown on the dashboard. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

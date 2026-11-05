@@ -1,5 +1,5 @@
--- Realized staking APR per completed Aegis reward period and validator. Historical, never a
--- projection. Definitions: docs/metrics/staking.md#realized-apr.
+-- Realized staking APR per completed reward period, Beta and Aegis, and validator. Historical, never
+-- a projection; every row says which programme it is. Definitions: docs/metrics/staking.md#realized-apr.
 --
 -- Stake, participation and eligibility come from chain data (staking_period_validators). Rewards per
 -- validator are not in the published files: they come from a verified split only
@@ -55,7 +55,8 @@ rows_ as (
 )
 
 select
-    period,
+    period_label as period,
+    if(era = 'beta', 'Beta', 'Aegis') as programme,
     period_start,
     period_end,
     validator,

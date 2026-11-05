@@ -16,6 +16,14 @@ export function completedPeriods(now: number): Period[] {
   return out;
 }
 
+// The 13 Beta reward periods: two weeks each from 2026-04-07 to 2026-10-06 (then the gap week).
+export function betaPeriods(): Period[] {
+  const out: Period[] = [];
+  for (let to = 1776729600; to <= 1791244800; to += 1209600) out.push({ from: to - 1209600, to });
+  return out;
+}
+export const isBeta = (p: Period) => p.to <= 1791244800;
+
 export type StakerSet = { validator: string; staker: string; time: number }; // production ValidatorStakerSet
 
 export type PairStake = { staker: string; validator: string; all: bigint; registered: bigint; self: bigint };
