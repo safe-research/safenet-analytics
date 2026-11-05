@@ -244,12 +244,18 @@ ${table}`,
 }
 
 // Several counters side by side (staking headline).
-export function countersHtml(title: string, items: { label: string; value: unknown }[], footer: string) {
+// A counter shows a whole number unless `decimals` is set (as `stringDecimal` on Dune), then `suffix`.
+export type Counter = { label: string; value: unknown; decimals?: number; suffix?: string };
+const counterValue = (i: Counter) =>
+  i.value === null || i.value === undefined
+    ? "–"
+    : `${num(i.value).toLocaleString("en-US", { minimumFractionDigits: i.decimals ?? 0, maximumFractionDigits: i.decimals ?? 0 })}${esc(i.suffix ?? "")}`;
+export function countersHtml(title: string, items: Counter[], footer: string) {
   return page(
     title,
     1400,
     `<div style="display:flex;flex-wrap:wrap;gap:24px 48px">${items
-      .map((i) => `<div><div class="hero" style="font-size:40px">${i.value === null || i.value === undefined ? "–" : fmt(Math.round(num(i.value)))}</div><div class="label">${esc(i.label)}</div></div>`)
+      .map((i) => `<div><div class="hero" style="font-size:40px">${counterValue(i)}</div><div class="label">${esc(i.label)}</div></div>`)
       .join("")}</div>`,
     footer,
   );
@@ -719,9 +725,9 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
     pages.push([
       "staking_apr",
       `${countersHtml(`Realized staking APR, latest published period: ${head.period}`, [
-        { label: "Realized APR, eligible stake (%)", value: round2(head.pool_apr) },
-        { label: "Delegators, net of commission (%)", value: round2(head.delegator_apr) },
-        { label: "On all stake (%)", value: round2(head.apr_all_stake) },
+        { label: "Realized APR, eligible stake", value: head.pool_apr, decimals: 2, suffix: "%" },
+        { label: "Delegators, net of commission", value: head.delegator_apr, decimals: 2, suffix: "%" },
+        { label: "On all stake", value: head.apr_all_stake, decimals: 2, suffix: "%" },
       ], footer)}${tableHtml("Realized staking APR by reward period (completed periods only)", a.map((r) => ({
         ...r,
         pool_apr: round2(r.pool_apr),
