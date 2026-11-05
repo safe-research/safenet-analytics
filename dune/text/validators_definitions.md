@@ -7,7 +7,8 @@
 - **Observed signing participation**: recognised signature shares ÷ completed ceremonies of the validator's groups. A share counts only under the completed signature's selection root. Pending ceremonies are not counted.
 - **Used for rewards**: the reward scripts' rate, signed attested transactions ÷ all attested transactions in the period. Payouts use settled two-week periods (from 2026-10-13) and thresholds that are part of the rewards proposal pending SafeDAO approval.
 - **Last signature share**: the validator's latest recognised share. It never reflects staking activity.
-- **Rewards**: allocations as published in [safenet-data](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards), by period. A validator staker's amount combines commission and own-stake reward; the split is not published. Claims count per address. Unpublished periods have no amounts, which is not 0.
+- **Rewards**: allocations as published by period: Beta in [safenet-data](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards), Aegis on chain (the ENS name `rewards.safenet-gov.eth` pins them on IPFS). A validator staker's amount combines commission and own-stake reward. The commission is shown only where the reward scripts' split matches every published payout exactly. Commission beneficiaries count with validator stakers. Claims count per address. Unpublished periods have no amounts, which is not 0.
+- **Realized APR by validator**: what each validator's stake earned in a completed period, annualized over 365 days without compounding. Gross is before commission; delegators' rate is net of it. Ineligible validators (below 75% participation) earned 0. See the Staking section.
 - **Outstanding withdrawals**: requested, not yet claimed, as in the Staking section.
 - Names come from [safenet-data](https://github.com/safe-fndn/safenet-data/blob/main/assets/validator-info.json) and are labels only; unknown validators show their address.
 

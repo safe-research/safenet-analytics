@@ -2,8 +2,9 @@
 -- KYC, claimed and claimable. Definitions: docs/metrics/validators.md#rewards.
 --
 -- One row per address ever registered as a validator's staker (Consensus.ValidatorStakerSet, Beta or
--- production). Its rewards are its commission and the reward on its own stake together, plus any
--- delegations it made to other validators; the published files do not split them. Claims are
+-- production), or paid a validator's commission as its beneficiary in a verified period. Its rewards
+-- are its commission and the reward on its own stake together, plus any delegations it made to other
+-- validators; the published files do not split them (safenet_reward_breakdown does, per validator). Claims are
 -- attributed by address only (distributor Claimed events); delegators' claims are not attributed to
 -- validators.
 --   allocated   cumulative amount + KYC-withheld under the latest published root
@@ -22,12 +23,23 @@ amounts as (
     where r.kind_row = 'entry'
 ),
 
+-- Registered stakers, and commission beneficiaries of verified periods (DelegateRegistry delegates
+-- that receive a validator's commission instead of its staker).
+links as (
+    select staker, validator, era, false as beneficiary_only from {{query:validator_staker_history}}
+    union all
+    select distinct beneficiary, validator, 'production', true
+    from {{query:safenet_reward_breakdown}}
+    where kind_row = 'validator' and cast(commission_raw as double) > 0
+),
+
 stakers as (
     select
         staker,
-        array_join(array_agg(distinct coalesce(lb.label, '0x' || lower(to_hex(h.validator)))), ', ') as validators,
+        array_join(array_agg(distinct coalesce(lb.label, '0x' || lower(to_hex(h.validator)))
+            || if(h.beneficiary_only, ' (commission beneficiary)', '')), ', ') as validators,
         array_join(array_agg(distinct h.era), ', ') as eras
-    from {{query:validator_staker_history}} as h
+    from links as h
     left join {{query:safenet_participant_labels}} as lb on lb.address = h.validator and lb.role = 'validator'
     group by 1
 ),

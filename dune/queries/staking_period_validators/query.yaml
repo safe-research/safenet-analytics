@@ -1,0 +1,11 @@
+name: "Safenet: validators per reward period"
+description: >
+  Per completed Aegis reward period and validator: time-weighted stake, self-stake and delegated
+  stake (Staking on Ethereum), and the reward scripts' participation and eligibility at the
+  period's settlement block (Consensus and FROSTCoordinator on Gnosis Chain). Shared model for the
+  realized APR; not shown on the dashboard. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

@@ -1,46 +1,46 @@
 {
-  "generated_at": "2026-10-27T15:42:08.391Z",
+  "generated_at": "2026-11-05T11:36:25.996Z",
   "rpc": "rpc.gnosischain.com",
-  "block": 48971624,
-  "active_epoch": 34008,
+  "block": 49121646,
+  "active_epoch": 34112,
   "attestation_set": [
     "Safe Labs",
     "Greenfield",
-    "Core Contributors",
-    "Gnosis"
+    "Gnosis",
+    "Core Contributors"
   ],
-  "epochs": 155,
+  "epochs": 259,
   "ceremonies": {
-    "total": 707,
-    "completed": 617
+    "total": 1139,
+    "completed": 999
   },
   "participation_production": {
     "RockawayX": "122/126",
-    "Greenfield": "617/617",
-    "Safe Labs": "617/617",
-    "Core Contributors": "616/617",
-    "Gnosis": "617/617"
+    "Greenfield": "895/897",
+    "Safe Labs": "998/999",
+    "Core Contributors": "998/999",
+    "Gnosis": "999/999"
   },
   "membership_checks": [
     {
       "check": "active epoch and group",
       "contract": {
-        "epoch": 34008,
-        "groupId": "0x3b121779585d5dc4bb52e74b1b3451d3187eb509b6a95dbb0000000000000000"
+        "epoch": 34112,
+        "groupId": "0xc35834b8ac475abdee479be38f41d2edb1a06aed28edd1800000000000000000"
       },
       "rebuilt": {
-        "epoch": 34008,
-        "groupId": "0x3b121779585d5dc4bb52e74b1b3451d3187eb509b6a95dbb0000000000000000"
+        "epoch": 34112,
+        "groupId": "0xc35834b8ac475abdee479be38f41d2edb1a06aed28edd1800000000000000000"
       },
       "ok": true
     },
     {
-      "check": "getEpochGroupId for 155 epochs",
+      "check": "getEpochGroupId for 259 epochs",
       "mismatches": [],
       "ok": true
     },
     {
-      "check": "participantKey for 155 groups x 6 validators",
+      "check": "participantKey for 259 groups x 6 validators",
       "mismatches": [],
       "ok": true
     },
@@ -52,7 +52,7 @@
   ],
   "reward_checks": [
     {
-      "check": "latest root: 208 proofs add up to tokenTotal",
+      "check": "latest root: 880 proofs add up to tokenTotal",
       "ok": true
     },
     {
@@ -60,7 +60,7 @@
       "ok": true
     },
     {
-      "check": "final root of each of 13 periods set on chain",
+      "check": "final root of each of 14 periods set on chain",
       "missing": [],
       "ok": true
     }
@@ -79,58 +79,56 @@
     },
     {
       "case": "completed ceremony a member did not sign",
-      "epoch": 33924,
+      "epoch": 34053,
+      "purpose": "transaction",
+      "did_not_sign": [
+        "Greenfield"
+      ],
+      "signed": [
+        "Safe Labs",
+        "Core Contributors",
+        "Gnosis"
+      ],
+      "completed": "https://gnosisscan.io/tx/0x1bbaee534a48a1db67d619c83d5418677351cbb331b42996f59caf090dba1c8c"
+    },
+    {
+      "case": "completed ceremony a member did not sign",
+      "epoch": 34053,
       "purpose": "epoch_rollover",
       "did_not_sign": [
-        "RockawayX"
+        "Greenfield"
       ],
       "signed": [
         "Safe Labs",
+        "Core Contributors",
+        "Gnosis"
+      ],
+      "completed": "https://gnosisscan.io/tx/0xd01803f24b2e760fd0ccdadfa39b938d1922818552bd7b663a911181b2a34e81"
+    },
+    {
+      "case": "completed ceremony a member did not sign",
+      "epoch": 34101,
+      "purpose": "transaction",
+      "did_not_sign": [
+        "Safe Labs"
+      ],
+      "signed": [
         "Greenfield",
         "Core Contributors",
         "Gnosis"
       ],
-      "completed": "https://gnosisscan.io/tx/0xa882855831b87f1faf6680806e7067106e9ff2b7ca55913f4a8d3670c6365773"
-    },
-    {
-      "case": "completed ceremony a member did not sign",
-      "epoch": 33924,
-      "purpose": "transaction",
-      "did_not_sign": [
-        "RockawayX"
-      ],
-      "signed": [
-        "Safe Labs",
-        "Greenfield",
-        "Core Contributors",
-        "Gnosis"
-      ],
-      "completed": "https://gnosisscan.io/tx/0xd84439ee6b07ccd498101efb125214237739dfdcbd3dc20a197b4c8a373aef9c"
-    },
-    {
-      "case": "completed ceremony a member did not sign",
-      "epoch": 33997,
-      "purpose": "transaction",
-      "did_not_sign": [
-        "Core Contributors"
-      ],
-      "signed": [
-        "Safe Labs",
-        "Greenfield",
-        "Gnosis"
-      ],
-      "completed": "https://gnosisscan.io/tx/0x5a903c5e2b3bd95358c3b599fb19d50b9a789237455d7a0389e15255c9635cb3"
+      "completed": "https://gnosisscan.io/tx/0x9c2ecbec97cda8d344e2966246db45da628b3717f773a77f436f7b58cc34a20e"
     },
     {
       "case": "epoch rollover ceremony",
-      "epoch": 34008,
+      "epoch": 34112,
       "signed": [
         "Safe Labs",
         "Greenfield",
-        "Core Contributors",
-        "Gnosis"
+        "Gnosis",
+        "Core Contributors"
       ],
-      "completed": "https://gnosisscan.io/tx/0x74fc2946bc64dcf53a83c25de7e3299a3166b2b394ba974bcf8431355f653b6b"
+      "completed": "https://gnosisscan.io/tx/0x9e57a13b0492f01a01d3e641e0923f86d02ad5e0a331e722ef22fff1e2803cf3"
     },
     {
       "case": "ceremonies on production groups not initiated by Consensus (excluded)",

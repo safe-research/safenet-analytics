@@ -1,5 +1,6 @@
-// Published SAFE reward allocations of Sentinel addresses, from github.com/safe-fndn/safenet-data
-// (assets/rewards). Each published version of assets/rewards/latest.json is one Merkle root of the
+// Published SAFE reward allocations of Sentinel addresses: Beta from github.com/safe-fndn/safenet-data
+// (assets/rewards, frozen), Aegis from the IPFS rewards DBs pinned by the ENS name
+// rewards.safenet-gov.eth (src/rewards-ipfs.ts; scripts/sync-sentinel-rewards.ts). Each published version of assets/rewards/latest.json is one Merkle root of the
 // Ethereum distributor (REWARDS_DISTRIBUTOR in src/safenet.ts), and assets/rewards/proofs holds one
 // file per address with its cumulative SAFE amount under that root.
 //

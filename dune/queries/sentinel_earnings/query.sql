@@ -11,8 +11,9 @@
 -- per-Sentinel figures equal.
 --
 -- SAFE subsidies are published by the Safe Foundation as Merkle roots of the rewards distributor on
--- Ethereum (safenet_sentinel_rewards, from safe-fndn/safenet-data; claims in safenet_reward_events):
---   published  the cumulative SAFE published for the address under the latest published root. The
+-- Ethereum (safenet_sentinel_rewards, from safe-fndn/safenet-data and the ENS-pinned IPFS rewards; claims in safenet_reward_events):
+--   published  the cumulative SAFE published for the address under the latest published root,
+--              including any amount withheld until KYC (kycAmount: allocated, not yet claimable). The
 --              files publish one amount per address for every reward type; for a Sentinel that also
 --              stakes, the Sentinel part cannot be separated.
 --   claimed    SAFE claimed by the address from the distributor (Claimed events)
@@ -47,7 +48,7 @@ latest_root as (
 ),
 
 safe_published as (
-    select p.address, p.cumulative_amount
+    select p.address, p.cumulative_amount, p.kyc_amount
     from published as p
     join latest_root as l on l.merkle_root = p.merkle_root
     where p.kind = 'entry'
@@ -79,7 +80,8 @@ select
     f.rewarded_requests,
     case
         when sp.address is null then 'No allocation published (latest root: rewards until ' || format_datetime(l.rewards_until, 'yyyy-MM-dd') || ')'
-        else format('%,.2f', cast(sp.cumulative_amount as double) / 1e18) || ' SAFE (all reward types)'
+        else format('%,.2f', (cast(sp.cumulative_amount as double) + cast(sp.kyc_amount as double)) / 1e18) || ' SAFE (all reward types)'
+            || if(cast(sp.kyc_amount as double) > 0, ', of which ' || format('%,.2f', cast(sp.kyc_amount as double) / 1e18) || ' withheld until KYC', '')
     end as safe_published,
     coalesce(cast(element_at(d.claimed_by_account, f.sentinel) as double), 0) / 1e18 as safe_claimed,
     case

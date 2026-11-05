@@ -203,6 +203,15 @@ jobs:
           --state "dune/.preview/${{ steps.state.outputs.track }}.json"
           --out "$RUNNER_TEMP/verification-validators.json"
 
+      - name: Reconcile realized APR against the ENS-pinned rewards, a stake replay and signing events
+        if: >-
+          always() && steps.run.outcome == 'success' && (contains(steps.run.outputs.previewed, ' staking_rewards_apr')
+          || contains(steps.run.outputs.previewed, ' validator_rewards_'))
+        run: >-
+          npm run verify:rewards-apr --
+          --state "dune/.preview/${{ steps.state.outputs.track }}.json"
+          --out "$RUNNER_TEMP/verification-rewards-apr.json"
+
       - name: Render result images
         if: always() && steps.run.outcome == 'success'
         run: >-
@@ -255,6 +264,7 @@ jobs:
             ${{ runner.temp }}/verification-sentinels.json
             ${{ runner.temp }}/verification-staking.json
             ${{ runner.temp }}/verification-validators.json
+            ${{ runner.temp }}/verification-rewards-apr.json
             ${{ runner.temp }}/production-plan.txt
             ${{ runner.temp }}/diagnose-production.md
             ${{ runner.temp }}/diagnose-preview.md
@@ -303,7 +313,7 @@ jobs:
               echo
               for f in counter daily results fees network_summary network_breakdown guard_adoption fee_allocation fee_config latest \
                 sentinel_overview sentinel_windows sentinel_heatmap sentinel_verdicts sentinel_coverage sentinel_disputes sentinel_earnings sentinel_earnings_daily sentinel_bonds \
-                staking_overview staking_flows staking_active staking_daily_flows staking_net_flow staking_requests staking_outstanding staking_validators \
+                staking_overview staking_flows staking_active staking_daily_flows staking_net_flow staking_requests staking_outstanding staking_validators staking_apr staking_apr_by_validator \
                 validator_overview validator_stake_status validator_participation_windows validator_heatmap validator_stake_daily \
                 validator_stake_split validator_rewards_periods validator_rewards_by_staker validator_withdrawal_exposure; do
                 if [ -f "$T/render/$f.png" ]; then echo "<img src=\"$IMG/$f.png?raw=true\" alt=\"$f\" width=\"$([ $f = counter ] && echo 320 || echo 900)\">"; echo; fi
@@ -377,6 +387,22 @@ jobs:
                 echo
                 echo '```json'
                 jq '.representative' "$T/verification-validators.json"
+                echo '```'
+                echo "</details>"
+                echo
+              fi
+              echo "<details><summary>Realized APR: published rewards (ENS/IPFS), stake replay, participation, payouts re-derived</summary>"
+              echo
+              echo '```json'
+              if [ -f "$T/verification-rewards-apr.json" ]; then jq '{ethereum_block, gnosis_block, ens, periods, by_validator, checks: [.checks[] | {check, ok}], issues, dune}' "$T/verification-rewards-apr.json"; else echo '"not run: no preview results (same SQL as production, verified by Refresh) or an earlier step failed"'; fi
+              echo '```'
+              echo "</details>"
+              echo
+              if [ -f "$T/verification-rewards-apr.json" ]; then
+                echo "<details><summary>Representative APR cases (intra-period stake changes, ineligible validator, KYC withholding, commission beneficiary, zero stake)</summary>"
+                echo
+                echo '```json'
+                jq '.representative' "$T/verification-rewards-apr.json"
                 echo '```'
                 echo "</details>"
                 echo

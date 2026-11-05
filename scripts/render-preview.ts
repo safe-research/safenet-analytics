@@ -584,7 +584,15 @@ const TABLES: Record<string, { title: string; cols: Col[] }> = {
 };
 
 // Staking section (docs/metrics/staking.md). Names match the image list in .github/workflows/preview.yml.
-const STAKING_QUERIES = ["staking_overview", "staking_daily", "staking_flow_summary", "staking_withdrawals_outstanding", "staking_by_validator"];
+const STAKING_QUERIES = [
+  "staking_overview",
+  "staking_daily",
+  "staking_flow_summary",
+  "staking_withdrawals_outstanding",
+  "staking_by_validator",
+  "staking_rewards_apr",
+  "staking_rewards_apr_by_validator",
+];
 const BETA = "#b5b3ab";
 export function stakingPages(results: Record<string, Row[]>, footer: string): [string, string, number, number][] {
   const pages: [string, string, number, number][] = [];
@@ -701,6 +709,74 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
       ], footer, "Validator"),
       996,
       300 + 64 * v.length,
+    ]);
+  const rowsHeight = (n: number) => 160 + 30 * Math.max(1, n);
+  const round2 = (x: unknown) => (x === null || x === undefined ? null : Math.round(num(x) * 100) / 100);
+  const round0 = (x: unknown) => (x === null || x === undefined ? null : Math.round(num(x)));
+  const a = results.staking_rewards_apr;
+  if (a?.length) {
+    const head = a[0];
+    pages.push([
+      "staking_apr",
+      `${countersHtml(`Realized staking APR, latest published period: ${head.period}`, [
+        { label: "Realized APR, eligible stake (%)", value: round2(head.pool_apr) },
+        { label: "Delegators, net of commission (%)", value: round2(head.delegator_apr) },
+        { label: "On all stake (%)", value: round2(head.apr_all_stake) },
+      ], footer)}${tableHtml("Realized staking APR by reward period (completed periods only)", a.map((r) => ({
+        ...r,
+        pool_apr: round2(r.pool_apr),
+        delegator_apr: round2(r.delegator_apr),
+        apr_all_stake: round2(r.apr_all_stake),
+        stake_rewards: round2(r.stake_rewards),
+        sentinel_grants: round2(r.sentinel_grants),
+        eligible_stake: round0(r.eligible_stake),
+        total_stake: round0(r.total_stake),
+      })), [
+        ["period", "Period"],
+        ["status", "Status"],
+        ["pool_apr", "APR eligible (%)"],
+        ["delegator_apr", "Delegators net (%)"],
+        ["apr_all_stake", "All stake (%)"],
+        ["stake_rewards", "Stake rewards"],
+        ["sentinel_grants", "Sentinel grants (excl.)"],
+        ["eligible_stake", "Avg eligible stake"],
+        ["total_stake", "Avg total stake"],
+        ["ineligible_validators", "Ineligible"],
+        ["split_status", "Commission split"],
+      ], `${footer} A period without APR is not published yet, which is not 0.`)}`,
+      1448,
+      420 + rowsHeight(a.length),
+    ]);
+  }
+  const b = results.staking_rewards_apr_by_validator;
+  if (b?.length)
+    pages.push([
+      "staking_apr_by_validator",
+      tableHtml("Realized staking APR by validator (completed periods)", b.map((r) => ({
+        ...r,
+        participation: pct(r.participation),
+        delegator_apr: round2(r.delegator_apr),
+        gross_apr: round2(r.gross_apr),
+        self_stake_apr: round2(r.self_stake_apr),
+        avg_stake: round0(r.avg_stake),
+        avg_self_stake: round0(r.avg_self_stake),
+        reward: round2(r.reward),
+        commission: round2(r.commission),
+      })), [
+        ["period", "Period"],
+        ["validator", "Validator"],
+        ["status", "Status"],
+        ["participation", "Participation (%)"],
+        ["delegator_apr", "Delegator APR net (%)"],
+        ["gross_apr", "Gross APR (%)"],
+        ["self_stake_apr", "Self-stake APR (%)"],
+        ["avg_stake", "Avg stake"],
+        ["avg_self_stake", "Avg self-stake"],
+        ["reward", "Reward"],
+        ["commission", "Commission"],
+      ], footer),
+      1448,
+      rowsHeight(b.length),
     ]);
   return pages;
 }

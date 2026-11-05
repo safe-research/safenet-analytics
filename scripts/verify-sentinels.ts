@@ -192,7 +192,8 @@ for (const s of sentinels)
 const safePublished: Record<string, number | null> = Object.fromEntries(
   sentinels.map((s) => {
     const e = published.entries.find((x) => x.address === s && x.merkle_root === latestRoot);
-    return [s, e ? Number(BigInt(e.cumulative_amount)) / 10 ** SAFE_TOKEN.decimals : null];
+    // Published = cumulative + withheld until KYC (allocated, not yet claimable), as on the dashboard.
+    return [s, e ? Number(BigInt(e.cumulative_amount) + BigInt(e.kyc_amount)) / 10 ** SAFE_TOKEN.decimals : null];
   }),
 );
 

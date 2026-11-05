@@ -1,0 +1,77 @@
+name: "Safenet: realized staking APR by reward period"
+description: >
+  Realized, non-compounded staking APR of each completed Safenet Aegis reward period: published
+  staking rewards (Sentinel grants excluded) over the time-weighted stake on validators that met
+  the participation threshold, annualized with 365 days. Also on all stake, and net of commission
+  for delegators where the commission split is verified. Historical only; not a projection.
+  Managed in github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  headline:
+    name: Realized staking APR, latest published period (%)
+    type: counter
+    description: >
+      Latest completed reward period whose rewards are published (its dates are the first row of the
+      table): stake rewards / time-weighted eligible stake × 365 days / period length. Before
+      commission; delegators' net rate is in the table. Not a projection.
+    options: { counterColName: pool_apr, rowNumber: 1, stringDecimal: 2, stringSuffix: "%", counterLabel: "Realized APR, latest published period (eligible stake, non-compounded)" }
+  history:
+    name: Realized staking APR by reward period (%)
+    type: chart
+    description: >
+      Completed Aegis periods only. Pool: all stake rewards over eligible stake. Delegators: net of
+      commission, verified split only. All stake: including stake on ineligible validators. A
+      period without bars is not published yet, not 0.
+    options:
+      globalSeriesType: column
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Reward period } }
+      yAxis:
+        - title: { text: "APR (%)" }
+      columnMapping:
+        period: x
+        pool_apr: y
+        delegator_apr: y
+        apr_all_stake: y
+      seriesOptions:
+        pool_apr: { type: column, yAxis: 0, zIndex: 0, name: "Pool (eligible stake, before commission)", color: "#184f95" }
+        delegator_apr: { type: column, yAxis: 0, zIndex: 1, name: "Delegators (net of commission)", color: "#6da7ec" }
+        apr_all_stake: { type: column, yAxis: 0, zIndex: 2, name: "All stake (incl. ineligible validators)", color: "#b5b3ab" }
+  table:
+    name: Realized staking APR by reward period (table)
+    type: table
+    description: >
+      Stake rewards = SAFE allocated in the period minus Sentinel grants, KYC-withheld included.
+      Stakes are time-weighted averages over the period from every deposit and withdrawal request.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: period, title: Period, type: normal, alignContent: left, isHidden: false }
+        - { name: status, title: Status, type: normal, alignContent: left, isHidden: false }
+        - { name: root_on_chain, title: Root set on chain, type: normal, alignContent: left, isHidden: false }
+        - { name: pool_apr, title: "APR, eligible stake (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: delegator_apr, title: "APR, delegators net (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: apr_all_stake, title: "APR, all stake (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: stake_rewards, title: Stake rewards (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: commission, title: of which commission, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: kyc_withheld_stake, title: of which withheld until KYC, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: sentinel_grants, title: Sentinel grants (excluded), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: eligible_stake, title: Avg eligible stake (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: ineligible_stake, title: Avg ineligible stake, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: total_stake, title: Avg total stake, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: ineligible_validators, title: Ineligible validators, type: normal, alignContent: left, isHidden: false }
+        - { name: split_status, title: Commission split, type: normal, alignContent: left, isHidden: false }
+        - { name: basis, title: Calculation basis, type: normal, alignContent: left, isHidden: false }
+        - { name: merkle_root, title: Merkle root, type: normal, alignContent: left, isHidden: true }
+        - { name: period_start, title: period_start, type: normal, alignContent: left, isHidden: true }
+        - { name: period_end, title: period_end, type: normal, alignContent: left, isHidden: true }
+        - { name: eligible_delegated_stake, title: eligible_delegated_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: eligible_validators, title: eligible_validators, type: normal, alignContent: left, isHidden: true }
+        - { name: validators_with_stake, title: validators_with_stake, type: normal, alignContent: left, isHidden: true }
+        - { name: payout_addresses, title: payout_addresses, type: normal, alignContent: left, isHidden: true }
+        - { name: settlement_block, title: settlement_block, type: normal, alignContent: left, isHidden: true }

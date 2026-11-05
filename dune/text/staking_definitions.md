@@ -8,6 +8,7 @@
 - **Delegated stake**: everyone else's stake on that validator.
 - **Deregistered**: removed from the Staking contract's validator list. Its stake stays until withdrawn and is shown separately, not as backing the validator set. Registration in the Staking contract does not by itself mean membership of the live validator set.
 - Names come from [safenet-data](https://github.com/safe-fndn/safenet-data/blob/main/assets/validator-info.json) and are labels only. Unknown validators show their address.
+- **Realized APR**: stake rewards ÷ time-weighted eligible stake × 365 days ÷ period length, for completed two-week reward periods from 2026-10-13. It is not compounded, not a projection, and excludes Sentinel grants. **Stake rewards**: SAFE allocated in the period minus Sentinel grants, including commission and amounts withheld until KYC. **Time-weighted stake**: each deposit and withdrawal request weighted by the exact seconds it was staked, carried in from before the period. **Eligible**: on a validator with ≥ 75% reward participation, while registered. **Delegators, net**: delegators' rewards after the 5% commission ÷ their eligible stake, shown only where the commission split is verified.
 - **Production start**: the deployment of the production Consensus on Gnosis Chain, 2026-10-07 13:51 UTC. Earlier staking backed Beta.
 
 [Full definitions, models, sources and validation](https://github.com/safe-research/safenet-analytics/blob/main/docs/metrics/staking.md)

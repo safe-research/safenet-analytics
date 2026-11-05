@@ -1,6 +1,6 @@
 # Staking
 
-The **Staking** section of [dune.com/safe/safenet](https://dune.com/safe/safenet) covers SAFE staked toward Safenet validators: active stake, deposits, withdrawal requests, outstanding withdrawals and completed withdrawals, and stake by validator with self-stake and delegated stake. The shared models below are also the basis for the Validators section.
+The **Staking** section of [dune.com/safe/safenet](https://dune.com/safe/safenet) covers SAFE staked toward Safenet validators: active stake, deposits, withdrawal requests, outstanding withdrawals and completed withdrawals, stake by validator with self-stake and delegated stake, and the [realized APR](#realized-apr) of completed reward periods. The shared models below are also the basis for the Validators section.
 
 ## Panels
 
@@ -15,8 +15,11 @@ The **Staking** section of [dune.com/safe/safenet](https://dune.com/safe/safenet
 | Withdrawal requests | `staking_daily/requests` (columns) | all time, Beta grey, production orange |
 | Outstanding withdrawals | `staking_withdrawals_outstanding/table` | current state, earliest withdrawal first |
 | Stake by validator | `staking_by_validator/bars` (horizontal stacked) and `/table` | current state |
+| Realized APR, latest published period | `staking_rewards_apr/headline` (counter) | latest completed and published reward period |
+| Realized APR by reward period | `staking_rewards_apr/history` (columns) and `/table` | completed Aegis reward periods |
+| Realized APR by validator | `staking_rewards_apr_by_validator/bars` (columns by validator) and `/table`, the table also on the Validators dashboard | completed Aegis reward periods |
 
-The dashboard has no parameter widgets ([deployment.md](../deployment.md#what-is-managed)), so the charts show all time. The flow table gives the 24 h, 7 d and 30 d summaries. The counters, the outstanding withdrawals and stake by validator are always current state, whatever range a chart shows; their titles say *now*.
+The dashboard has no parameter widgets ([deployment.md](../deployment.md#what-is-managed)), so the charts show all time. The flow table gives the 24 h, 7 d and 30 d summaries. The counters, the outstanding withdrawals and stake by validator are always current state, whatever range a chart shows; their titles say *now*. The realized APR panels are history of completed periods only, in their own block, and are never mixed with current stake or with an estimate of future returns.
 
 ## The contract
 
@@ -96,6 +99,102 @@ At block 26278309 (2026-10-26), the Staking contract had registered six validato
 ### Eras
 
 The **production start** is the deployment of the production Consensus on Gnosis Chain: block 48635843, 2026-10-07 13:51:55 UTC (`PRODUCTION_START_TIME` in `src/safenet.ts`). Events before it are `beta`, events from it on are `production` (`era` in `staking_events`). The daily charts use UTC days, with 2026-10-07 as the first production day. The active stake area includes the boundary day in both series so the two areas meet. Dune charts cannot draw a vertical marker, so the boundary is shown by the change in colour, and the section text names it.
+
+## Realized APR
+
+What staking earned in each **completed** Aegis reward period, from the published rewards and the stake that earned them. It is historical. There is no projected or current APR on the dashboard, and none is implied: future rates depend on future stake, participation and rewards.
+
+### Formula
+
+```
+APR (%) = stake rewards / time-weighted eligible stake × 365 days / period length × 100
+```
+
+- **Realized and non-compounded.** One period's rewards are scaled linearly to a year. Rewards are not assumed to be restaked.
+- **Annualization: 365 days.** A period is 14 days (1,209,600 s), so the factor is 365 / 14 = 26.07. The rewards programme budgets 5M SAFE over 52 weeks, which is 26 periods of 364 days in total. Using 52 weeks instead would give a 0.27% lower rate (relative). The dashboard uses 365 days throughout and says so (`basis` column).
+
+| Term | Definition |
+| --- | --- |
+| **Period** | Two weeks from 2026-10-13 00:00 UTC (`AEGIS_REWARDS_START` in safenet-staking-scripts `src/utils/sep.ts`). The first is 2026-10-13 to 2026-10-27. Beta periods have no APR. |
+| **Stake rewards** | SAFE allocated in the period minus Sentinel grants. It is the change of the published `tokenTotal − sentinelTokenTotal` from the previous period's last root. It includes every validator's and delegator's staking reward and the commission, and KYC-withheld amounts, which are allocated but not yet claimable. The programme's `unpaidAmount` (rounding dust) is not allocated and not included. |
+| **Sentinel grants** | `sentinelAmount` in the published proofs. They are a subsidy for Sentinels, not a return on stake, and are excluded from every APR. They are shown in the table as *excluded*, so the totals add up to the published amounts. A Sentinel address that also stakes counts only its staking reward. |
+| **Time-weighted stake** | Σ balance × seconds held, ÷ period seconds, per (staker, validator), from every `StakeIncreased` and `WithdrawalInitiated` at its block time (`staking_period_stake`). The balance at the period start is carried in. A withdrawal request leaves at once, as in the contract. This is exact event-time weighting, not daily snapshots. |
+| **Eligible stake** | Time-weighted stake on validators that met the 75% reward participation threshold, counted only while the validator was registered in the Staking contract. It is the stake the rewards were paid on. Stakers the reward scripts exclude (sanctioned) would be removed. There are none so far, and the verification checks it. |
+| **Reward participation** | The reward scripts' rate (`src/data/attestations.ts`). It counts recognised signature shares on transaction ceremonies completed in the period (both ends included) whose `TransactionAttested` is no later than the **settlement block** (the last Gnosis block at or before the period end, + 48). The denominator is all such ceremonies, member or not (`staking_period_validators`). |
+
+Three rates per period (`staking_rewards_apr`):
+
+| Rate | Numerator | Denominator | Meaning |
+| --- | --- | --- | --- |
+| **APR, eligible stake** (headline) | stake rewards | eligible stake | average over the stake that was paid, before commission |
+| **APR, delegators net** | delegators' rewards after commission | eligible delegated stake (eligible stake − self-stake) | what delegations earned; from a [verified split](#commission-split) only |
+| **APR, all stake** | stake rewards | all time-weighted stake in the contract, ineligible validators included | what an average staked SAFE earned |
+
+Per validator (`staking_rewards_apr_by_validator`):
+
+| Rate | Definition |
+| --- | --- |
+| **Gross APR** | the validator's reward (own stake + delegations, before commission) / its average stake |
+| **Delegator APR, net** | its delegators' rewards after commission / its average delegated stake. This is what a delegation to it earned. |
+| **Self-stake APR** | its registered staker's own-stake reward / average self-stake. No commission is charged on self-stake, so this equals gross. |
+
+Commission is a transfer from delegators to the validator's beneficiary, not a return on stake, so it is in no APR. A **validator staker's published allocation** combines its commission, its own-stake reward and any delegations it holds elsewhere, so it is never treated as a staking yield. Validator stakers get an APR only on their self-stake, from the verified split.
+
+### How rewards are allocated (production)
+
+From safe-fndn/safenet-staking-scripts at `8401845` (`src/safenet.ts` `rewards()`, `src/data/staking.ts`), reproduced exactly below:
+
+1. **Budget**: 5M SAFE × period / 52 weeks, plus the catch-up of earlier unpaid amounts. Sentinels have their own budget, 400k SAFE per eligible Sentinel per year.
+2. **Stake per validator**: time-weighted over the period while registered, divided by the full period length.
+3. **Weight**: 0 below 75% participation. The share of an ineligible validator goes to the others; nothing is burnt. Above the threshold, weight = stake up to T = total stake ÷ number of validators, and √(T × stake) above it, × participation. A validator with much more than the average stake therefore earns less per SAFE. That is why Gnosis' rate is the lowest of the eligible validators.
+4. **Validator reward** = budget × weight / Σ weights. It is split pro rata to time-weighted stake: self-stake (the registered staker's, time-sliced by `ValidatorStakerSet`) without commission, delegations minus **5% commission** if the validator's average self-stake is ≥ 3.5M SAFE.
+5. **Commission** goes to the validator's beneficiary: its staker, or the DelegateRegistry delegate it set (id `keccak256("Safenet Beta validator commission beneficiary")`).
+6. **KYC**: an account's payout of ≥ 7,500 SAFE is withheld whole (`kycAmount`) until the account is approved. It still counts in `tokenTotal`.
+
+### Commission split
+
+The published proofs give one amount per address. A split into staking reward and commission is recorded only from the reward scripts themselves, at a pinned commit, and only if it reproduces the published payout of **every** address exactly:
+
+1. In a checkout of safe-fndn/safenet-staking-scripts at the pinned commit, with safenet-data's `config/aegis.env`, run `npm run cmd:index`. Then run `npx tsx export-split.ts --rewardPeriodStart=<s> --rewardPeriodEnd=<e> > split.json`, with [`scripts/reward-split/export-split.ts`](../../scripts/reward-split/export-split.ts) copied in. It writes the scripts' `rewards()` and `sentinelRewards()` payouts per recipient (as `cmd:rewards --split`), and per validator its stats, participation, reward and commission. It also checks that the per-validator breakdown reproduces `rewards()` per payee.
+2. `node scripts/record-reward-split.ts split.json`. It records nothing unless:
+   - stake reward + commission + Sentinel grant = the published payout for every address;
+   - the totals match the change of `tokenTotal` and `sentinelTokenTotal`;
+   - payouts + unpaid = budget;
+   - the period's `unpaidAmount` matches.
+3. `npm run sync:validator-rewards` again, to include new commission beneficiaries.
+
+Then `safenet_reward_breakdown` has per-validator rows for the period. Without a verified split, the per-validator rewards, delegator APR and commission stay blank (*split not verified*). The pool APR does not need a split.
+
+### First production period: 2026-10-13 to 2026-10-27
+
+Published on chain on 2026-11-04. ENS `rewards.safenet-gov.eth` → IPFS `bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em`, root `0xab63…711e`, set on the distributor in Ethereum block 26341873.
+
+| | SAFE |
+| --- | --- |
+| Allocated in the period (Δ `tokenTotal`) | 223,076.923076923076922575 |
+| Sentinel grants (2 Sentinels, both withheld until KYC; excluded) | 30,769.230769230769230768 |
+| **Stake rewards** = 5M × 2 / 52 weeks − 500 wei unpaid | **192,307.692307692307691807** |
+| of which commission (Gnosis, Core Contributors, Greenfield's beneficiary) | 5,574.524233338648039958 |
+| of which withheld until KYC | 0 |
+| Average eligible stake (Gnosis, Greenfield, Core Contributors, Safe Labs) | 56,394,566.79 |
+| Average stake on ineligible validators (RockawayX, Blockchain Capital) | 11,682,754.51 |
+
+| Rate | APR |
+| --- | --- |
+| **Eligible stake** | **8.89%** |
+| Delegators, net of commission | 8.49% |
+| All stake | 7.36% |
+
+| Validator | Participation | Avg stake | Avg self-stake | Commission | Gross | Delegators net |
+| --- | --- | --- | --- | --- | --- | --- |
+| Safe Labs | 416/416 | 11,598,830 | 3,222,967 | none (self < 3.5M) | 9.86% | 9.86% |
+| Core Contributors | 415/416 | 11,934,169 | 3,737,610 | 1,523.98 | 9.69% | 9.21% |
+| Greenfield | 416/416 | 13,862,163 | 3,678,555 | 1,761.07 to `0xafb0…a56d` | 9.02% | 8.57% |
+| Gnosis | 416/416 | 18,999,405 | 3,500,000 | 2,289.47 | 7.70% | 7.32% |
+| RockawayX | 53/416 (12.7%) | 7,122,567 | 265,568 | ineligible | 0% | 0% |
+| Blockchain Capital | 0/416 | 3,765,679 while registered (4,560,187 in all) | none | ineligible | 0% | 0% |
+
+Safe Labs' staker was registered on 2026-10-14 08:47 UTC, so its time-sliced self-stake stayed below 3.5M and no commission was charged.
 
 ## Models
 
@@ -182,6 +281,29 @@ One row per UTC day from 2026-03-04. It is also a dashboard query, scheduled dai
 | `*_raw` | exact levels |
 | `through_block`, `as_of_time` | head of Dune's `ethereum.blocks` at execution |
 
+### staking_period_stake
+
+One row per completed Aegis reward period and (staker, validator) with stake in it, from `staking_events` and production `validator_staker_history`. `refresh: none`.
+
+| Field | Meaning |
+| --- | --- |
+| `period_start`, `period_end`, `period_seconds` | the period |
+| `stake_seconds_all_raw`, `stake_seconds_raw`, `self_stake_seconds_raw` | balance × seconds in the period (base units × s): all, while the validator was registered, and the registered part held by its registered staker |
+| `avg_stake_all`, `avg_stake`, `avg_self_stake` | the same ÷ period seconds, in SAFE |
+
+### staking_period_validators
+
+One row per completed period and validator with stake. Fields: `avg_stake`, `avg_stake_all`, `avg_self_stake`, `avg_delegated_stake`, `stakers`, `signed`, `transactions`, `participation`, `eligible`, `settlement_block`, `settlement_time`. `refresh: none`.
+
+### safenet_reward_breakdown
+
+Generated by `npm run sync:validator-rewards` and `scripts/record-reward-split.ts` from `dune/data/validator-rewards.json`. `refresh: none`.
+
+- **`kind_row = 'period'`**: one row per published Aegis period, summed over the per-address payouts: `payout_raw`, `stake_rewards_raw`, `sentinel_raw`, `kyc_withheld_raw`, `kyc_withheld_stake_raw`, `payout_addresses`, and `commission_raw` with `scripts_commit` if verified.
+- **`kind_row = 'validator'`**: one row per (period, validator) of a verified split: `avg_stake_raw`, `avg_self_stake_raw`, `signed`, `transactions`, `eligible`, `commission_charged`, `reward_raw`, `self_reward_raw`, `delegator_reward_raw`, `commission_raw`, `beneficiary`.
+
+The per-address payouts (`payouts` in the JSON, about 850 rows per period) are kept in the repository as reconciliation evidence and are not uploaded to Dune.
+
 ## Freshness and empty states
 
 - `staking_overview` and `staking_daily` report `through_block` and `as_of_time`, the newest Ethereum block Dune had when the query ran, and `computed_at`. The *Staking data as of* panel shows them.
@@ -242,6 +364,32 @@ At block 26278309, every contract check matched the replay exactly, in base unit
 
 Stakers with active stake: 887. Outstanding withdrawals: 1,580,929.27 SAFE waiting and 4,343,414.71 SAFE claimable. The Dune comparison runs in the pull request's preview, and its result is in the preview comment.
 
+### Realized APR (`verification/rewards_apr.json`)
+
+`npm run verify:rewards-apr` (`scripts/verify-rewards-apr.ts`, `scripts/lib/rewards-apr.ts`) runs in every preview that executes the APR or reward queries, and in the daily *Refresh*. It is independent of Dune and of the reward scripts' run.
+
+1. **Published source.**
+   - The ENS contenthash history is replayed, every rewards DB is fetched as a CAR, and every block is verified against its CID.
+   - Proofs add up to `tokenTotal`. The distributor's `merkleRoot()` is the latest root, and every period root appears in `MerkelRootUpdated`.
+   - The per-address payouts recomputed from IPFS equal the recorded ones.
+   - Budget identity: `tokenTotal − sentinelTokenTotal − Beta total + unpaid = 5M × elapsed / 52 weeks`.
+2. **Stake.** The Staking events are replayed from Ethereum logs and time-weighted per second, with registration and registered-staker intervals. Per validator, stake and self-stake must equal the reward scripts'.
+3. **Participation.** It is rebuilt from Consensus and FROSTCoordinator logs up to the settlement block, and must equal the scripts' signed / transactions and eligibility.
+4. **Rewards.**
+   - The allocation formula applied to the replayed stake and participation gives the recorded per-validator rewards.
+   - Every address's payout is re-derived from them and its replayed stake.
+   - Every staker with eligible stake is paid, and stakers only on ineligible validators are not.
+5. **Dune.** With `DUNE_API_KEY`, `staking_rewards_apr`, `staking_rewards_apr_by_validator` and `validator_rewards_periods` are compared with the replay.
+6. **Representative cases** with Etherscan links: a deposit and a withdrawal request during the period, a staker on an ineligible validator, the KYC-withheld Sentinel grants, the commission beneficiary, and an address that withdrew everything before the period.
+
+Result on 2026-11-05, without Dune: all 30 checks passed at Ethereum block 26348270 and Gnosis block 49121614.
+
+- The replay reproduces every validator's reward to **0 base units**.
+- All **844 staking payouts** are re-derived with a maximum difference of **0 base units**.
+- The split from the reward scripts at `8401845` matches the published payout of all 846 recipients exactly.
+
+The Dune comparison runs in the pull request's preview comment.
+
 ## Limitations
 
 - **Status is as of the refresh.** *Waiting* turns into *claimable* as time passes, and Dune results update daily, so a withdrawal can be claimable before the dashboard says so.
@@ -249,4 +397,8 @@ Stakers with active stake: 887. Outstanding withdrawals: 1,580,929.27 SAFE waiti
 - **Self-stake depends on the registered staker.** A validator that has not called `setValidatorStaker` gets no self-stake split; its stake shows as *No registered staker*.
 - **Fixed windows only.** No dashboard-wide date range, because the dashboard has no parameter widgets. The history charts are all time.
 - **Decoding lag.** If Dune's decoded tables lag behind `ethereum.blocks`, an event in that gap is missing from a result that reports a later `through_block`. The verification would show it as a mismatch.
-- **No USD values and no APY.**
+- **No USD values.**
+- **APR is realized, not projected.** It covers completed and published periods only. A period that has ended but whose rewards are not published shows its stake and *not yet published*, with no APR.
+- **Per-validator rewards and commission need a verified split.** They are recorded per period by hand (see [Commission split](#commission-split)). Without one, only the pool APR and the APR on all stake are shown.
+- **Rewards are published on chain**, through the ENS contenthash of `rewards.safenet-gov.eth` and IPFS. [safenet-data](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards) was a mirror and is no longer updated after Beta. The sync needs an IPFS gateway that serves the content (`IPFS_GATEWAY_URL`; default Filebase, then Pinata). Every CAR is verified against its CID, so a gateway can withhold data but not alter it.
+- **The reward methodology is a proposal pending SafeDAO approval.** The APR describes what was published and set on chain.

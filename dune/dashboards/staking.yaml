@@ -1,6 +1,6 @@
 # Safenet — Staking: https://dune.com/safe/safenet-staking-withdrawals
 # (safe/safenet-staking is a separately maintained dashboard, see docs/metrics/staking.md.)
-# Active stake, flows, withdrawals and stake by validator. Linked from the overview (overview.yaml);
+# Active stake, flows, withdrawals, stake by validator and realized APR of completed reward periods. Linked from the overview (overview.yaml);
 # the navigation bar at the top and bottom links back to it and to the other sections.
 # Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
 name: Safenet — Staking
@@ -47,8 +47,24 @@ widgets:
   - visualization: staking_by_validator/table
     position: { row: 40, col: 3, size_x: 3, size_y: 8 }
 
+  # Realized APR (completed reward periods; history, not current state or a projection)
+  - text_file: text/staking_apr.md
+    position: { row: 48, col: 0, size_x: 6, size_y: 3 }
+  - visualization: staking_rewards_apr/headline
+    position: { row: 51, col: 0, size_x: 2, size_y: 4 }
+  - text_file: text/staking_apr_basis.md
+    position: { row: 55, col: 0, size_x: 2, size_y: 4 }
+  - visualization: staking_rewards_apr/history
+    position: { row: 51, col: 2, size_x: 4, size_y: 8 }
+  - visualization: staking_rewards_apr/table
+    position: { row: 59, col: 0, size_x: 6, size_y: 5 }
+  - visualization: staking_rewards_apr_by_validator/bars
+    position: { row: 64, col: 0, size_x: 6, size_y: 8 }
+  - visualization: staking_rewards_apr_by_validator/table
+    position: { row: 72, col: 0, size_x: 6, size_y: 7 }
+
   - text_file: text/staking_definitions.md
-    position: { row: 48, col: 0, size_x: 6, size_y: 10 }
+    position: { row: 79, col: 0, size_x: 6, size_y: 12 }
 
   - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · **Staking** · [Validators]({{dashboard:validators}}) · [Sentinels]({{dashboard:sentinels}}) · [Arbitration]({{dashboard:arbitration}})"
-    position: { row: 58, col: 0, size_x: 6, size_y: 2 }
+    position: { row: 91, col: 0, size_x: 6, size_y: 2 }

@@ -1,0 +1,73 @@
+name: "Safenet: realized staking APR by validator"
+description: >
+  Realized, non-compounded staking APR per completed Safenet Aegis reward period and validator:
+  gross, for delegators net of commission and on self-stake, with time-weighted stake, reward
+  participation, eligibility, reward and commission. Rewards per validator from a verified split of
+  the reward scripts only. Historical only; not a projection. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  bars:
+    name: Realized delegator APR by validator and reward period (%)
+    type: chart
+    description: >
+      What a delegation to each validator earned in each completed period, net of commission. 0% for
+      a validator below the 75% participation threshold. No bar: not published or split not
+      verified, not 0.
+    options:
+      globalSeriesType: column
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Reward period } }
+      yAxis:
+        - title: { text: "APR (%)" }
+      columnMapping:
+        period: x
+        delegator_apr: y
+        validator: series
+      seriesOptions:
+        "Blockchain Capital": { type: column, yAxis: 0, name: "Blockchain Capital", color: "#2a78d6" }
+        "Core Contributors": { type: column, yAxis: 0, name: "Core Contributors", color: "#eb6834" }
+        "Gnosis": { type: column, yAxis: 0, name: "Gnosis", color: "#1baf7a" }
+        "Greenfield": { type: column, yAxis: 0, name: "Greenfield", color: "#eda100" }
+        "RockawayX": { type: column, yAxis: 0, name: "RockawayX", color: "#e87ba4" }
+        "Safe Labs": { type: column, yAxis: 0, name: "Safe Labs", color: "#008300" }
+  table:
+    name: Realized staking APR by validator (table)
+    type: table
+    description: >
+      Stakes are time-weighted averages over the period while the validator was registered.
+      Reward = own-stake reward + delegators' rewards + commission. Gross APR is before commission;
+      delegator APR is net of it. Commission goes to the beneficiary and is not a return on stake.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: period, title: Period, type: normal, alignContent: left, isHidden: false }
+        - { name: validator, title: Validator, type: normal, alignContent: left, isHidden: false }
+        - { name: status, title: Status, type: normal, alignContent: left, isHidden: false }
+        - { name: participation, title: Reward participation, type: normal, alignContent: right, isHidden: false, numberFormat: "0.00%" }
+        - { name: delegator_apr, title: "Delegator APR, net (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: gross_apr, title: "Gross APR (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: self_stake_apr, title: "Self-stake APR (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: avg_stake, title: Avg stake (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: avg_self_stake, title: Avg self-stake, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: avg_delegated_stake, title: Avg delegated, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: reward, title: Reward (SAFE), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: commission, title: Commission, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: commission_beneficiary, title: Commission to, type: normal, alignContent: left, isHidden: false }
+        - { name: source, title: Source, type: normal, alignContent: left, isHidden: false }
+        - { name: period_start, title: period_start, type: normal, alignContent: left, isHidden: true }
+        - { name: period_end, title: period_end, type: normal, alignContent: left, isHidden: true }
+        - { name: eligible, title: eligible, type: normal, alignContent: left, isHidden: true }
+        - { name: signed, title: signed, type: normal, alignContent: left, isHidden: true }
+        - { name: transactions, title: transactions, type: normal, alignContent: left, isHidden: true }
+        - { name: avg_stake_while_deregistered, title: avg_stake_while_deregistered, type: normal, alignContent: left, isHidden: true }
+        - { name: stakers, title: stakers, type: normal, alignContent: left, isHidden: true }
+        - { name: self_reward, title: self_reward, type: normal, alignContent: left, isHidden: true }
+        - { name: delegator_reward, title: delegator_reward, type: normal, alignContent: left, isHidden: true }
+        - { name: commission_charged, title: commission_charged, type: normal, alignContent: left, isHidden: true }
+        - { name: validator_address, title: validator_address, type: normal, alignContent: left, isHidden: true }

@@ -1,0 +1,399 @@
+{
+  "generated_at": "2026-11-05T11:34:00.097Z",
+  "ethereum_block": 26348270,
+  "gnosis_block": 49121614,
+  "ens": {
+    "name": "rewards.safenet-gov.eth",
+    "cid": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em",
+    "history": [
+      {
+        "cid": "bafybeiczeo7uiupwte7dfa3yaus6dogwauxbookpvcgmxebbga5jtp7afq",
+        "block": 26240372,
+        "tx": "https://etherscan.io/tx/0xdc77adedb9b9428a9660888d28e66e37a057a9ca4a11b2af03c44d0baf90aa6a"
+      },
+      {
+        "cid": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em",
+        "block": 26341873,
+        "tx": "https://etherscan.io/tx/0x19d4cfd896f0a72343ebb88b7260addf7c6803849fce7fd4922147c837c3ce4f"
+      }
+    ]
+  },
+  "periods": [
+    {
+      "period": "2026-10-27",
+      "status": "published",
+      "settlement_block": 48960594,
+      "stake_rewards": 192307.6923076923,
+      "eligible_stake": 56394566.78928315,
+      "total_stake": 68077321.29467198,
+      "pool_apr": 8.890459753809191,
+      "apr_all_stake": 7.364767250512631,
+      "delegator_apr": 8.488972757946573,
+      "split": "verified"
+    }
+  ],
+  "by_validator": [
+    {
+      "period": "2026-10-27",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": "415/416",
+      "avg_stake": 11934168.79454403,
+      "avg_self_stake": 3737610.4,
+      "gross_apr": 9.69490801731523,
+      "delegator_apr": 9.210162616449468,
+      "self_stake_apr": 9.694908017315228,
+      "commission": 1523.9839941249356
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": "416/416",
+      "avg_stake": 13862162.651189057,
+      "avg_self_stake": 3678555.4265939174,
+      "gross_apr": 9.017154683528936,
+      "delegator_apr": 8.566296949352488,
+      "self_stake_apr": 9.017154683528936,
+      "commission": 1761.0688522283292
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": false,
+      "participation": "53/416",
+      "avg_stake": 7122567.411922095,
+      "avg_self_stake": 265567.933749939,
+      "gross_apr": 0,
+      "delegator_apr": 0,
+      "self_stake_apr": 0,
+      "commission": 0
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": false,
+      "participation": "0/416",
+      "avg_stake": 3765679.118464993,
+      "avg_self_stake": 0,
+      "gross_apr": 0,
+      "delegator_apr": 0,
+      "self_stake_apr": null,
+      "commission": 0
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": "416/416",
+      "avg_stake": 11598830.137270492,
+      "avg_self_stake": 3222966.8075615456,
+      "gross_apr": 9.857752743381926,
+      "delegator_apr": 9.857752743381926,
+      "self_stake_apr": 9.857752743381926,
+      "commission": 0
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": "416/416",
+      "avg_stake": 18999405.206279576,
+      "avg_self_stake": 3500000,
+      "gross_apr": 7.7022039152748425,
+      "delegator_apr": 7.317093719511101,
+      "self_stake_apr": 7.702203915274844,
+      "commission": 2289.471386985383
+    }
+  ],
+  "checks": [
+    {
+      "check": "bafybeiczeo7uiupwte7dfa3yaus6dogwauxbookpvcgmxebbga5jtp7afq: 208 proofs add up to tokenTotal",
+      "ok": true
+    },
+    {
+      "check": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em: 880 proofs add up to tokenTotal",
+      "ok": true
+    },
+    {
+      "check": "ENS contenthash pins the latest recorded root",
+      "ok": true,
+      "detail": {
+        "cid": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em",
+        "root": "0xab638c08ac00981fb708a6d9e0c4667605579aa945629231313ba6c87d1d711e"
+      }
+    },
+    {
+      "check": "distributor merkleRoot() = latest published root",
+      "ok": true,
+      "detail": {
+        "block": 26348270,
+        "root": "0xab638c08ac00981fb708a6d9e0c4667605579aa945629231313ba6c87d1d711e"
+      }
+    },
+    {
+      "check": "2026-10-27: root set on chain",
+      "ok": true,
+      "detail": "https://etherscan.io/tx/0x19d4cfd896f0a72343ebb88b7260addf7c6803849fce7fd4922147c837c3ce4f"
+    },
+    {
+      "check": "per-address payouts recomputed from IPFS = recorded",
+      "ok": true,
+      "detail": {
+        "rows": 846
+      }
+    },
+    {
+      "check": "2026-10-27: tokenTotal − Sentinel − Beta + unpaid = 5M × elapsed / 52 weeks",
+      "ok": true,
+      "detail": {
+        "lhs": "192307692307692307692307"
+      }
+    },
+    {
+      "check": "2026-10-27 Core Contributors: time-weighted stake and self-stake = reward scripts'",
+      "ok": true,
+      "detail": {
+        "stake": 11934168.79454403,
+        "self": 3737610.4,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Core Contributors: participation 415/416 = reward scripts'",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Greenfield: time-weighted stake and self-stake = reward scripts'",
+      "ok": true,
+      "detail": {
+        "stake": 13862162.651189057,
+        "self": 3678555.4265939174,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Greenfield: participation 416/416 = reward scripts'",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 RockawayX: time-weighted stake and self-stake = reward scripts'",
+      "ok": true,
+      "detail": {
+        "stake": 7122567.411922095,
+        "self": 265567.933749939,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 RockawayX: participation 53/416 = reward scripts'",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Blockchain Capital: time-weighted stake and self-stake = reward scripts'",
+      "ok": true,
+      "detail": {
+        "stake": 3765679.118464993,
+        "self": 0,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Blockchain Capital: participation 0/416 = reward scripts'",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Safe Labs: time-weighted stake and self-stake = reward scripts'",
+      "ok": true,
+      "detail": {
+        "stake": 11598830.137270492,
+        "self": 3222966.8075615456,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Safe Labs: participation 416/416 = reward scripts'",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Gnosis: time-weighted stake and self-stake = reward scripts'",
+      "ok": true,
+      "detail": {
+        "stake": 18999405.206279576,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Gnosis: participation 416/416 = reward scripts'",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Gnosis: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 56129.37272185745,
+        "recorded": 56129.37272185745,
+        "diff_base_units": "0"
+      }
+    },
+    {
+      "check": "2026-10-27 Greenfield: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 47944.15639003096,
+        "recorded": 47944.15639003096,
+        "diff_base_units": "0"
+      }
+    },
+    {
+      "check": "2026-10-27 Core Contributors: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 44378.33868950833,
+        "recorded": 44378.33868950833,
+        "diff_base_units": "0"
+      }
+    },
+    {
+      "check": "2026-10-27 Blockchain Capital: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 0,
+        "recorded": 0,
+        "diff_base_units": "0"
+      }
+    },
+    {
+      "check": "2026-10-27 Safe Labs: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 43855.82450629556,
+        "recorded": 43855.82450629556,
+        "diff_base_units": "0"
+      }
+    },
+    {
+      "check": "2026-10-27 RockawayX: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 0,
+        "recorded": 0,
+        "diff_base_units": "0"
+      }
+    },
+    {
+      "check": "2026-10-27: staking payouts + unpaid = budget",
+      "ok": true,
+      "detail": {
+        "budget": "192307692307692307692307",
+        "unpaid": "500"
+      }
+    },
+    {
+      "check": "2026-10-27: validator rewards cover the payouts up to rounding",
+      "ok": true,
+      "detail": {
+        "dust_base_units": "498"
+      }
+    },
+    {
+      "check": "2026-10-27: every payout (844 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-10-27: every staker with eligible stake is paid (none excluded, e.g. sanctioned)",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-10-27: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "issues": [],
+  "dune": {
+    "skipped": "DUNE_API_KEY not set"
+  },
+  "representative": [
+    {
+      "case": "deposit during the period",
+      "staker": "https://etherscan.io/address/0x6fe95669af152f96e3c81bf6ae16e75ef7bb1558",
+      "validator": "Core Contributors",
+      "amount": 1,
+      "tx": "https://etherscan.io/tx/0xb2fb38301d59dcd111b65cfeeb386e8a0458ceab7bde4b6c49d802d980d2b815",
+      "avg_stake_in_period": 548050.6019320437,
+      "payout": 1936.0792416909567
+    },
+    {
+      "case": "withdrawal request during the period",
+      "staker": "https://etherscan.io/address/0x3b747c372c2088963abc2194b7d5ade238965b33",
+      "validator": "Gnosis",
+      "amount": 1,
+      "tx": "https://etherscan.io/tx/0x738f04e344ad7fd1ad0488a835c49d6b327e0a4ffb755438467a25de67e7f669",
+      "avg_stake_in_period": 0.05935433201058201,
+      "payout": 0.000166581286019882
+    },
+    {
+      "case": "staker on an ineligible validator: no reward",
+      "staker": "https://etherscan.io/address/0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "validator": "RockawayX",
+      "avg_stake": 490157.1261439994,
+      "participation": "53/416"
+    },
+    {
+      "case": "withheld until KYC (counted as allocated)",
+      "address": "https://etherscan.io/address/0x6d081448c04d9ef7cf8ecf54207b1931ecc25312",
+      "withheld": 15384.615384615385,
+      "sentinel_grant": 15384.615384615385
+    },
+    {
+      "case": "withheld until KYC (counted as allocated)",
+      "address": "https://etherscan.io/address/0xc84a0928632382e75c543acced101b9525027362",
+      "withheld": 15384.615384615385,
+      "sentinel_grant": 15384.615384615385
+    },
+    {
+      "case": "commission paid to a DelegateRegistry beneficiary, not the staker",
+      "validator": "Greenfield",
+      "beneficiary": "https://etherscan.io/address/0xafb08a3e32e6b049fe434d9e7453c11efd0aa56d",
+      "commission": 1761.0688522283292
+    },
+    {
+      "case": "withdrew everything before the period: zero stake, no reward",
+      "staker": "https://etherscan.io/address/0xb1b9d5aa5d6e87a9688b42c6e5f772a29c3d14ac",
+      "tx": "https://etherscan.io/tx/0xcba3fe3004bc45c0ea34c251f8cdee597be6272368b59e9b007fa3927b8f4aac",
+      "in_payouts": false
+    }
+  ]
+}

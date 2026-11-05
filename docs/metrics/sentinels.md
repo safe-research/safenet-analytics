@@ -212,7 +212,7 @@ The per-day chart shows accrued rewards on the day the request was decided. The 
 
 Sentinel SAFE rewards are paid by Safe Foundation's rewards distributor on **Ethereum**:
 - **Contract.** *Safenet Aegis Rewards* ([`0xe5139Fc0…20f2`](https://etherscan.io/address/0xe5139Fc0FB8eae81e30d8a85C22E88c6757120f2)), a `CumulativeMerkleDrop` deployed at block 24749707, with SAFE as its `token()`. It is verified on Etherscan and Sourcify.
-- **Publication.** Allocations are published as Merkle proofs in [`safe-fndn/safenet-data` `assets/rewards`](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards). Each version of `latest.json` is one root (`merkleRoot`, `rewardsUntil`), and one proof file per address carries its **cumulative** amount.
+- **Publication.** Allocations are published as Merkle proofs: for Beta in [`safe-fndn/safenet-data` `assets/rewards`](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards), which is frozen since; for Aegis on IPFS, pinned by the ENS name `rewards.safenet-gov.eth` (verified against its CID, `src/rewards-ipfs.ts`). The first Aegis period (to 2026-10-27) grants 15,384.62 SAFE to each of two Sentinels, both withheld until KYC (`kycAmount`, not yet claimable). Each version of `latest.json` is one root (`merkleRoot`, `rewardsUntil`), and one proof file per address carries its **cumulative** amount.
 - **Sync.** `npm run sync:sentinel-rewards` copies every published root, and every proof of a Sentinel address under it, into [`dune/data/sentinel-rewards.json`](../../dune/data/sentinel-rewards.json) and the `safenet_sentinel_rewards` query, at a pinned commit.
 
 | Column | Meaning |
@@ -266,7 +266,7 @@ There is no slash after a total timeout (nobody revealed), an out-of-scope dispu
 - Event signatures, topic0 values and call selectors: [`src/safenet.ts`](../../src/safenet.ts), recomputed in `test/safenet.test.ts`.
 - The arbitration flow: the Safenet Arbitration Charter, and `safe-research/safenet-arbitration-bot`.
 - Rewards distributor: Etherscan and Sourcify (*CumulativeMerkleDrop*, verified). Its address is also in the Sentinel engine's staking checker (`crates/sentinel-engine/src/checkers/staking.rs`).
-- Published rewards: `safe-fndn/safenet-data` `assets/rewards`, and the format in `safe-fndn/safenet-staking-scripts`.
+- Published rewards: `safe-fndn/safenet-data` `assets/rewards` (Beta) and the ENS `rewards.safenet-gov.eth` contenthash on IPFS (Aegis), and the format in `safe-fndn/safenet-staking-scripts`.
 
 ## Verification
 
