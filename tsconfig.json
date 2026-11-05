@@ -11,7 +11,5 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["src", "scripts", "test"],
-  // Runs inside a safe-fndn/safenet-staking-scripts checkout, against its modules.
-  "exclude": ["scripts/reward-split"]
+  "include": ["src", "scripts", "test"]
 }

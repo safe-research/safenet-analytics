@@ -13,7 +13,8 @@
 --                     before commission. Rates differ by validator (by_validator).
 --   apr_all_stake     stake_rewards / all average stake in the contract, ineligible included
 --   delegator_apr     what delegations earned net of commission: delegators' rewards / delegated
---                     eligible stake, from a verified split only; null otherwise
+--                     eligible stake, from a verified split only (derived from the published
+--                     payouts and chain data, safenet_reward_breakdown); null otherwise
 -- A period that has ended but is not published shows its stake and no rewards or APR, never 0.
 
 with
@@ -28,7 +29,7 @@ b as (
 
 published as (
     select period_start, period_end, merkle_root, stake_rewards_raw, sentinel_raw, payout_raw, kyc_withheld_raw,
-        kyc_withheld_stake_raw, payout_addresses, commission_raw, scripts_commit
+        kyc_withheld_stake_raw, payout_addresses, commission_raw, split_source
     from b
     where kind_row = 'period'
 ),
@@ -73,7 +74,7 @@ rows_ as (
         cast(p.kyc_withheld_stake_raw as double) / 1e18 as kyc_withheld_stake,
         cast(p.commission_raw as double) / 1e18 as commission,
         p.payout_addresses,
-        p.scripts_commit,
+        p.split_source,
         '0x' || lower(to_hex(p.merkle_root)) as merkle_root,
         c.new_root is not null as root_on_chain,
         x.delegator_rewards,
@@ -95,8 +96,8 @@ select
     sentinel_grants,
     kyc_withheld_stake,
     commission,
-    if(not is_published, 'not published', if(scripts_commit is null, 'split not verified',
-        'verified (safenet-staking-scripts ' || substr(scripts_commit, 1, 7) || ')')) as split_status,
+    if(not is_published, 'not published', if(split_source is null, 'split not verified',
+        'verified: ' || split_source)) as split_status,
     eligible_stake,
     total_stake,
     total_stake - eligible_stake as ineligible_stake,

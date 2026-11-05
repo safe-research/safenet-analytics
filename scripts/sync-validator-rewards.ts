@@ -8,21 +8,25 @@
 //     against its CID (src/rewards-ipfs.ts). A root already known from git is not recorded twice.
 //
 // Checks the latest root against the sum of all its proof files, computes the per-address payouts of
-// every Aegis period, and writes dune/data/validator-rewards.json and the generated queries.
-// Verified commission splits (scripts/record-reward-split.ts) are kept.
+// every Aegis period, derives the commission split of every period that has none yet (or whose
+// recorded split no longer reproduces its payouts) from the payouts and chain data
+// (scripts/lib/derive-split.ts), and writes dune/data/validator-rewards.json and the generated queries.
 //
-// Validator stakers are every staker in a ValidatorStakerSet on Beta or production Consensus
-// (Gnosis Chain RPC, GNOSIS_RPC_URL or --rpc), plus the commission beneficiaries of verified periods.
+// Validator stakers are every staker in a ValidatorStakerSet on Beta or production Consensus (Gnosis
+// Chain RPC, GNOSIS_RPC_URL or --rpc), plus the commission beneficiaries they named in the
+// DelegateRegistry (Ethereum RPC, ETHEREUM_RPC_URL or --eth-rpc).
 //
-//   node scripts/sync-validator-rewards.ts [--ref <commit>] [--rpc URL] [--eth-rpc URL] [--gateway URL]
+//   node scripts/sync-validator-rewards.ts [--ref <commit>] [--rpc URL] [--eth-rpc URL] [--gateway URL] [--rederive]
 
 import { parseArgs } from "node:util";
 import { contenthashHistory, DEFAULT_IPFS_GATEWAYS, fetchRewardsDb, proofTotals, REWARDS_ENS_NAME, type RewardsProof } from "../src/rewards-ipfs.ts";
-import { BETA_CONSENSUS, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { BETA_CONSENSUS, DELEGATE_REGISTRY, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import {
   AEGIS_REWARDS_START,
   BETA_REWARDS_REF,
   loadValidatorRewards,
+  PERIOD_SECONDS,
+  periodBudget,
   periodEnds,
   periodPayouts,
   proofPath,
@@ -34,7 +38,9 @@ import {
   writeValidatorRewards,
 } from "../src/validator-rewards.ts";
 import { rpcClient, topicAddress } from "./lib/recount.ts";
-import { DEFAULT_ETH_RPC } from "./lib/staking.ts";
+import { deriveSplit } from "./lib/derive-split.ts";
+import { periodStake, type StakerSet } from "./lib/rewards-apr.ts";
+import { DEFAULT_ETH_RPC, fetchStakingEvents } from "./lib/staking.ts";
 
 const { values } = parseArgs({
   options: {
@@ -42,6 +48,7 @@ const { values } = parseArgs({
     rpc: { type: "string", default: process.env.GNOSIS_RPC_URL || "https://rpc.gnosischain.com" },
     "eth-rpc": { type: "string", default: process.env.ETHEREUM_RPC_URL || DEFAULT_ETH_RPC },
     gateway: { type: "string", default: process.env.IPFS_GATEWAY_URL || DEFAULT_IPFS_GATEWAYS },
+    rederive: { type: "boolean", default: false }, // derive every Aegis period's split again
   },
 });
 
@@ -60,15 +67,26 @@ const ref = values.ref!;
 
 const previous = await loadValidatorRewards().catch(() => undefined);
 
-// Validator stakers, Beta and production, and verified commission beneficiaries.
+// Validator stakers, Beta and production, and the commission beneficiaries they named.
 const rpc = rpcClient(values.rpc!);
 const head = await rpc.finalized();
 const stakers: ValidatorRewardData["stakers"] = [];
+const stakerSets: StakerSet[] = []; // production, with times, for self-stake and beneficiaries
 for (const [era, c] of [["beta", BETA_CONSENSUS], ["production", PRODUCTION.consensus]] as const)
-  for (const l of await rpc.getLogs(c.address, [VALIDATOR_STAKER_SET.topic0], c.deployBlock, head))
-    stakers.push({ validator: topicAddress(l.topics[1]), staker: `0x${l.data.slice(26, 66)}`.toLowerCase(), era });
-const beneficiaries = (previous?.validator_periods ?? []).map((v) => v.beneficiary).filter((b) => !/^0x0{40}$/.test(b));
-const addresses = [...new Set([...stakers.map((s) => s.staker), ...beneficiaries])].sort();
+  for (const l of await rpc.getLogs(c.address, [VALIDATOR_STAKER_SET.topic0], c.deployBlock, head)) {
+    const s = { validator: topicAddress(l.topics[1]), staker: `0x${l.data.slice(26, 66)}`.toLowerCase() };
+    stakers.push({ ...s, era });
+    if (era === "production") stakerSets.push({ ...s, time: await rpc.blockTime(l) });
+  }
+
+// Commission beneficiaries: DelegateRegistry delegates named by validator stakers.
+const eth = rpcClient(values["eth-rpc"]!);
+const ethHead = await eth.finalized();
+const R = DELEGATE_REGISTRY;
+const delegations: { staker: string; delegate: string | null; time: number }[] = [];
+for (const l of await eth.getLogs(R.address, [[R.events.SetDelegate.topic0, R.events.ClearDelegate.topic0], null, R.commissionId], R.fromBlock, ethHead, 500_000))
+  delegations.push({ staker: topicAddress(l.topics[1]), delegate: l.topics[0] === R.events.SetDelegate.topic0 ? topicAddress(l.topics[3]) : null, time: await eth.blockTime(l) });
+const addresses = [...new Set([...stakers.map((s) => s.staker), ...delegations.flatMap((d) => (d.delegate ? [d.delegate] : []))])].sort();
 
 // ---------------------------------------------------------------------------------------------
 // Beta: safenet-data git history up to ref.
@@ -129,8 +147,6 @@ for (const { c, index } of indexes.slice(start + 1)) {
 // ---------------------------------------------------------------------------------------------
 // Aegis: ENS contenthash history, rewards DBs from IPFS.
 
-const eth = rpcClient(values["eth-rpc"]!);
-const ethHead = await eth.finalized();
 const ens = await contenthashHistory(eth, { fromBlock: REWARDS_DISTRIBUTOR.deployBlock, toBlock: ethHead });
 const proofs = new Map<string, Map<string, RewardsProof>>(); // full proofs by merkle root
 for (const h of ens.history) {
@@ -200,6 +216,102 @@ if (proofs.has(latest.merkle_root)) {
 }
 
 const payouts = periodPayouts(roots, proofs);
+
+// ---------------------------------------------------------------------------------------------
+// Commission split, derived from the payouts and chain data (no reward scripts).
+
+const splits = previous?.splits ?? [];
+const validatorPeriods = previous?.validator_periods ?? [];
+const splitChecks = previous?.split_checks ?? [];
+const ends = periodEnds(roots);
+const stillMatches = (until: string) => {
+  const s = new Map(splits.filter((x) => x.rewards_until === until).map((x) => [x.address, x]));
+  const p = payouts.filter((x) => BigInt(x.payout) > 0n && x.rewards_until === until);
+  return p.length > 0 && p.length === s.size && p.every((x) => {
+    const y = s.get(x.address);
+    return !!y && BigInt(y.stake_reward) + BigInt(y.commission) + BigInt(y.sentinel_grant) === BigInt(x.payout) && y.sentinel_grant === x.sentinel;
+  });
+};
+const drop = (until: string) => {
+  for (const list of [splits, validatorPeriods, splitChecks] as { rewards_until: string }[][])
+    for (let k = list.length - 1; k >= 0; k--) if (list[k].rewards_until === until) list.splice(k, 1);
+};
+const todo = ends.filter(
+  (r, i) => i > 0 && r.rewards_until > AEGIS_REWARDS_START && (values.rederive || !splitChecks.some((c) => c.rewards_until === r.rewards_until) || !stillMatches(r.rewards_until)),
+);
+const derivedNotes: string[] = [];
+if (todo.length) {
+  const events = await fetchStakingEvents(eth, ethHead);
+  for (const r of todo) {
+    const i = ends.indexOf(r);
+    const until = r.rewards_until;
+    const to = Date.parse(until) / 1000;
+    const pairs = periodStake(events, { from: to - PERIOD_SECONDS, to }, stakerSets);
+    // The validator's staker at the period end, and the delegate it named then (else itself).
+    const stakerAt = new Map<string, string>();
+    for (const x of [...stakerSets].sort((a, b) => a.time - b.time)) if (x.time <= to) stakerAt.set(x.validator, x.staker);
+    const beneficiaries = new Map<string, string>();
+    for (const [v, st] of stakerAt) {
+      const last = delegations.filter((d) => d.staker === st && d.time <= to).sort((a, b) => a.time - b.time).at(-1);
+      beneficiaries.set(v, last?.delegate ?? st);
+    }
+    const budget = periodBudget(until, ends[i - 1]);
+    const d = deriveSplit({
+      periodSeconds: BigInt(PERIOD_SECONDS),
+      pairs,
+      payouts: new Map(payouts.filter((x) => x.rewards_until === until).map((x) => [x.address, { payout: BigInt(x.payout), sentinel: BigInt(x.sentinel) }])),
+      beneficiaries,
+      stakers: stakerAt,
+      budget,
+      unpaid: BigInt(r.unpaid_amount),
+    });
+    if (!d.ok) {
+      const why = `${until.slice(0, 10)}: commission split not derivable: ${d.problems.slice(0, 5).join("; ")}${d.problems.length > 5 ? ` (+${d.problems.length - 5} more)` : ""}`;
+      // A period that was verified and still matches its payouts must stay verified: fail instead.
+      if (splitChecks.some((c) => c.rewards_until === until) && stillMatches(until)) throw new Error(`${why}; it was verified before`);
+      drop(until);
+      derivedNotes.push(`${why}. Recorded as split not verified.`);
+      continue;
+    }
+    drop(until);
+    const s = (v: bigint) => v.toString();
+    const rows = [...d.recipients].sort(([a], [b]) => (a < b ? -1 : 1));
+    splits.push(...rows.map(([address, x]) => ({ rewards_until: until, address, stake_reward: s(x.stake_reward), commission: s(x.commission), sentinel_grant: s(x.sentinel_grant) })));
+    validatorPeriods.push(
+      ...d.validators
+        .sort((a, b) => (a.validator < b.validator ? -1 : 1))
+        .map((v) => ({
+          rewards_until: until,
+          validator: v.validator,
+          beneficiary: v.beneficiary,
+          avg_stake: s(v.avg_stake),
+          avg_self_stake: s(v.avg_self_stake),
+          eligible: v.reward > 0n,
+          commission_charged: v.commission_charged,
+          reward: s(v.reward),
+          self_reward: s(v.self_reward),
+          delegator_reward: s(v.delegator_reward),
+          commission: s(v.commission),
+        })),
+    );
+    const sum = (f: (x: { stake_reward: bigint; commission: bigint; sentinel_grant: bigint }) => bigint) => rows.reduce((a, [, x]) => a + f(x), 0n);
+    splitChecks.push({
+      rewards_until: until,
+      split_source: `derived from published payouts and chain data, ${d.checked} payouts reproduced`,
+      recipients: rows.length,
+      payouts_checked: d.checked,
+      max_diff: s(d.max_diff),
+      budget: s(budget),
+      unpaid: r.unpaid_amount,
+      stake_rewards: s(sum((x) => x.stake_reward)),
+      commission: s(sum((x) => x.commission)),
+      sentinel_grants: s(sum((x) => x.sentinel_grant)),
+    });
+    derivedNotes.push(`${until.slice(0, 10)}: commission split derived; ${d.checked} payouts reproduced (max difference ${d.max_diff} base units), commission ${sum((x) => x.commission)}`);
+  }
+}
+splitChecks.sort((a, b) => (a.rewards_until < b.rewards_until ? -1 : 1));
+
 const data: ValidatorRewardData = {
   source: REWARDS_SOURCE,
   ref,
@@ -209,22 +321,12 @@ const data: ValidatorRewardData = {
   entries,
   latest_check: latestCheck,
   payouts,
-  // Verified splits are kept across syncs; they are added by scripts/record-reward-split.ts.
-  splits: previous?.splits ?? [],
-  validator_periods: previous?.validator_periods ?? [],
-  split_checks: previous?.split_checks ?? [],
+  splits,
+  validator_periods: validatorPeriods,
+  split_checks: splitChecks,
 };
 await writeValidatorRewards(data);
-// Published Aegis periods without a verified split: how to record one (docs/metrics/staking.md#commission-split).
-const ends = periodEnds(roots);
-for (let i = 1; i < ends.length; i++) {
-  const r = ends[i];
-  if (r.rewards_until <= AEGIS_REWARDS_START || data.split_checks!.some((c) => c.rewards_until === r.rewards_until)) continue;
-  console.log(
-    `${r.rewards_until.slice(0, 10)}: no verified commission split. In safenet-staking-scripts: ` +
-      `npx tsx export-split.ts --previousCid=${ends[i - 1].cid ?? "<not pinned by ENS>"} > split.json; then: node scripts/record-reward-split.ts split.json`,
-  );
-}
+for (const n of derivedNotes) console.log(n);
 console.log(
   `${roots.length} roots (${roots.filter((r) => r.kind === "period").length} periods; ${roots.filter((r) => r.source === "ipfs").length} from IPFS), ` +
     `${entries.length} entries for ${addresses.length} validator stakers and beneficiaries, ${payouts.length} Aegis payouts; ` +

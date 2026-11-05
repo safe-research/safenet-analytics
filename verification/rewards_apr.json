@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-05T11:34:00.097Z",
-  "ethereum_block": 26348270,
-  "gnosis_block": 49121614,
+  "generated_at": "2026-11-05T14:04:35.983Z",
+  "ethereum_block": 26349035,
+  "gnosis_block": 49123394,
   "ens": {
     "name": "rewards.safenet-gov.eth",
     "cid": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em",
@@ -133,7 +133,7 @@
       "check": "distributor merkleRoot() = latest published root",
       "ok": true,
       "detail": {
-        "block": 26348270,
+        "block": 26349035,
         "root": "0xab638c08ac00981fb708a6d9e0c4667605579aa945629231313ba6c87d1d711e"
       }
     },
@@ -157,7 +157,7 @@
       }
     },
     {
-      "check": "2026-10-27 Core Contributors: time-weighted stake and self-stake = reward scripts'",
+      "check": "2026-10-27 Core Contributors: time-weighted stake and self-stake = recorded split",
       "ok": true,
       "detail": {
         "stake": 11934168.79454403,
@@ -169,11 +169,11 @@
       }
     },
     {
-      "check": "2026-10-27 Core Contributors: participation 415/416 = reward scripts'",
+      "check": "2026-10-27 Core Contributors: participation 415/416 ≥ 75%, as the derived reward says",
       "ok": true
     },
     {
-      "check": "2026-10-27 Greenfield: time-weighted stake and self-stake = reward scripts'",
+      "check": "2026-10-27 Greenfield: time-weighted stake and self-stake = recorded split",
       "ok": true,
       "detail": {
         "stake": 13862162.651189057,
@@ -185,11 +185,11 @@
       }
     },
     {
-      "check": "2026-10-27 Greenfield: participation 416/416 = reward scripts'",
+      "check": "2026-10-27 Greenfield: participation 416/416 ≥ 75%, as the derived reward says",
       "ok": true
     },
     {
-      "check": "2026-10-27 RockawayX: time-weighted stake and self-stake = reward scripts'",
+      "check": "2026-10-27 RockawayX: time-weighted stake and self-stake = recorded split",
       "ok": true,
       "detail": {
         "stake": 7122567.411922095,
@@ -201,11 +201,11 @@
       }
     },
     {
-      "check": "2026-10-27 RockawayX: participation 53/416 = reward scripts'",
+      "check": "2026-10-27 RockawayX: participation 53/416 < 75%, as the derived reward says",
       "ok": true
     },
     {
-      "check": "2026-10-27 Blockchain Capital: time-weighted stake and self-stake = reward scripts'",
+      "check": "2026-10-27 Blockchain Capital: time-weighted stake and self-stake = recorded split",
       "ok": true,
       "detail": {
         "stake": 3765679.118464993,
@@ -217,11 +217,11 @@
       }
     },
     {
-      "check": "2026-10-27 Blockchain Capital: participation 0/416 = reward scripts'",
+      "check": "2026-10-27 Blockchain Capital: participation 0/416 < 75%, as the derived reward says",
       "ok": true
     },
     {
-      "check": "2026-10-27 Safe Labs: time-weighted stake and self-stake = reward scripts'",
+      "check": "2026-10-27 Safe Labs: time-weighted stake and self-stake = recorded split",
       "ok": true,
       "detail": {
         "stake": 11598830.137270492,
@@ -233,11 +233,11 @@
       }
     },
     {
-      "check": "2026-10-27 Safe Labs: participation 416/416 = reward scripts'",
+      "check": "2026-10-27 Safe Labs: participation 416/416 ≥ 75%, as the derived reward says",
       "ok": true
     },
     {
-      "check": "2026-10-27 Gnosis: time-weighted stake and self-stake = reward scripts'",
+      "check": "2026-10-27 Gnosis: time-weighted stake and self-stake = recorded split",
       "ok": true,
       "detail": {
         "stake": 18999405.206279576,
@@ -249,7 +249,7 @@
       }
     },
     {
-      "check": "2026-10-27 Gnosis: participation 416/416 = reward scripts'",
+      "check": "2026-10-27 Gnosis: participation 416/416 ≥ 75%, as the derived reward says",
       "ok": true
     },
     {
@@ -258,7 +258,7 @@
       "detail": {
         "replay": 56129.37272185745,
         "recorded": 56129.37272185745,
-        "diff_base_units": "0"
+        "diff_base_units": "-2"
       }
     },
     {
@@ -267,6 +267,15 @@
       "detail": {
         "replay": 47944.15639003096,
         "recorded": 47944.15639003096,
+        "diff_base_units": "2"
+      }
+    },
+    {
+      "check": "2026-10-27 RockawayX: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 0,
+        "recorded": 0,
         "diff_base_units": "0"
       }
     },
@@ -294,16 +303,7 @@
       "detail": {
         "replay": 43855.82450629556,
         "recorded": 43855.82450629556,
-        "diff_base_units": "0"
-      }
-    },
-    {
-      "check": "2026-10-27 RockawayX: reward from the formula on the replay = recorded",
-      "ok": true,
-      "detail": {
-        "replay": 0,
-        "recorded": 0,
-        "diff_base_units": "0"
+        "diff_base_units": "2"
       }
     },
     {
@@ -318,7 +318,7 @@
       "check": "2026-10-27: validator rewards cover the payouts up to rounding",
       "ok": true,
       "detail": {
-        "dust_base_units": "498"
+        "dust_base_units": "496"
       }
     },
     {

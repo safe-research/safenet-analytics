@@ -8,8 +8,8 @@
 --                       production Consensus), and the commission beneficiaries of a verified split
 --                       (DelegateRegistry delegates): their commission and own-stake reward together
 --   delegators          everything else allocated in the period, minus Sentinel grants
---   commission          not in the published files. Shown only from a verified split of the reward
---                       scripts (safenet_reward_breakdown); Beta periods: not published
+--   commission          not in the published files. Shown only from a verified split, derived from the
+--                       published payouts and chain data (safenet_reward_breakdown); Beta periods: not published
 -- Production periods (two weeks from 2026-10-13) that have ended but are not published yet are listed
 -- with no amounts, never 0. 2026-10-06 to 2026-10-13 is the gap between Beta and production.
 
@@ -61,9 +61,9 @@ stakers as (
 ),
 
 commission as (
-    select period_end, cast(commission_raw as double) / 1e18 as commission, scripts_commit
+    select period_end, cast(commission_raw as double) / 1e18 as commission, split_source
     from breakdown
-    where kind_row = 'period' and scripts_commit is not null
+    where kind_row = 'period' and split_source is not null
 ),
 
 staker_amounts as (
@@ -103,7 +103,7 @@ published as (
         c.new_root is not null as root_on_chain,
         o.merkle_root,
         cm.commission,
-        cm.scripts_commit
+        cm.split_source
     from ordered as o
     left join staker_amounts as sa on sa.period_end = o.period_end
     left join on_chain as c on c.new_root = o.merkle_root
@@ -132,8 +132,8 @@ select
     commission,
     case
         when era = 'beta' then 'not published'
-        when scripts_commit is null then 'split not verified'
-        else 'verified (safenet-staking-scripts ' || substr(scripts_commit, 1, 7) || ')'
+        when split_source is null then 'split not verified'
+        else 'verified: ' || split_source
     end as commission_status,
     unpaid_carried,
     reissues,

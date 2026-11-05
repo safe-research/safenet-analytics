@@ -3,8 +3,8 @@
 --
 -- Stake, participation and eligibility come from chain data (staking_period_validators). Rewards per
 -- validator are not in the published files: they come from a verified split only
--- (safenet_reward_breakdown, recorded where safenet-staking-scripts at a pinned commit reproduces the
--- published payouts of every address exactly). Without one, rewards and APR stay blank.
+-- (safenet_reward_breakdown: derived from the published payouts and chain data, and recorded only if
+-- it reproduces every published payout). Without one, rewards and APR stay blank.
 --
 --   gross_apr       validator reward (own stake + delegations, before commission) / average stake
 --   delegator_apr   delegators' rewards net of commission / average delegated stake: what a
@@ -45,7 +45,7 @@ rows_ as (
         cast(x.commission_raw as double) / 1e18 as commission,
         x.commission_charged,
         x.beneficiary,
-        x.scripts_commit,
+        x.split_source,
         365.0 * 86400 / date_diff('second', v.period_start, v.period_end) as annualization
     from v
     -- rewards attach to the fixed period with the same start and end, never to another period
@@ -85,7 +85,7 @@ select
     if(beneficiary is null or beneficiary = 0x0000000000000000000000000000000000000000, null,
         '<a href="https://etherscan.io/address/0x' || lower(to_hex(beneficiary)) || '" target="_blank">0x'
         || substr(lower(to_hex(beneficiary)), 1, 4) || '…' || substr(lower(to_hex(beneficiary)), 37, 4) || '</a>') as commission_beneficiary,
-    if(verified, 'safenet-staking-scripts ' || substr(scripts_commit, 1, 7)) as source,
+    if(verified, split_source) as source,
     '0x' || lower(to_hex(validator_address)) as validator_address
 from rows_
 order by period_end desc, avg_stake desc

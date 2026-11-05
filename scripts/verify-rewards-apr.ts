@@ -8,13 +8,13 @@
 //      tokenTotal − sentinelTokenTotal − Beta total + unpaid = 5M SAFE × elapsed / 52 weeks.
 //   2. Stake: every Staking event replayed from Ethereum logs (scripts/lib/staking.ts), weighted by
 //      the exact seconds held (scripts/lib/rewards-apr.ts), with registration and registered-staker
-//      intervals. Per verified period: per-validator stake and self-stake = the reward scripts'.
+//      intervals. Per verified period: per-validator stake and self-stake = the recorded split's.
 //   3. Participation at the settlement block (last Gnosis block at or before the period end + 48),
-//      rebuilt from Consensus and FROSTCoordinator logs: signed / transactions and eligibility = the
-//      reward scripts'.
-//   4. Rewards: the formula (sqrt-damped weights × participation, src/safenet.ts rewards() of the
-//      reward scripts) on the replayed stake and participation gives the recorded per-validator
-//      rewards; every address's payout re-derived from them and its replayed stake matches the
+//      rebuilt from Consensus and FROSTCoordinator logs: a validator is eligible (≥ 75%) exactly where
+//      the derived split pays it.
+//   4. Rewards: the allocation formula (sqrt-damped weights × participation, src/safenet.ts rewards()
+//      of the reward scripts), applied to the replayed stake and participation, gives the per-validator
+//      rewards the split derived from the payouts — two independent routes to the same numbers; every address's payout re-derived from them and its replayed stake matches the
 //      published payout within rounding (a few base units); eligible stakers are all paid,
 //      ineligible-only stakers are not.
 //   5. APR from the replay; with DUNE_API_KEY, the latest results of staking_rewards_apr,
@@ -194,13 +194,14 @@ for (const p of periods) {
       const dStake = v.registered / L - BigInt(r.avg_stake);
       const dSelf = v.self / L - BigInt(r.avg_self_stake);
       const tol = BigInt(v.stakers + 1);
-      check(`${until.slice(0, 10)} ${nameOf(v.validator)}: time-weighted stake and self-stake = reward scripts'`, (dStake < 0n ? -dStake : dStake) <= tol && (dSelf < 0n ? -dSelf : dSelf) <= tol, {
+      check(`${until.slice(0, 10)} ${nameOf(v.validator)}: time-weighted stake and self-stake = recorded split`, (dStake < 0n ? -dStake : dStake) <= tol && (dSelf < 0n ? -dSelf : dSelf) <= tol, {
         stake: safe(v.registered / L),
         self: safe(v.self / L),
         diff_base_units: [dStake.toString(), dSelf.toString()],
       });
       // 3. Participation = the scripts'.
-      if (part) check(`${until.slice(0, 10)} ${nameOf(v.validator)}: participation ${part.signed.get(v.validator) ?? 0}/${part.transactions} = reward scripts'`, (part.signed.get(v.validator) ?? 0) === r.signed && part.transactions === r.transactions && eligible(v.validator) === r.eligible);
+      // 3. Participation rebuilt from signing events: eligible exactly where the derived split pays.
+      if (part) check(`${until.slice(0, 10)} ${nameOf(v.validator)}: participation ${part.signed.get(v.validator) ?? 0}/${part.transactions} ${eligible(v.validator) ? "≥" : "<"} 75%, as the derived reward says`, eligible(v.validator) === r.eligible && r.eligible === BigInt(r.reward) > 0n);
     }
     // 4. The formula on the replay gives the recorded per-validator rewards.
     const budget = recorded.reduce((a, v) => a + BigInt(v.reward), 0n) + BigInt(root?.unpaid_amount ?? "0");

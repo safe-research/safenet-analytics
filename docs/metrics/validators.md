@@ -146,8 +146,8 @@ Registrations are by era: `ValidatorStakerSet` on the Beta Consensus `0x2236…c
   | Delegators | the rest, minus Sentinel grants |
   | Sentinel grants | from `sentinelTokenTotal`; none in Beta |
 
-- **Commission.** Not published. A split is recorded only from the reward scripts at a pinned commit, and only if it reproduces the published payout of every address exactly ([staking.md](staking.md#commission-split)).
-  - 2026-10-13 to 2026-10-27 is verified with safenet-staking-scripts `8401845`: 846 recipients match exactly, and commission is 5,574.52 SAFE. The per-validator rewards and APR are in [staking.md](staking.md#first-production-period-2026-10-13-to-2026-10-27).
+- **Commission.** Not published. The sync derives the split from the published payouts and chain data, and records it only if it reproduces every published payout ([staking.md](staking.md#commission-split)).
+  - 2026-10-13 to 2026-10-27 is derived with every payout reproduced exactly, and equals the reward scripts' own split for all 846 recipients (test fixture). Commission is 5,574.52 SAFE. The per-validator rewards and APR are in [staking.md](staking.md#first-production-period-2026-10-13-to-2026-10-27).
   - Beta reads *not published*; older Beta parameters are not assumed to apply.
   - A later period without a verified split reads *split not verified*.
 - **Claimed / claimable.**

@@ -153,22 +153,28 @@ From safe-fndn/safenet-staking-scripts at `8401845` (`src/safenet.ts` `rewards()
 
 ### Commission split
 
-The published proofs give one amount per address. A split into staking reward and commission is recorded only from the reward scripts themselves, at a pinned commit, and only if it reproduces the published payout of **every** address exactly:
+The published proofs give one amount per address, with no split into staking reward and commission. `npm run sync:validator-rewards` derives the split from public data, without running the reward scripts (`scripts/lib/derive-split.ts`):
 
-1. In a checkout of safe-fndn/safenet-staking-scripts at the commit production used, with safenet-data's `config/aegis.env`, run `npm run cmd:index`. Then copy in [`scripts/reward-split/export-split.ts`](../../scripts/reward-split/export-split.ts) and run `npx tsx export-split.ts --previousCid=<CID> > split.json`. `npm run sync:validator-rewards` prints this command, with the CID, for every published period without a split.
-   - As in the production export, nothing is chosen by hand: the period is the two weeks after the previous rewards DB, which is fetched by CID and verified, and the budget is measured against it, catch-up of earlier unpaid amounts included.
-   - Pinata's public gateway refuses some CIDs, so set `IPFS_GATEWAY_URL=https://ipfs.filebase.io` if needed.
-   - Rerun for 2026-10-27 with only the Beta-final CID, it gives output identical to the recorded split.
+1. **Inputs, all public:**
+   - every address's published payout for the period;
+   - time-weighted stake per staker and validator, and self-stake, from the Staking events and `ValidatorStakerSet` (as for the APR);
+   - each validator's commission beneficiary: its staker at the period end, or the delegate that staker named in the DelegateRegistry (`SetDelegate` / `ClearDelegate`, id `keccak256("Safenet Beta validator commission beneficiary")`).
+2. **One unknown per validator**, its reward R. Payouts follow from it with the scripts' rounding:
+   - self-stake gets ⌊R·s/T⌋;
+   - a delegation gets ⌊R·d/T⌋ minus 5% commission (⌊·×500/10000⌋), if the validator's average self-stake is ≥ 3.5M SAFE.
+3. **Solving R.**
+   - Each plain delegator (one position, not a staker or beneficiary) bounds R. A validator whose plain delegators all received nothing is ineligible: R = 0.
+   - Within the bounds, R is chosen so that every payout is reproduced. This includes the validators' own stakers, multi-validator holders and beneficiaries.
+4. **Recorded only if every published payout is reproduced** (tolerance 2 base units), and if payouts + `unpaidAmount` = the period's budget. Otherwise the period reads *split not verified*.
+   - A change of the rules (commission rate, threshold, beneficiary rule) therefore gives no split, never a wrong one.
+   - A period that was verified and no longer derives fails the sync instead of losing its split.
+   - A re-issue that changes a period's payouts is derived again.
 
-   It writes the scripts' `rewards()` and `sentinelRewards()` payouts per recipient (as `cmd:rewards --split`), and per validator its stats, participation, reward and commission. It also checks that the per-validator breakdown reproduces `rewards()` per payee.
-2. `node scripts/record-reward-split.ts split.json`. It records nothing unless:
-   - stake reward + commission + Sentinel grant = the published payout for every address;
-   - the totals match the change of `tokenTotal` and `sentinelTokenTotal`;
-   - payouts + unpaid = budget;
-   - the period's `unpaidAmount` matches.
-3. `npm run sync:validator-rewards` again, to include new commission beneficiaries.
+The payouts identify each validator's reward up to a few base units (10⁻¹⁸ SAFE): a staker on two validators lets one base unit move between them without changing any payout. Per address, the split is exact: commission is derived, and the staking reward is the rest of the published payout.
 
-Then `safenet_reward_breakdown` has per-validator rows for the period. Without a verified split, the per-validator rewards, delegator APR and commission stay blank (*split not verified*). The pool APR does not need a split.
+**Checked against the reward scripts.** For 2026-10-13 to 2026-10-27, the safe-fndn/safenet-staking-scripts `rewards()` split at `8401845` was run once and kept as a test fixture (`test/fixtures/split-2026-10-27-scripts.json`). The derived split equals it for all 846 recipients, field by field. Per validator, the rewards agree within 2 base units, the commissions exactly, and the ineligible validators are exactly 0. All 893 addresses with stake or a payout are reproduced with a difference of 0 base units.
+
+Then `safenet_reward_breakdown` has per-validator rows for the period. The pool APR does not need a split.
 
 ### First production period: 2026-10-13 to 2026-10-27
 
@@ -302,7 +308,7 @@ One row per completed period and validator with stake. Fields: `avg_stake`, `avg
 
 ### safenet_reward_breakdown
 
-Generated by `npm run sync:validator-rewards` and `scripts/record-reward-split.ts` from `dune/data/validator-rewards.json`. `refresh: none`.
+Generated by `npm run sync:validator-rewards` from `dune/data/validator-rewards.json`. `refresh: none`.
 
 - **`kind_row = 'period'`**: one row per published Aegis period, summed over the per-address payouts: `payout_raw`, `stake_rewards_raw`, `sentinel_raw`, `kyc_withheld_raw`, `kyc_withheld_stake_raw`, `payout_addresses`, and `commission_raw` with `scripts_commit` if verified.
 - **`kind_row = 'validator'`**: one row per (period, validator) of a verified split: `avg_stake_raw`, `avg_self_stake_raw`, `signed`, `transactions`, `eligible`, `commission_charged`, `reward_raw`, `self_reward_raw`, `delegator_reward_raw`, `commission_raw`, `beneficiary`.
@@ -391,7 +397,7 @@ Result on 2026-11-05, without Dune: all 30 checks passed at Ethereum block 26348
 
 - The replay reproduces every validator's reward to **0 base units**.
 - All **844 staking payouts** are re-derived with a maximum difference of **0 base units**.
-- The split from the reward scripts at `8401845` matches the published payout of all 846 recipients exactly.
+- The split derived from the payouts reproduces all 893 addresses exactly and equals the reward scripts' own split (`8401845`, test fixture) for all 846 recipients.
 
 The Dune comparison runs in the pull request's preview comment.
 
@@ -404,6 +410,7 @@ The Dune comparison runs in the pull request's preview comment.
 - **Decoding lag.** If Dune's decoded tables lag behind `ethereum.blocks`, an event in that gap is missing from a result that reports a later `through_block`. The verification would show it as a mismatch.
 - **No USD values.**
 - **APR is realized, not projected.** It covers completed and published periods only. A period that has ended but whose rewards are not published shows its stake and *not yet published*, with no APR.
-- **Per-validator rewards and commission need a verified split.** They are recorded per period by hand (see [Commission split](#commission-split)). Without one, only the pool APR and the APR on all stake are shown.
+- **Per-validator rewards and commission need a verified split.** The sync derives it ([Commission split](#commission-split)). If the published payouts cannot be reproduced, for example after a change of the reward rules, the period shows only the pool APR and the APR on all stake.
+- **Reward rules are restated in code.** The derivation uses the 5% commission, the 3.5M SAFE self-stake threshold and the beneficiary rule of the reward scripts. The exact-match check makes a wrong rule visible as *split not verified*, not as wrong numbers.
 - **Rewards are published on chain**, through the ENS contenthash of `rewards.safenet-gov.eth` and IPFS. [safenet-data](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards) was a mirror and is no longer updated after Beta. The sync needs an IPFS gateway that serves the content (`IPFS_GATEWAY_URL`; default Filebase, then Pinata). Every CAR is verified against its CID, so a gateway can withhold data but not alter it.
 - **The reward methodology is a proposal pending SafeDAO approval.** The APR describes what was published and set on chain.

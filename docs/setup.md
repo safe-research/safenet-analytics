@@ -32,7 +32,7 @@
 
 One-time setup: under *Settings → Actions → General*, enable **Allow GitHub Actions to create and approve pull requests**. Optional secrets `GNOSIS_RPC_URL` and `ETHEREUM_RPC_URL` are used if set.
 
-The commission split is not run in CI. The pull request lists the command for every new period without one ([staking.md](metrics/staking.md#commission-split)). Pushing the recorded split to the branch also starts the normal pull-request workflows. Pushes made with `GITHUB_TOKEN` start none, so if `main`'s ruleset requires checks from `pull_request` runs, push any commit to the branch, or close and reopen the pull request.
+The sync also derives the commission split from the published payouts and chain data; no reward scripts run ([staking.md](metrics/staking.md#commission-split)). Pushes made with `GITHUB_TOKEN` start no workflows, so if `main`'s ruleset requires checks from `pull_request` runs, push any commit to the branch, or close and reopen the pull request.
 
 ## Local use
 

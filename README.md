@@ -77,8 +77,7 @@ npm run sync:known-traffic         # regenerate the known operational/test Safes
 npm run sync:participants          # refresh participant labels from safe-fndn/safenet-data
 npm run sync:sentinel-rewards      # refresh published SAFE allocations of Sentinels (safenet-data git for Beta, ENS → IPFS for Aegis)
 npm run verify:sentinels           # recount the Sentinels section from chain data (add -- --traces for reverted calls)
-npm run sync:validator-rewards     # refresh published staking rewards (Beta: safenet-data git; Aegis: ENS rewards.safenet-gov.eth → IPFS)
-node scripts/record-reward-split.ts split.json  # record a verified commission split (docs/metrics/staking.md#commission-split)
+npm run sync:validator-rewards     # refresh published staking rewards (Beta: safenet-data git; Aegis: ENS → IPFS) and derive the commission split
 npm run verify:rewards-apr         # check the realized APR against the published rewards, a stake replay and signing events
 npm run dune -- deploy --preview --sha <sha>   # preview deploy (normally done by CI)
 ```

@@ -300,7 +300,7 @@ test("recorded splits reproduce the published payouts of every address exactly",
     assert.equal(BigInt(c.stake_rewards) + BigInt(c.commission) + BigInt(c.unpaid), BigInt(c.budget));
     const vs = (data.validator_periods ?? []).filter((v) => v.rewards_until === c.rewards_until);
     assert.equal(vs.reduce((a, v) => a + BigInt(v.commission), 0n), BigInt(c.commission));
-    for (const v of vs) assert.equal(v.eligible, v.signed / v.transactions >= 0.75, v.validator);
+    for (const v of vs) assert.equal(v.eligible, BigInt(v.reward) > 0n, v.validator);
   }
 });
 
@@ -362,4 +362,117 @@ test("the APR panels are on the Staking and Validators dashboards, never on safe
     assert.ok(staking.includes(`visualization: ${v}`), v);
   assert.match(staking, /^slug: safenet-staking-withdrawals$/m);
   assert.ok((await readFile(`${DEFAULT_ROOT}/dashboards/validators.yaml`, "utf8")).includes("visualization: staking_rewards_apr_by_validator/table"));
+});
+
+// ---------------------------------------------------------------------------------------------
+// Commission split derived from payouts and chain data (scripts/lib/derive-split.ts)
+
+import { deriveSplit, type SplitInput } from "../scripts/lib/derive-split.ts";
+import type { PairStake } from "../scripts/lib/rewards-apr.ts";
+
+const E18 = 10n ** 18n;
+// A synthetic period paid with the reward scripts' rounding (src/safenet.ts rewards()).
+function synthetic({ bps = 500n, threshold = 3_500_000n * E18 } = {}) {
+  const L = 1209600n;
+  const pair = (staker: string, validator: string, avg: bigint, self = 0n): PairStake => ({ staker, validator, all: avg * L, registered: avg * L, self: self * L });
+  const pairs = [
+    pair("0xs1", "0xv1", 4_000_000n * E18 + 7n, 4_000_000n * E18 + 7n), // v1's staker: commission charged
+    pair("0xd1", "0xv1", 1_234_567n * E18 + 89n),
+    pair("0xd2", "0xv1", 9_876n * E18 + 5n),
+    pair("0xm", "0xv1", 500_000n * E18 + 3n), // on two validators
+    pair("0xs2", "0xv2", 1_000_000n * E18, 1_000_000n * E18), // v2: self-stake < 3.5M, no commission
+    pair("0xd3", "0xv2", 2_345_678n * E18 + 1n),
+    pair("0xm", "0xv2", 700_000n * E18 + 9n),
+    pair("0xd4", "0xv3", 3_000_000n * E18), // v3: ineligible
+  ];
+  const R = new Map([["0xv1", 40_000n * E18 + 123_456_789n], ["0xv2", 30_000n * E18 + 987_654_321n], ["0xv3", 0n]]);
+  const beneficiaries = new Map([["0xv1", "0xbenef"], ["0xv2", "0xs2"]]); // v1's staker named a delegate
+  const T = new Map<string, bigint>();
+  const S = new Map<string, bigint>();
+  for (const p of pairs) {
+    T.set(p.validator, (T.get(p.validator) ?? 0n) + p.registered / L);
+    S.set(p.validator, (S.get(p.validator) ?? 0n) + p.self / L);
+  }
+  const pay = new Map<string, bigint>();
+  const add = (a: string, x: bigint) => pay.set(a, (pay.get(a) ?? 0n) + x);
+  for (const p of pairs) {
+    const r = R.get(p.validator)!;
+    const t = T.get(p.validator)!;
+    const self = p.self / L;
+    add(p.staker, (r * self) / t);
+    const gross = (r * (p.registered / L - self)) / t;
+    const c = S.get(p.validator)! >= threshold ? (gross * bps) / 10000n : 0n;
+    add(p.staker, gross - c);
+    if (c > 0n) add(beneficiaries.get(p.validator)!, c);
+  }
+  const paid = [...pay.values()].reduce((a, b) => a + b, 0n);
+  const input: SplitInput = {
+    periodSeconds: L,
+    pairs: new Map(pairs.map((p) => [`${p.staker}:${p.validator}`, p])),
+    payouts: new Map([...pay].map(([a, x]) => [a, { payout: x, sentinel: 0n }])),
+    beneficiaries,
+    stakers: new Map([["0xv1", "0xs1"], ["0xv2", "0xs2"]]),
+    budget: paid + 77n,
+    unpaid: 77n,
+  };
+  return { input, R, pay };
+}
+
+test("the split is derived from payouts and stake alone, exactly, with the beneficiary's commission", () => {
+  const { input, R, pay } = synthetic();
+  const d = deriveSplit(input);
+  assert.ok(d.ok, d.problems.join("; "));
+  assert.equal(d.max_diff, 0n);
+  const v = new Map(d.validators.map((x) => [x.validator, x]));
+  assert.equal(v.get("0xv3")!.reward, 0n, "ineligible: exactly 0");
+  assert.ok(v.get("0xv1")!.commission_charged && !v.get("0xv2")!.commission_charged);
+  for (const k of ["0xv1", "0xv2"]) {
+    const diff = v.get(k)!.reward - R.get(k)!;
+    assert.ok((diff < 0n ? -diff : diff) <= 10n, `${k}: ${diff}`);
+  }
+  // the beneficiary's whole payout is commission; the staker's is stake reward only
+  assert.equal(d.recipients.get("0xbenef")!.commission, pay.get("0xbenef"));
+  assert.equal(d.recipients.get("0xbenef")!.stake_reward, 0n);
+  assert.equal(d.recipients.get("0xs1")!.commission, 0n);
+  for (const [a, x] of d.recipients) assert.equal(x.stake_reward + x.commission + x.sentinel_grant, pay.get(a), a);
+});
+
+test("a change of the reward rules gives no split rather than a wrong one", () => {
+  for (const changed of [{ bps: 600n }, { threshold: 1_000_000n * E18 }]) {
+    const d = deriveSplit(synthetic(changed).input);
+    assert.equal(d.ok, false, JSON.stringify(changed, (_, x) => (typeof x === "bigint" ? x.toString() : x)));
+  }
+  const { input } = synthetic();
+  input.unpaid += 1n; // published unpaidAmount inconsistent with the budget
+  assert.equal(deriveSplit(input).ok, false);
+});
+
+test("the derived split of 2026-10-13 – 10-27 equals the reward scripts' own split", async () => {
+  // test/fixtures: safenet-staking-scripts 8401845 rewards(), run once for this period.
+  const f = JSON.parse(await readFile(new URL("./fixtures/split-2026-10-27-scripts.json", import.meta.url), "utf8"));
+  const data = await loadValidatorRewards();
+  const until = "2026-10-27T00:00:00.000Z";
+  const splits = new Map(data.splits.filter((s) => s.rewards_until === until).map((s) => [s.address, s]));
+  assert.equal(splits.size, Object.keys(f.recipients).length);
+  for (const [a, r] of Object.entries(f.recipients) as [string, { stake_reward: string; commission: string; sentinel_grant: string }][]) {
+    const s = splits.get(a)!;
+    assert.deepEqual([s.stake_reward, s.commission, s.sentinel_grant], [r.stake_reward, r.commission, r.sentinel_grant], a);
+  }
+  // Per validator: the payouts identify each reward up to a few base units (10^-18 SAFE).
+  for (const v of f.validators) {
+    const x = data.validator_periods!.find((y) => y.rewards_until === until && y.validator === v.validator)!;
+    assert.equal(x.eligible, v.eligible, v.validator);
+    assert.equal(x.avg_stake, v.avg_stake, v.validator);
+    assert.equal(x.avg_self_stake, v.avg_self_stake, v.validator);
+    assert.equal(x.beneficiary, v.beneficiary, v.validator);
+    assert.equal(x.commission, v.commission, v.validator);
+    for (const k of ["reward", "self_reward", "delegator_reward"] as const) {
+      const d = BigInt(x[k]) - BigInt(v[k]);
+      assert.ok((d < 0n ? -d : d) <= 5n, `${v.validator} ${k}: ${d}`);
+    }
+    if (!v.eligible) assert.equal(x.reward, "0");
+  }
+  const c = data.split_checks!.find((y) => y.rewards_until === until)!;
+  assert.equal(c.max_diff, "0");
+  assert.equal(c.budget, f.budget);
 });

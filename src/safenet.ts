@@ -141,6 +141,22 @@ export const ORACLE_FUNCTIONS = {
 // is the scheduling block plus this delay; SentinelRemoved takes effect at once.
 export const SENTINEL_GOVERNANCE_DELAY_BLOCKS = 51_840;
 
+// Gnosis DelegateRegistry on Ethereum, in which a validator's staker can name another address to
+// receive its commission (safenet-staking-scripts src/indexing/validator-beneficiaries.ts: delegate id
+// keccak256("Safenet Beta validator commission beneficiary"), indexed from its seed block 24878000).
+// Used to derive the commission split (scripts/lib/derive-split.ts).
+export const DELEGATE_REGISTRY = {
+  chain: "ethereum",
+  address: "0x469788fe6e9e9681c6ebf3bf78e7fd26fc015446",
+  fromBlock: 24878000,
+  commissionId: "0x45c518fef2d01542b884830ef4eaae3137aebc8a3df6e4c4b73c585f85e709b0",
+  commissionIdText: "Safenet Beta validator commission beneficiary",
+  events: {
+    SetDelegate: { signature: "SetDelegate(address,bytes32,address)", topic0: "0xa9a7fd460f56bddb880a465a9c3e9730389c70bc53108148f16d55a87a6c468e" },
+    ClearDelegate: { signature: "ClearDelegate(address,bytes32,address)", topic0: "0x9c4f00c4291262731946e308dc2979a56bd22cce8f95906b975065e96cd5a064" },
+  },
+} as const;
+
 // Safe Foundation's SAFE rewards distributor on Ethereum ("Safenet Aegis Rewards",
 // CumulativeMerkleDrop, verified on Etherscan and Sourcify). Rewards, Sentinel subsidies included,
 // are published as Merkle proofs in safe-fndn/safenet-data assets/rewards (src/sentinel-rewards.ts).

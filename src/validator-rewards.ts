@@ -10,10 +10,9 @@
 //     the git history (the Beta-final DB was pinned first) is not recorded twice.
 //
 // Rewards are paid to stakers. A validator's registered staker receives its commission and the
-// reward on its own stake as one amount; the published files do not split them. A split is only
-// recorded from safe-fndn/safenet-staking-scripts at a pinned commit (scripts/reward-split/), and
-// only if its per-address totals equal the published period payouts exactly
-// (scripts/record-reward-split.ts). Nothing is estimated here; only published amounts are copied.
+// reward on its own stake as one amount; the published files do not split them. The sync derives
+// the split from the published payouts and chain data (scripts/lib/derive-split.ts) and records it
+// only if it reproduces every published payout; nothing is estimated.
 //
 // `npm run sync:validator-rewards` refreshes dune/data/validator-rewards.json and regenerates the
 // safenet_validator_rewards and safenet_reward_breakdown queries.
@@ -33,6 +32,20 @@ export const BETA_REWARDS_REF = "276526f6c0b204fa7d5aa4f788c0b7983b08bc7f";
 export const AEGIS_REWARDS_START = "2026-10-13T00:00:00.000Z";
 export const BETA_REWARDS_UNTIL = "2026-10-06T00:00:00.000Z";
 export const PERIOD_SECONDS = 14 * 86400;
+// Aegis validator budget: 5M SAFE over 52 weeks (sep.ts AEGIS_VALIDATOR_REWARDS, AEGIS_REWARDS_DURATION),
+// on top of Beta's final tokenTotal (BETA_TOKEN_TOTAL).
+export const AEGIS_VALIDATOR_REWARDS = 5_000_000n * 10n ** 18n;
+export const AEGIS_REWARDS_DURATION = 52n * 7n * 86400n;
+export const BETA_TOKEN_TOTAL = 4499987774807670271201970n;
+
+// The validator budget of the Aegis period ending at `end`, given the previous period's last root:
+// the programme amount due through `end`, minus what earlier roots already allocated to staking
+// (safenet-staking-scripts src/utils/args.ts totalRewardsAmount; unpaid amounts roll forward).
+export function periodBudget(end: string, previous: Pick<ValidatorRewardRoot, "token_total" | "sentinel_token_total">) {
+  const elapsed = BigInt(unixOf(end) - unixOf(AEGIS_REWARDS_START));
+  const due = (AEGIS_VALIDATOR_REWARDS * (elapsed > AEGIS_REWARDS_DURATION ? AEGIS_REWARDS_DURATION : elapsed)) / AEGIS_REWARDS_DURATION;
+  return due - (BigInt(previous.token_total) - BigInt(previous.sentinel_token_total ?? "0") - BETA_TOKEN_TOTAL);
+}
 const unixOf = (iso: string) => Date.parse(iso) / 1000;
 
 // The fixed Aegis period ending at `end` (ISO), or an error why a published root is not one: it
@@ -86,43 +99,42 @@ export type ValidatorRewardEntry = {
 //   kyc_change  change of kycAmount (> 0: withheld in the period; < 0: released into cumulative)
 export type RewardPayout = { rewards_until: string; address: string; payout: string; kyc_amount: string; kyc_change?: string; sentinel: string };
 
-// A verified split of one address's period payout (safenet-staking-scripts `cmd:rewards --split`).
-// stake_reward + commission + sentinel_grant = the published payout, exactly.
+// A verified split of one address's period payout, derived from public data
+// (scripts/lib/derive-split.ts). stake_reward + commission + sentinel_grant = the published payout.
 export type ValidatorRewardSplit = {
   rewards_until: string;
   address: string;
   stake_reward: string;
   commission: string;
   sentinel_grant: string;
-  scripts_commit: string;
 };
 
-// One validator in one verified period, from the reward scripts' own inputs (validatorStats,
-// participation) and formula; recorded only with a verified split that it reproduces.
+// One validator in one verified period, derived with the split.
 //   avg_stake / avg_self_stake  time-weighted over the period while registered (base units)
-//   signed / transactions       reward participation (attested transactions to settlement)
-//   reward = self_reward + delegator_reward + commission (base units)
+//   reward                      solved from the payouts of its plain delegators (base units)
+//   eligible                    reward > 0 (participation ≥ 75%, checked by verify:rewards-apr)
+//   reward = self_reward + delegator_reward + commission, up to rounding
 export type ValidatorPeriod = {
   rewards_until: string;
   validator: string;
   beneficiary: string;
   avg_stake: string;
   avg_self_stake: string;
-  signed: number;
-  transactions: number;
   eligible: boolean;
   commission_charged: boolean;
   reward: string;
   self_reward: string;
   delegator_reward: string;
   commission: string;
-  scripts_commit: string;
 };
 
+// How a period's split was verified: every published payout reproduced within max_diff base units.
 export type SplitCheck = {
   rewards_until: string;
-  scripts_commit: string;
+  split_source: string;
   recipients: number;
+  payouts_checked: number;
+  max_diff: string;
   budget: string;
   unpaid: string;
   stake_rewards: string;
@@ -247,17 +259,18 @@ export function periodTotals(data: ValidatorRewardData) {
 
 export function rewardBreakdownSql(data: ValidatorRewardData): string {
   const roots = new Map(periodEnds(data.roots).map((r) => [r.rewards_until, r]));
+  const splitSource = (until: string) => data.split_checks?.find((c) => c.rewards_until === until)?.split_source ?? "";
   const start = (until: string) => ts(new Date(unixOf(until) * 1000 - PERIOD_SECONDS * 1000).toISOString());
   const periods = [...periodTotals(data)].map(([until, t]) => {
     const c = (data.split_checks ?? []).find((x) => x.rewards_until === until);
-    return `    ('period', ${start(until)}, ${ts(until)}, ${roots.get(until)!.merkle_root}, cast(null as varbinary), cast(null as varbinary), ${u256(t.payout.toString())}, ${u256((t.payout - t.sentinel).toString())}, ${u256(t.sentinel.toString())}, ${u256(t.kycWithheld.toString())}, ${u256(t.kycWithheldStake.toString())}, ${t.addresses}, cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as integer), cast(null as boolean), cast(null as boolean), cast(null as uint256), cast(null as uint256), cast(null as uint256), ${c ? u256(c.commission) : "cast(null as uint256)"}, ${c ? sqlString(c.scripts_commit) : "cast(null as varchar)"})`;
+    return `    ('period', ${start(until)}, ${ts(until)}, ${roots.get(until)!.merkle_root}, cast(null as varbinary), cast(null as varbinary), ${u256(t.payout.toString())}, ${u256((t.payout - t.sentinel).toString())}, ${u256(t.sentinel.toString())}, ${u256(t.kycWithheld.toString())}, ${u256(t.kycWithheldStake.toString())}, ${t.addresses}, cast(null as uint256), cast(null as uint256), cast(null as boolean), cast(null as boolean), cast(null as uint256), cast(null as uint256), cast(null as uint256), ${c ? u256(c.commission) : "cast(null as uint256)"}, ${c ? sqlString(c.split_source) : "cast(null as varchar)"})`;
   });
   const validators = (data.validator_periods ?? []).map(
     (v) =>
-      `    ('validator', ${start(v.rewards_until)}, ${ts(v.rewards_until)}, ${roots.get(v.rewards_until)!.merkle_root}, ${v.validator}, ${v.beneficiary}, cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as integer), ${u256(v.avg_stake)}, ${u256(v.avg_self_stake)}, ${v.signed}, ${v.transactions}, ${v.eligible}, ${v.commission_charged}, ${u256(v.reward)}, ${u256(v.self_reward)}, ${u256(v.delegator_reward)}, ${u256(v.commission)}, ${sqlString(v.scripts_commit)})`,
+      `    ('validator', ${start(v.rewards_until)}, ${ts(v.rewards_until)}, ${roots.get(v.rewards_until)!.merkle_root}, ${v.validator}, ${v.beneficiary}, cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as integer), ${u256(v.avg_stake)}, ${u256(v.avg_self_stake)}, ${v.eligible}, ${v.commission_charged}, ${u256(v.reward)}, ${u256(v.self_reward)}, ${u256(v.delegator_reward)}, ${u256(v.commission)}, ${sqlString(splitSource(v.rewards_until))})`,
   );
   return `-- Aegis reward periods as published, and verified per-validator rewards. Generated by
--- \`npm run sync:validator-rewards\` and scripts/record-reward-split.ts; do not edit by hand.
+-- \`npm run sync:validator-rewards\`; do not edit by hand.
 -- src/validator-rewards.ts, docs/metrics/staking.md#realized-apr
 ${header(data)}.
 --
@@ -269,26 +282,26 @@ ${header(data)}.
 --     stake_rewards_raw       payout minus Sentinel grants: staking rewards and commission
 --     sentinel_raw            Sentinel grants (published sentinelAmount); not staking rewards
 --     kyc_withheld_raw        newly withheld until KYC; kyc_withheld_stake_raw: its staking part
---     commission_raw          commission, from a verified split (scripts_commit); null otherwise
--- kind_row = 'validator': one row per (period, validator) of a verified split, from
---   safe-fndn/safenet-staking-scripts at scripts_commit (validatorStats, participation, the rewards
---   formula), recorded only because it reproduces the published payouts per address exactly:
+--     commission_raw          commission, from a verified split (split_source); null otherwise
+-- kind_row = 'validator': one row per (period, validator) of a verified split, derived from the
+--   published payouts and chain data (scripts/lib/derive-split.ts) and recorded only because it
+--   reproduces every published payout (split_source says how many):
 --     avg_stake_raw / avg_self_stake_raw  time-weighted over the period while registered
---     signed / transactions               reward participation; eligible = signed / transactions >= 0.75
+--     eligible                            reward > 0 (participation >= 75%)
 --     commission_charged                  avg self-stake >= 3.5M SAFE (5% of delegated rewards)
 --     reward_raw = self_reward_raw + delegator_reward_raw (net) + commission_raw (to beneficiary)
 
 select kind_row, period_start, period_end, merkle_root, validator, beneficiary, payout_raw, stake_rewards_raw, sentinel_raw,
-    kyc_withheld_raw, kyc_withheld_stake_raw, payout_addresses, avg_stake_raw, avg_self_stake_raw, signed,
-    transactions, eligible, commission_charged, reward_raw, self_reward_raw, delegator_reward_raw,
-    commission_raw, scripts_commit
+    kyc_withheld_raw, kyc_withheld_stake_raw, payout_addresses, avg_stake_raw, avg_self_stake_raw,
+    eligible, commission_charged, reward_raw, self_reward_raw, delegator_reward_raw,
+    commission_raw, split_source
 from (
     values
-${[...periods, ...validators].join(",\n") || "    ('none', cast(null as timestamp), cast(null as timestamp), cast(null as varbinary), cast(null as varbinary), cast(null as varbinary), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as integer), cast(null as boolean), cast(null as boolean), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as varchar))"}
+${[...periods, ...validators].join(",\n") || "    ('none', cast(null as timestamp), cast(null as timestamp), cast(null as varbinary), cast(null as varbinary), cast(null as varbinary), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as integer), cast(null as uint256), cast(null as uint256), cast(null as boolean), cast(null as boolean), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as uint256), cast(null as varchar))"}
 ) as t (kind_row, period_start, period_end, merkle_root, validator, beneficiary, payout_raw, stake_rewards_raw, sentinel_raw,
-    kyc_withheld_raw, kyc_withheld_stake_raw, payout_addresses, avg_stake_raw, avg_self_stake_raw, signed,
-    transactions, eligible, commission_charged, reward_raw, self_reward_raw, delegator_reward_raw,
-    commission_raw, scripts_commit)
+    kyc_withheld_raw, kyc_withheld_stake_raw, payout_addresses, avg_stake_raw, avg_self_stake_raw,
+    eligible, commission_charged, reward_raw, self_reward_raw, delegator_reward_raw,
+    commission_raw, split_source)
 where kind_row <> 'none'
 `;
 }
