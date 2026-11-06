@@ -1,20 +1,20 @@
-// Independent rebuild of Safenet production validator membership and signing participation from
+// Independent rebuild of Safenet Aegis validator membership and signing participation from
 // Gnosis Chain RPC logs, for scripts/verify-validators.ts. It mirrors the rules of
 // dune/queries/validator_epochs, validator_membership and validator_ceremonies in TypeScript
 // (docs/metrics/validators.md).
 
-import { EVENTS, FROST_COORDINATOR, GENESIS_GROUP_ID, PRODUCTION, VALIDATOR_EVENTS } from "../../src/safenet.ts";
+import { EVENTS, FROST_COORDINATOR, GENESIS_GROUP_ID, AEGIS, VALIDATOR_EVENTS } from "../../src/safenet.ts";
 import { type Log, type Rpc, order, topicAddress } from "./recount.ts";
 
 const V = VALIDATOR_EVENTS;
 const w = (data: string, i: number) => `0x${data.slice(2 + 64 * i, 2 + 64 * (i + 1))}`;
-const CONSENSUS_WORD = `0x${"0".repeat(24)}${PRODUCTION.consensus.address.slice(2)}`;
+const CONSENSUS_WORD = `0x${"0".repeat(24)}${AEGIS.consensus.address.slice(2)}`;
 
 export async function fetchValidatorLogs(rpc: Rpc, to: number) {
   const consensus = await rpc.getLogs(
-    PRODUCTION.consensus.address,
+    AEGIS.consensus.address,
     [[V.EpochStaged.topic0, EVENTS.TransactionAttested.topic0]],
-    PRODUCTION.consensus.deployBlock,
+    AEGIS.consensus.deployBlock,
     to,
     50_000,
   );
@@ -53,7 +53,7 @@ export function build(logs: ValidatorLogs, to: number) {
   const staged = consensus
     .filter((l) => l.topics[0] === V.EpochStaged.topic0)
     .map((l) => ({ epoch: Number(BigInt(l.topics[2])), activeFrom: Number(BigInt(w(l.data, 0))), groupId: w(l.data, 1), sid: w(l.data, 4) }));
-  const all = [{ epoch: 0, activeFrom: PRODUCTION.consensus.deployBlock, groupId: GENESIS_GROUP_ID, sid: null as string | null }, ...staged].sort(
+  const all = [{ epoch: 0, activeFrom: AEGIS.consensus.deployBlock, groupId: GENESIS_GROUP_ID, sid: null as string | null }, ...staged].sort(
     (a, b) => a.activeFrom - b.activeFrom,
   );
   const epochs: Epoch[] = all.map((e, i) => ({ epoch: e.epoch, groupId: e.groupId, activeFrom: e.activeFrom, activeTo: all[i + 1]?.activeFrom ?? null }));

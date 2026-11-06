@@ -1,4 +1,4 @@
--- Safenet production: arbitration rate per UTC proposal day, from the first production request to
+-- Safenet Aegis: arbitration rate per UTC proposal day, from the first Aegis request to
 -- today, days without requests included (no rate). Same population and states as
 -- arbitration_windows (docs/metrics/sentinels.md#arbitration-rate-and-resolution-time). A day's
 -- requests are counted in their latest state: requests of recent days still being voted on

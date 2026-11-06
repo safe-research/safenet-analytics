@@ -1,6 +1,6 @@
 name: "Safenet: transaction checks per day"
 description: >
-  Safenet production (Aegis, Gnosis Chain): transaction-check requests, completed checks
+  Safenet Aegis (Gnosis Chain): transaction-check requests, completed checks
   (approved or denied verdicts) and attestations per UTC day for the last 30 days, with the
   all-time request total, with requests for Safes on chains outside the Charter (likely tests) and timeouts
   in separate columns. Managed in github.com/safe-research/safenet-analytics
@@ -33,7 +33,7 @@ visualizations:
     name: Requests (all time)
     type: counter
     description: >
-      Transaction-check requests for Safes on Charter chains since the first production request
+      Transaction-check requests for Safes on Charter chains since the first Aegis request
       (2026-10-14), up to the latest execution. Same execution as the daily chart.
     options:
       counterColName: requests_cumulative

@@ -478,7 +478,7 @@ const TABLES: Record<string, { title: string; cols: Col[] }> = {
     cols: [
       ["network", "Safe network"],
       ["guard_enabled_safes", "Guard-enabled Safes"],
-      ["verified_production_guards", "Production guard deployments"],
+      ["verified_aegis_guards", "Aegis guard deployments"],
       ["note", "Note"],
     ],
   },
@@ -645,7 +645,7 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
       "staking_active",
       timeSeriesHtml("Active stake (SAFE, all time; Beta before 2026-10-07)", d, [
         { column: "active_stake_beta", name: "Active stake (Beta)", color: BETA, kind: "area" },
-        { column: "active_stake_production", name: "Active stake (production)", color: "#2a78d6", kind: "area" },
+        { column: "active_stake_aegis", name: "Active stake (Aegis)", color: "#2a78d6", kind: "area" },
       ], footer),
       996,
       h,
@@ -672,7 +672,7 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
       "staking_requests",
       timeSeriesHtml("Withdrawal requests per day (SAFE, all time)", d, [
         { column: "withdrawals_requested_beta", name: "Requested (Beta)", color: BETA, kind: "column" },
-        { column: "withdrawals_requested_production", name: "Requested (production)", color: "#eb6834", kind: "column" },
+        { column: "withdrawals_requested_aegis", name: "Requested (Aegis)", color: "#eb6834", kind: "column" },
       ], footer),
       996,
       h,
@@ -888,7 +888,7 @@ export function validatorPages(results: Record<string, Row[]>, footer: string): 
     pages.push([
       "validator_stake_daily",
       timeSeriesHtml(
-        "Active stake by validator (SAFE, all time; production from 2026-10-07)",
+        "Active stake by validator (SAFE, all time; Aegis from 2026-10-07)",
         pivotByDay(sd, "validator", "active_stake"),
         names.map((name) => ({ column: name, name, color: validatorColor(name), kind: "line" as const })),
         footer,

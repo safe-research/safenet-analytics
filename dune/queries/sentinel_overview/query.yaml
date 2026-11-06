@@ -1,6 +1,6 @@
 name: "Safenet: Sentinel overview"
 description: >
-  Safenet production (Aegis): every Sentinel ever scheduled, its current membership status and its
+  Safenet Aegis: every Sentinel ever scheduled, its current membership status and its
   all-time participation: eligible requests, commits, valid reveals, participation rate, secure,
   insecure, no-commit and missing responses, reverted calls and last activity. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).

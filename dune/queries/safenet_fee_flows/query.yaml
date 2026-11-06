@@ -1,6 +1,6 @@
 name: "Safenet: Sentinel Oracle USDC.e flows"
 description: >
-  Every USDC.e transfer into or out of the Safenet production Sentinel Oracle (Gnosis Chain),
+  Every USDC.e transfer into or out of the Safenet Aegis Sentinel Oracle (Gnosis Chain),
   classified as fee, bond, Sentinel claim, sponsor refund or protocol funds receiver payout by the
   oracle events in the same transaction. Shared model for fee accounting; not shown on the
   dashboard. Managed in github.com/safe-research/safenet-analytics

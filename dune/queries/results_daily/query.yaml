@@ -1,6 +1,6 @@
 name: "Safenet: result breakdown by proposal day (last 30 days)"
 description: >
-  Safenet production (Aegis): requests of the last 30 days by UTC proposal day and current status:
+  Safenet Aegis: requests of the last 30 days by UTC proposal day and current status:
   unanimous secure, disputed, unanimous insecure, timed out without a verdict, pending. Charter
   chains only. Managed in github.com/safe-research/safenet-analytics
   (docs/metrics/network-and-revenue.md).

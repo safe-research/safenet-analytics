@@ -1,5 +1,5 @@
--- Safenet production: Sentinel participation over the last 24 hours, 7 days, 30 days and all time
--- (production only, since the first production request). One row per Sentinel, one column group
+-- Safenet Aegis: Sentinel participation over the last 24 hours, 7 days, 30 days and all time
+-- (Aegis only, since the first Aegis request). One row per Sentinel, one column group
 -- per window. Definitions: docs/metrics/sentinels.md#participation.
 --
 -- The population of a window is the requests proposed in it (Charter chains, as in the overview)

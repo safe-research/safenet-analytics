@@ -1,6 +1,6 @@
 name: "Safenet: disputes and arbitration"
 description: >
-  Safenet production (Aegis): every disputed request with each Sentinel's vote and recorded reason,
+  Safenet Aegis: every disputed request with each Sentinel's vote and recorded reason,
   the Oracle result, the arbitration status, the ruling and the arbitrator's recorded context,
   and its timing: proposal, dispute (freeze), outcome, time to ruling and age of open cases.
   Managed in github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).

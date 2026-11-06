@@ -31,7 +31,7 @@ Commands:
   check-sql [--all]
                            Run changed (or all) queries' SQL on Dune without saving it and
                            check that visualized columns exist in the result
-  check-decoded            Look up the production contracts in Dune's decoded contract tables
+  check-decoded            Look up the Aegis contracts in Dune's decoded contract tables
   decoded-parity [--out FILE]
                            Read-only: compare every decoded Safenet event table with the raw logs,
                            log by log, from the deploy block to a block at least a day old

@@ -3,7 +3,7 @@
 //   - test_uncovered_chain: requests for Safes on chains the Charter does not cover. A rule, applied
 //     in SQL through covered_chain.
 //   - operational: Safes listed in dune/data/known-traffic.json, such as Safenet's own Arbitrator
-//     Safe. Their requests are real production checks; totals include them and dashboards show
+//     Safe. Their requests are real Aegis checks; totals include them and dashboards show
 //     them separately.
 //
 // Nothing here says where a request originated (for example Safe{Wallet}): Safenet records no

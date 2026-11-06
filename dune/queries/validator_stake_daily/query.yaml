@@ -1,7 +1,7 @@
 name: "Safenet: active stake per validator per day (SAFE)"
 description: >
-  Safenet active stake per validator at the end of each UTC day, all time (Beta and production in one
-  Staking contract; production from 2026-10-07), with the Staking section's definition. Managed in
+  Safenet active stake per validator at the end of each UTC day, all time (Beta and Aegis in one
+  Staking contract; Aegis from 2026-10-07), with the Staking section's definition. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/validators.md).
 private: false
 tags: [safenet]
@@ -10,7 +10,7 @@ performance: medium
 
 visualizations:
   area:
-    name: Active stake by validator (SAFE, all time; production from 2026-10-07)
+    name: Active stake by validator (SAFE, all time; Aegis from 2026-10-07)
     type: chart
     description: >
       Stacked by validator; includes stake on validators later deregistered. Days before

@@ -1,4 +1,4 @@
--- Safenet production: Sentinel transaction-fee rewards accrued per UTC day and Sentinel, last 30 days,
+-- Safenet Aegis: Sentinel transaction-fee rewards accrued per UTC day and Sentinel, last 30 days,
 -- in USDC.e. A reward accrues on the day its request is decided (OracleResult, or the arbitrator's
 -- ruling), and is paid when the Sentinel claims it. SAFE subsidies are a different token and are
 -- never added here (sentinel_earnings). Definitions: docs/metrics/sentinels.md#earnings.

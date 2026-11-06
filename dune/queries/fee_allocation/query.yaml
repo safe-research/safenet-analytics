@@ -1,6 +1,6 @@
 name: "Safenet: fee allocation (USDC.e)"
 description: >
-  Safenet production (Aegis), all time: gross transaction fees collected and where they went
+  Safenet Aegis, all time: gross transaction fees collected and where they went
   (Sentinel rewards accrued, paid and outstanding; refunds; protocol funds receiver; fees held),
   bonds kept separate, and reconciliation checks against USDC.e transfers. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/network-and-revenue.md).

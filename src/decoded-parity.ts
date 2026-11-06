@@ -9,7 +9,7 @@
 // Whether the decoded columns carry the right values is checked by the preview reconciliations
 // of the pull request that switches a model.
 
-import { EVENTS, FROST_COORDINATOR, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_EVENTS, VALIDATOR_STAKER_SET } from "./safenet.ts";
+import { EVENTS, FROST_COORDINATOR, AEGIS, REWARDS_DISTRIBUTOR, VALIDATOR_EVENTS, VALIDATOR_STAKER_SET } from "./safenet.ts";
 
 type Event = { signature: string; topic0: string };
 export type DecodedSource = {
@@ -21,22 +21,22 @@ export type DecodedSource = {
   events: Event[];
 };
 
-// Production contracts as decoded on Dune (check-decoded, 2026-10-29). The FROSTCoordinator is
-// shared with the Aegis testnet: all its logs are compared, production attribution stays in the models.
+// Aegis contracts as decoded on Dune (check-decoded, 2026-10-29). The FROSTCoordinator is
+// shared with the Aegis testnet: all its logs are compared, Aegis attribution stays in the models.
 export const DECODED_SOURCES: DecodedSource[] = [
   {
     table: "safe_gnosis.SafenetAegisConsensus",
     chain: "gnosis",
-    address: PRODUCTION.consensus.address,
-    deployBlock: PRODUCTION.consensus.deployBlock,
+    address: AEGIS.consensus.address,
+    deployBlock: AEGIS.consensus.deployBlock,
     deployDate: "2026-10-07",
     events: [EVENTS.TransactionProposed, EVENTS.TransactionAttested, VALIDATOR_EVENTS.EpochStaged, VALIDATOR_EVENTS.EpochRolledOver, VALIDATOR_STAKER_SET],
   },
   {
     table: "safe_gnosis.SafenetAegisSentinelOracle",
     chain: "gnosis",
-    address: PRODUCTION.sentinelOracle.address,
-    deployBlock: PRODUCTION.sentinelOracle.deployBlock,
+    address: AEGIS.sentinelOracle.address,
+    deployBlock: AEGIS.sentinelOracle.deployBlock,
     deployDate: "2026-10-07",
     events: [
       EVENTS.NewRequest,

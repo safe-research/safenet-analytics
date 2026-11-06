@@ -1,6 +1,6 @@
 name: "Safenet: fees collected per day (USDC.e)"
 description: >
-  Safenet production (Aegis): transaction fees actually collected by the Sentinel Oracle per UTC day
+  Safenet Aegis: transaction fees actually collected by the Sentinel Oracle per UTC day
   for the last 30 days, refunds, and the all-time cumulative total, in USDC.e. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/network-and-revenue.md).
 private: false

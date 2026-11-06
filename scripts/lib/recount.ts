@@ -1,8 +1,8 @@
-// Independent recount of Safenet production activity from Gnosis Chain RPC logs, shared by the
+// Independent recount of Safenet Aegis activity from Gnosis Chain RPC logs, shared by the
 // verification scripts. It mirrors the rules of dune/queries/safenet_requests and
 // safenet_fee_flows in TypeScript, so Dune results can be checked against the chain without Dune.
 
-import { COVERED_SAFE_CHAINS, EVENTS, FEE_TOKEN, ORACLE_STATE, PRODUCTION, PROTOCOL_FUNDS_RECEIVER } from "../../src/safenet.ts";
+import { COVERED_SAFE_CHAINS, EVENTS, FEE_TOKEN, ORACLE_STATE, AEGIS, PROTOCOL_FUNDS_RECEIVER } from "../../src/safenet.ts";
 
 export type Log = {
   address: string;
@@ -78,18 +78,18 @@ export const abiString = (data: string, i: number) => {
   return Buffer.from(data.slice(at + 64, at + 64 + length * 2), "hex").toString("utf8");
 };
 export const isCovered = (chainId: number) => (COVERED_SAFE_CHAINS as readonly number[]).includes(chainId);
-export const ORACLE_TOPIC = `0x${"0".repeat(24)}${PRODUCTION.sentinelOracle.address.slice(2)}`;
+export const ORACLE_TOPIC = `0x${"0".repeat(24)}${AEGIS.sentinelOracle.address.slice(2)}`;
 
 // Every log the network & revenue metrics read, up to `to` (inclusive).
 export async function fetchSafenetLogs(rpc: Rpc, to: number) {
-  const consensus = PRODUCTION.consensus.address;
-  const oracle = PRODUCTION.sentinelOracle.address;
+  const consensus = AEGIS.consensus.address;
+  const oracle = AEGIS.sentinelOracle.address;
   const [proposed, attested, oracleLogs, transfersIn, transfersOut] = await Promise.all([
-    rpc.getLogs(consensus, [EVENTS.TransactionProposed.topic0, null, null, ORACLE_TOPIC], PRODUCTION.consensus.deployBlock, to),
-    rpc.getLogs(consensus, [EVENTS.TransactionAttested.topic0, null, null, ORACLE_TOPIC], PRODUCTION.consensus.deployBlock, to),
-    rpc.getLogs(oracle, [], PRODUCTION.sentinelOracle.deployBlock, to),
-    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, null, ORACLE_TOPIC], PRODUCTION.sentinelOracle.deployBlock, to),
-    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, ORACLE_TOPIC], PRODUCTION.sentinelOracle.deployBlock, to),
+    rpc.getLogs(consensus, [EVENTS.TransactionProposed.topic0, null, null, ORACLE_TOPIC], AEGIS.consensus.deployBlock, to),
+    rpc.getLogs(consensus, [EVENTS.TransactionAttested.topic0, null, null, ORACLE_TOPIC], AEGIS.consensus.deployBlock, to),
+    rpc.getLogs(oracle, [], AEGIS.sentinelOracle.deployBlock, to),
+    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, null, ORACLE_TOPIC], AEGIS.sentinelOracle.deployBlock, to),
+    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, ORACLE_TOPIC], AEGIS.sentinelOracle.deployBlock, to),
   ]);
   return { proposed, attested, oracleLogs, transfers: [...transfersIn, ...transfersOut].sort(order) };
 }
@@ -248,7 +248,7 @@ export async function buildRequests(rpc: Pick<Rpc, "blockTime">, logs: SafenetLo
     if (!name || name === "NewRequest" || name.endsWith("Scheduled") || name === "SentinelRemoved") continue;
     const req = requests.get(l.topics[1]);
     if (!req) {
-      issues.push(`${name} ${l.transactionHash}: no production request ${l.topics[1]}`);
+      issues.push(`${name} ${l.transactionHash}: no Aegis request ${l.topics[1]}`);
       continue;
     }
     const time = await rpc.blockTime(l);
@@ -301,7 +301,7 @@ export async function buildRequests(rpc: Pick<Rpc, "blockTime">, logs: SafenetLo
 
 // Classifies USDC.e transfers of the oracle like dune/queries/safenet_fee_flows.
 export function classifyTransfers(logs: SafenetLogs, requests: RequestRecord[]) {
-  const oracle = PRODUCTION.sentinelOracle.address;
+  const oracle = AEGIS.sentinelOracle.address;
   const inTx = new Map<string, { fee: Set<string>; bond: Set<string>; claim: Set<string>; refund: Set<string> }>();
   const get = (tx: string) => {
     let e = inTx.get(tx);

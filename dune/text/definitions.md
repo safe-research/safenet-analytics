@@ -8,7 +8,7 @@
 - **Timed out**: no Sentinel revealed a vote. This is final, the fee is refunded, and it is not a result. **Pending**: not decided yet.
 - **Attestation**: the validators' threshold signature on an approved, undisputed request.
 - **Safes with completed checks** vs **Safes with requests**: unique Safes per network whose requests received a verdict, vs all Safes that requested one.
-- **Guard-enabled Safes**: Safes whose current transaction guard is a SafenetGuard bound to the production Consensus. Using checks without the guard does not count. Shown as *not available* while no such guard is deployed.
+- **Guard-enabled Safes**: Safes whose current transaction guard is a SafenetGuard bound to the Aegis Consensus. Using checks without the guard does not count. Shown as *not available* while no such guard is deployed.
 - **Gross fees collected**: fees actually paid into the Sentinel Oracle, as recorded on each request. Refunds are shown separately and do not reduce it.
 - **Network**: the network of the checked Safe, not Gnosis Chain where the Safenet contracts run.
 - Flows are counted on the UTC day they happen. The result breakdown counts requests by proposal day in their **current** status.

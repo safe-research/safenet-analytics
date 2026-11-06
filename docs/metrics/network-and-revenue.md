@@ -1,6 +1,6 @@
 # Network & revenue
 
-The *Network & revenue* section of [dune.com/safe/safenet](https://dune.com/safe/safenet). It covers Safenet **production** ("Aegis") only. Beta was a separate network with different contracts and is never read, so "all time" means production activity since the first production request (2026-10-14).
+The *Network & revenue* section of [dune.com/safe/safenet](https://dune.com/safe/safenet). It covers Safenet **Aegis** ("Aegis") only. Beta was a separate network with different contracts and is never read, so "all time" means Aegis activity since the first Aegis request (2026-10-14).
 
 All queries read shared models, so counters, charts and tables reconcile by construction:
 
@@ -10,7 +10,7 @@ All queries read shared models, so counters, charts and tables reconcile by cons
 | [`safenet_requests`](../../dune/queries/safenet_requests) | request: status, votes, attestation, fee accounting | counters, windows, results, networks, fees |
 | [`safenet_fee_flows`](../../dune/queries/safenet_fee_flows) | USDC.e transfer to or from the Sentinel Oracle, classified | fee allocation and its checks |
 | [`safenet_known_traffic`](../../dune/queries/safenet_known_traffic) | known operational or test Safe | traffic classes |
-| [`safenet_guards`](../../dune/queries/safenet_guards), [`safenet_guard_status`](../../dune/queries/safenet_guard_status) | guard deployment; Safe with a production guard | Guard-enabled Safes |
+| [`safenet_guards`](../../dune/queries/safenet_guards), [`safenet_guard_status`](../../dune/queries/safenet_guard_status) | guard deployment; Safe with an Aegis guard | Guard-enabled Safes |
 
 ## Panels
 
@@ -33,11 +33,11 @@ All queries read shared models, so counters, charts and tables reconcile by cons
 
 | Measure | Counted as | Stable identifier | Time |
 | --- | --- | --- | --- |
-| **Request** (protocol request) | A production `TransactionProposed` paired with its `NewRequest`. Each one paid the fee. | Oracle `request_id`: the EIP-712 hash of epoch, oracle, oracle data and `safeTxHash` | Proposal block |
+| **Request** (protocol request) | An Aegis `TransactionProposed` paired with its `NewRequest`. Each one paid the fee. | Oracle `request_id`: the EIP-712 hash of epoch, oracle, oracle data and `safeTxHash` | Proposal block |
 | **Unique Safe transaction** | Distinct (network, Safe, `safeTxHash`) among requests | `safeTxHash` with network and Safe | Proposal block |
 | **Sentinel response** | A `Revealed` vote. A committed vote that is never revealed is a missing response and is not counted. | (`request_id`, Sentinel) | Reveal block |
 | **Completed result** | A request with a verdict: an undisputed `OracleResult` (approved or denied), or the arbitrator's `DisputeResolved` | `request_id` | Verdict block |
-| **Validator attestation** | `TransactionAttested` with the production oracle | `safeTxHash` and epoch | Attestation block |
+| **Validator attestation** | `TransactionAttested` with the Aegis oracle | `safeTxHash` and epoch | Attestation block |
 | **Safes with requests / with completed checks** | Distinct (network, Safe) with a request, or with a completed result, in the period | Network and Safe address | As above |
 
 **Deduplication and retries.**
@@ -78,21 +78,21 @@ The network is the **Safe's network**, taken from the request's `safeId` (chain 
 
 - **Charter networks.** Headline activity counts Safes on the networks the Charter covers: Ethereum, Gnosis Chain and Arbitrum One.
 - **Test traffic** (`test_uncovered_chain`): requests for Safes on any other network. They are only shown as *Test requests* and as a separate row in the network table. So far there is one, on Polygon.
-- **Operational traffic** (`operational`): Safes listed in [`dune/data/known-traffic.json`](../../dune/data/known-traffic.json), each with its source. Currently that is the Safenet Arbitrator Safe on Gnosis Chain. Its requests are real production checks, so totals **include** them and the window table shows them as *of which Safenet operational*.
+- **Operational traffic** (`operational`): Safes listed in [`dune/data/known-traffic.json`](../../dune/data/known-traffic.json), each with its source. Currently that is the Safenet Arbitrator Safe on Gnosis Chain. Its requests are real Aegis checks, so totals **include** them and the window table shows them as *of which Safenet operational*.
 - **Fees are money actually received.** Gross fees therefore include every request, including test requests (0.40 USDC.e so far).
 - **Attribution limits.**
   - Safenet records no origin, so nothing is labelled as Safe{Wallet} activity. `proposeTransaction` is permissionless, and the sponsor in `NewRequest` is only the account that paid the fee: today a handful of relayer and Safe accounts. Requests from wallets, scripts and tests by the same sponsors cannot be told apart.
-  - There is no list of production test Safes beyond the network rule and the known operational Safes.
+  - There is no list of Aegis test Safes beyond the network rule and the known operational Safes.
 
 ## Guard-enabled Safes
 
-- **What counts.** A Safe whose **current** transaction guard is a SafenetGuard bound to the production Consensus.
+- **What counts.** A Safe whose **current** transaction guard is a SafenetGuard bound to the Aegis Consensus.
 - **How it is determined.** From the Safe's own `ChangedGuard` events on Ethereum, Gnosis Chain and Arbitrum One. The latest event wins, so removing the guard or switching to another guard ends the status.
   - Safe 1.3.0 logs the guard address in the event data; 1.4.1 and later as `topic1`. Both are read.
   - Module guards are ignored, because SafenetGuard guards transactions only.
 - **Requesting checks without the guard is not Guard activation.** Those Safes are not counted.
-- **Which guards are production.** No guard address is documented, so guards are found on chain: every SafenetGuard emits `EpochInitialized` in its constructor. A guard is production only if its creation trace shows the production Consensus. Either its constructor arguments must be chain 100 and `0xc855761D…aa96`, or its runtime code must embed the production Consensus domain separator `0x0a60fd26…b097`, which equals `Consensus.domainSeparator()`. Testnet guards are never counted.
-- **No production guard yet.** As long as none is deployed on a network, that network shows *not available*, not 0. No guard deployment was found on Gnosis Chain by RPC (2026-10-26). Ethereum and Arbitrum One are checked by the query.
+- **Which guards are Aegis.** No guard address is documented, so guards are found on chain: every SafenetGuard emits `EpochInitialized` in its constructor. A guard is Aegis only if its creation trace shows the Aegis Consensus. Either its constructor arguments must be chain 100 and `0xc855761D…aa96`, or its runtime code must embed the Aegis Consensus domain separator `0x0a60fd26…b097`, which equals `Consensus.domainSeparator()`. Testnet guards are never counted.
+- **No Aegis guard yet.** As long as none is deployed on a network, that network shows *not available*, not 0. No guard deployment was found on Gnosis Chain by RPC (2026-10-26). Ethereum and Arbitrum One are checked by the query.
 
 ## Revenue
 
@@ -176,7 +176,7 @@ Result up to Gnosis block 48947889 (2026-10-26), in [`verification/network_reven
 
 ## Limitations and follow-ups
 
-- **No production SafenetGuard address is documented,** so *Guard-enabled Safes* depends on on-chain discovery. If Safenet publishes the addresses, pin them in the repository as well.
+- **No Aegis SafenetGuard address is documented,** so *Guard-enabled Safes* depends on on-chain discovery. If Safenet publishes the addresses, pin them in the repository as well.
 - **Ethereum and Arbitrum logs scans grow over time.** The guard queries scan `ethereum` and `arbitrum` logs from 2026-09-01 by event signature. Their cost grows with time; Dune's decoded Safe tables or a materialized view would bound it ([decoding.md](../decoding.md)).
 - **Some approved requests are never attested.** Two were found in epoch 33915 (2026-10-23 census). They show as secure without an attestation. The cause is unknown; an approval that arrives after the validators' signing window is never attested. The gap is the difference between unanimous-secure requests and attestations.
 - **No origin attribution:** see [Test and operational traffic](#test-and-operational-traffic).

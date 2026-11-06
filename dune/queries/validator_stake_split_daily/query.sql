@@ -2,7 +2,7 @@
 -- docs/metrics/validators.md#stake-history.
 --
 -- Self-stake on a day is each validator's stake from the staker registered for it at the end of that
--- day (validator_staker_history: Beta Consensus before the production start, production Consensus
+-- day (validator_staker_history: Beta Consensus before the Aegis start, Aegis Consensus
 -- after); delegated stake is everyone else's. Stake on a validator without a registered staker that
 -- day is unattributed (split unknown), never counted as delegated. The three add up to
 -- staking_daily.active_stake.
@@ -61,7 +61,7 @@ levels as (
 
 select
     day,
-    if(day >= date '2026-10-07', 'production', 'beta') as era,
+    if(day >= date '2026-10-07', 'aegis', 'beta') as era,
     cast(sum(if(validator_staker is not null and staker = validator_staker, stake_raw, 0)) as double) / 1e18 as self_stake,
     cast(sum(if(validator_staker is not null and staker <> validator_staker, stake_raw, 0)) as double) / 1e18 as delegated_stake,
     cast(sum(if(validator_staker is null, stake_raw, 0)) as double) / 1e18 as unattributed_stake,

@@ -153,7 +153,7 @@ export type ValidatorRewardData = {
   ref: string;
   ens?: { name: string; resolver: string; through_block: number; cids: string[] };
   addresses?: string[]; // validator stakers and beneficiaries whose entries were read (incremental sync)
-  stakers: { validator: string; staker: string; era: "beta" | "production" }[]; // ValidatorStakerSet
+  stakers: { validator: string; staker: string; era: "beta" | "aegis" }[]; // ValidatorStakerSet
   roots: ValidatorRewardRoot[]; // oldest first
   entries: ValidatorRewardEntry[];
   // Check of the latest root: sum over every published proof file of cumulative + KYC-withheld.
@@ -231,7 +231,7 @@ ${header(data)}.
 --   root_kind 'period' ends a reward period (rewards_until), 'reissue' republishes it (KYC release).
 --   token_total: SAFE (base units) allocated under the root, cumulative over all periods.
 --   source_commit: the safenet-data commit (Beta) or the IPFS CID pinned by ENS (Aegis).
--- kind_row = 'entry': a validator staker address (Consensus.ValidatorStakerSet, Beta or production)
+-- kind_row = 'entry': a validator staker address (Consensus.ValidatorStakerSet, Beta or Aegis)
 --   or a verified commission beneficiary with a proof under the root: cumulative_amount claimable and
 --   kyc_amount withheld until KYC, commission and own-stake reward together, as published. No row =
 --   nothing published for it.

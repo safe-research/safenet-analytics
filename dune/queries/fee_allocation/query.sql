@@ -1,4 +1,4 @@
--- Safenet production: where the transaction fees went, all time, in USDC.e. Definitions:
+-- Safenet Aegis: where the transaction fees went, all time, in USDC.e. Definitions:
 -- docs/metrics/network-and-revenue.md#fee-allocation.
 --
 -- Accrued: what the contract rules assign (SentinelOracleRequests.sol), from the request model.

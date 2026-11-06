@@ -1,6 +1,6 @@
 name: "Safenet: validator stakers"
 description: >
-  Each Safenet validator's registered staker (Consensus.ValidatorStakerSet on the production
+  Each Safenet validator's registered staker (Consensus.ValidatorStakerSet on the Aegis
   Consensus, Gnosis Chain): the Ethereum account whose stake on that validator is its self-stake.
   Shared model; not shown on the dashboard. Managed in github.com/safe-research/safenet-analytics
   (docs/metrics/staking.md).

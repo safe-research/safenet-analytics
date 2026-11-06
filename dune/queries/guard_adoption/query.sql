@@ -1,14 +1,14 @@
--- Safes whose current transaction guard is a verified production SafenetGuard, by network, now.
+-- Safes whose current transaction guard is a verified Aegis SafenetGuard, by network, now.
 -- A current status count, not a flow. Guard-enabled is not the same as using Safenet checks:
 -- Safes can request checks without the guard, and are then not counted here.
--- If no SafenetGuard bound to the production Consensus has been deployed on a network,
+-- If no SafenetGuard bound to the Aegis Consensus has been deployed on a network,
 -- guard_enabled_safes is null (not available), not 0. First row: all networks (the counter).
 -- Definitions: docs/metrics/network-and-revenue.md#guard-enabled-safes.
 
 with
 
 guards as (
-    select chain_id, count_if(verified_production) as verified_guards
+    select chain_id, count_if(verified_aegis) as verified_guards
     from {{query:safenet_guards}}
     group by 1
 ),
@@ -27,7 +27,7 @@ per_network as (
     select
         n.network,
         n.sort_order,
-        coalesce(g.verified_guards, 0) as verified_production_guards,
+        coalesce(g.verified_guards, 0) as verified_aegis_guards,
         if(coalesce(g.verified_guards, 0) > 0, coalesce(s.enabled, 0)) as guard_enabled_safes
     from networks as n
     left join guards as g on g.chain_id = n.chain_id
@@ -36,18 +36,18 @@ per_network as (
 
 select
     'All Charter networks' as network,
-    sum(verified_production_guards) as verified_production_guards,
-    -- null only if no network has a verified production guard
+    sum(verified_aegis_guards) as verified_aegis_guards,
+    -- null only if no network has a verified Aegis guard
     sum(guard_enabled_safes) as guard_enabled_safes,
-    if(sum(verified_production_guards) = 0, 'not available: no SafenetGuard bound to the production Consensus found on chain') as note,
+    if(sum(verified_aegis_guards) = 0, 'not available: no SafenetGuard bound to the Aegis Consensus found on chain') as note,
     1 as sort_order
 from per_network
 union all
 select
     network,
-    verified_production_guards,
+    verified_aegis_guards,
     guard_enabled_safes,
-    if(verified_production_guards = 0, 'not available: no production SafenetGuard on this network'),
+    if(verified_aegis_guards = 0, 'not available: no Aegis SafenetGuard on this network'),
     sort_order
 from per_network
 order by sort_order

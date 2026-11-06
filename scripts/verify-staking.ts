@@ -22,7 +22,7 @@ import { keccak_256 } from "@noble/hashes/sha3.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { DuneClient } from "../src/dune.ts";
 import { addressUrl, txUrl } from "../src/links.ts";
-import { PRODUCTION, SAFE_TOKEN, STAKING, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { AEGIS, SAFE_TOKEN, STAKING, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 import { loadState } from "../src/state.ts";
 import { rpcClient, topicAddress, word } from "./lib/recount.ts";
 import { DEFAULT_ETH_RPC, type StakingEvent, fetchStakingEvents, replay, safe, withdrawalStatus } from "./lib/staking.ts";
@@ -192,13 +192,13 @@ contractChecks.push({
 });
 for (const c of contractChecks) if (!c.ok) issues.push(`contract check failed: ${c.check}`);
 
-// Registered stakers on the production Consensus (Gnosis Chain) vs getValidatorStaker.
-const stakerLogs = await gnosis.getLogs(PRODUCTION.consensus.address, [VALIDATOR_STAKER_SET.topic0], PRODUCTION.consensus.deployBlock, await gnosis.finalized());
+// Registered stakers on the Aegis Consensus (Gnosis Chain) vs getValidatorStaker.
+const stakerLogs = await gnosis.getLogs(AEGIS.consensus.address, [VALIDATOR_STAKER_SET.topic0], AEGIS.consensus.deployBlock, await gnosis.finalized());
 const registeredStakers = new Map<string, { staker: string; tx: string }>();
 for (const l of stakerLogs) registeredStakers.set(topicAddress(l.topics[1]), { staker: `0x${l.data.slice(26, 66)}`.toLowerCase(), tx: l.transactionHash });
 const stakerChecks = [];
 for (const v of validators) {
-  const data = await gnosis.call<string>("eth_call", [{ to: PRODUCTION.consensus.address, data: `0x${selector("getValidatorStaker(address)")}${pad(v)}` }, "latest"]);
+  const data = await gnosis.call<string>("eth_call", [{ to: AEGIS.consensus.address, data: `0x${selector("getValidatorStaker(address)")}${pad(v)}` }, "latest"]);
   const chain = `0x${data.slice(26, 66)}`.toLowerCase();
   const fromLogs = registeredStakers.get(v)?.staker ?? `0x${"0".repeat(40)}`;
   stakerChecks.push({ validator: v, staker: chain, ok: chain === fromLogs });

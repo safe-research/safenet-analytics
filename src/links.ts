@@ -14,8 +14,8 @@ export const EXPLORERS: Record<number, string> = {
   42161: "https://arbiscan.io",
 };
 
-// Production Safenet explorer (safe-research/safenet-beta-wallet-extension src/constants.ts,
-// production network). It uses hash routing; the route is explorer/src/routes/safeTx.tsx.
+// Aegis Safenet explorer (safe-research/safenet-beta-wallet-extension src/constants.ts,
+// Aegis network). It uses hash routing; the route is explorer/src/routes/safeTx.tsx.
 export const SAFENET_EXPLORER = "https://safenet-explorer.eth.limo";
 
 export const addressUrl = (chainId: number, address: string) =>

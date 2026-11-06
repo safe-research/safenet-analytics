@@ -2,7 +2,7 @@
 -- KYC, claimed and claimable. Definitions: docs/metrics/validators.md#rewards.
 --
 -- One row per address ever registered as a validator's staker (Consensus.ValidatorStakerSet, Beta or
--- production), or paid a validator's commission as its beneficiary in a verified period. Its rewards
+-- Aegis), or paid a validator's commission as its beneficiary in a verified period. Its rewards
 -- are its commission and the reward on its own stake together, plus any delegations it made to other
 -- validators; the published files do not split them (safenet_reward_breakdown does, per validator). Claims are
 -- attributed by address only (distributor Claimed events); delegators' claims are not attributed to
@@ -28,7 +28,7 @@ amounts as (
 links as (
     select staker, validator, era, false as beneficiary_only from {{query:validator_staker_history}}
     union all
-    select distinct beneficiary, validator, 'production', true
+    select distinct beneficiary, validator, 'aegis', true
     from {{query:safenet_reward_breakdown}}
     where kind_row = 'validator' and cast(commission_raw as double) > 0
 ),

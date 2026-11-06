@@ -1,6 +1,6 @@
 name: "Safenet: Sentinel bonds"
 description: >
-  Safenet production (Aegis): per Sentinel, USDC.e available in its account and bonds locked in
+  Safenet Aegis: per Sentinel, USDC.e available in its account and bonds locked in
   the Sentinel Oracle now, and all-time bonds posted, returned and slashed. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
 private: false

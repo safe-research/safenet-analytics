@@ -1,4 +1,4 @@
--- Safenet production: every USDC.e transfer into or out of the production SentinelOracle, one row
+-- Safenet Aegis: every USDC.e transfer into or out of the Aegis SentinelOracle, one row
 -- per Transfer log, classified by the oracle events of the same transaction (never by amount):
 --
 --   fee_in        from the sponsor of a request proposed in the transaction (NewRequest)

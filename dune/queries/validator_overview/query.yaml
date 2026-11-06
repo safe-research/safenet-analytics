@@ -1,6 +1,6 @@
 name: "Safenet: validators now"
 description: >
-  Safenet validators, current snapshot: production attestation-set membership and Ethereum staking
+  Safenet validators, current snapshot: Aegis attestation-set membership and Ethereum staking
   registration (separate attributes), self-stake, delegated stake, stake shares with their
   denominators, observed signing participation (30 days), the reward scripts' participation for the
   current period, and the last signature share. Managed in github.com/safe-research/safenet-analytics

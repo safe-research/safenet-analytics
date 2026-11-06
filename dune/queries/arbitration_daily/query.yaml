@@ -1,6 +1,6 @@
 name: "Safenet: arbitration rate per proposal day"
 description: >
-  Safenet production (Aegis): per UTC proposal day, requests on the Charter's chains, how many
+  Safenet Aegis: per UTC proposal day, requests on the Charter's chains, how many
   entered arbitration (DisputeTriggered) and how many are still being voted on. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/sentinels.md).
 private: false
@@ -10,7 +10,7 @@ performance: medium
 
 visualizations:
   chart:
-    name: Arbitration rate per proposal day (production)
+    name: Arbitration rate per proposal day (Aegis)
     type: chart
     description: >
       Requests by the day they were proposed, in their latest state. Columns: requests and those that

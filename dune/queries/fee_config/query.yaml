@@ -1,6 +1,6 @@
 name: "Safenet: Sentinel Oracle fee terms"
 description: >
-  Safenet production (Aegis): request fee, bond, DAO fee share and slash amount as charged per
+  Safenet Aegis: request fee, bond, DAO fee share and slash amount as charged per
   request, and any scheduled changes, from Sentinel Oracle events. Managed in
   github.com/safe-research/safenet-analytics (docs/metrics/network-and-revenue.md).
 private: false

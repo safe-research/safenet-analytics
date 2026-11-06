@@ -1,6 +1,6 @@
 # Sentinels
 
-The *Sentinels* section of [dune.com/safe/safenet](https://dune.com/safe/safenet) covers participation, verdicts, coverage, arbitration, earnings and bonds of the Safenet **production** ("Aegis") Sentinels. Beta is never read. It reads the shared decoding model [`safenet_events`](../../dune/queries/safenet_events), unchanged, and applies the request rules of the [Network & revenue](network-and-revenue.md) section's [`safenet_requests`](../../dune/queries/safenet_requests):
+The *Sentinels* section of [dune.com/safe/safenet](https://dune.com/safe/safenet) covers participation, verdicts, coverage, arbitration, earnings and bonds of the Safenet **Aegis** ("Aegis") Sentinels. Beta is never read. It reads the shared decoding model [`safenet_events`](../../dune/queries/safenet_events), unchanged, and applies the request rules of the [Network & revenue](network-and-revenue.md) section's [`safenet_requests`](../../dune/queries/safenet_requests):
 - the request identifier (`request_id`);
 - the lifecycle (verdict, dispute, timeout);
 - one row per log;
@@ -42,14 +42,14 @@ On the [Arbitration dashboard](https://dune.com/safe/safenet-arbitration), plus 
 | Panel | Query | Time basis |
 | --- | --- | --- |
 | Open arbitrations, oldest open arbitration (counters) | `arbitration_resolution` | **Now** (latest execution) |
-| Arbitration rate by request cohort | `arbitration_windows` | Requests proposed in the last 24 hours, 7 days, 30 days, and since production start (2026-10-07) |
-| Arbitration rate per proposal day | `arbitration_daily` | Every UTC proposal day since the first production request |
+| Arbitration rate by request cohort | `arbitration_windows` | Requests proposed in the last 24 hours, 7 days, 30 days, and since Aegis start (2026-10-07) |
+| Arbitration rate per proposal day | `arbitration_daily` | Every UTC proposal day since the first Aegis request |
 | Time from dispute (freeze) to ruling, per ruled case | `sentinel_disputes` | All ruled cases, at their dispute time |
-| Time from dispute (freeze) to ruling (median, p90, longest) | `arbitration_resolution` | Cases ruled in the last 30 days, and since production start |
+| Time from dispute (freeze) to ruling (median, p90, longest) | `arbitration_resolution` | Cases ruled in the last 30 days, and since Aegis start |
 | Disputes and arbitration | `sentinel_disputes` | All disputes, newest first |
 | Overview: arbitration rate, last 30 days | `arbitration_windows` | Requests proposed in the last 30 days |
 
-"All time" means production since the first production request (2026-10-14).
+"All time" means Aegis since the first Aegis request (2026-10-14).
 
 ## Participation
 
@@ -160,7 +160,7 @@ Shown together on their own dashboard, [safe/safenet-arbitration](https://dune.c
 
 A request **enters arbitration** with `DisputeTriggered(requestId, deadline)`:
 - **The freeze.** `SentinelOracle.finalize` emits it when the revealed votes include both an approval and a denial, and moves the request to `State.FROZEN`. Source: `contracts/src/SentinelOracle.sol` and `libraries/SentinelOracleRequests.sol` in `safe-research/safenet`, read at commit `c6ab855`. There is no separate freeze event: this is the freeze.
-- **The deadline.** `deadline` is the block after which anyone can call `timeoutArbitration`. In production it is always the freeze block + 483,840 blocks, 28 days at 5-second blocks; the verification checks this.
+- **The deadline.** `deadline` is the block after which anyone can call `timeoutArbitration`. In Aegis it is always the freeze block + 483,840 blocks, 28 days at 5-second blocks; the verification checks this.
 
 A frozen request leaves arbitration with exactly one terminal event:
 
@@ -174,15 +174,15 @@ A frozen request leaves arbitration with exactly one terminal event:
 ### Arbitration rate
 
 - **Population.** As in Network & revenue: requests for Safes on the Charter's chains (Ethereum, Gnosis Chain, Arbitrum One), including Safenet's operational Safes. Requests for Safes on other chains are test traffic and excluded. The dispute table still lists them, marked.
-- **Cohorts.** Requests are selected by **proposal time**: the last 24 hours, 7 days and 30 days before the execution, and *production, all time* since 2026-10-07. Each request counts once, in its **latest state**, unresolved arbitrations included. A Safe transaction proposed again in a later epoch is a new request, counted as such, as in the request counter.
+- **Cohorts.** Requests are selected by **proposal time**: the last 24 hours, 7 days and 30 days before the execution, and *Aegis, all time* since 2026-10-07. Each request counts once, in its **latest state**, unresolved arbitrations included. A Safe transaction proposed again in a later epoch is a new request, counted as such, as in the request counter.
 - **Rate** = requests that entered arbitration ÷ requests. A window without requests shows *no requests*, not 0%. The awaiting, ruled secure, ruled insecure, out-of-scope and timed-out cases add up to the arbitrated requests.
 - **Recent cohorts can rise.** A request still being voted on (*Still being voted on*: no outcome and no dispute yet) can still be disputed. So the latest windows and days can gain arbitrations later. Dispute dates are never mixed in: a request disputed today but proposed 40 days ago is in the all-time cohort only.
-- **Per day.** The chart shows each UTC proposal day since the first production request, days without requests included. Columns: requests, arbitrated, still being voted on (left axis). Line: the rate (right axis), with no point on days without requests.
+- **Per day.** The chart shows each UTC proposal day since the first Aegis request, days without requests included. Columns: requests, arbitrated, still being voted on (left axis). Line: the rate (right axis), with no point on days without requests.
 
 ### Resolution time
 
 - **Definition.** From the freeze (`DisputeTriggered`) to the ruling (`DisputeResolved`), in hours, from the two blocks' timestamps.
-- **Sample.** Ruled cases only, selected by **ruling time**: *ruled in the last 30 days* and *ruled since production start*. Unresolved cases are excluded. Out-of-scope outcomes and arbitration timeouts end without a ruling: they are counted separately and never as resolved.
+- **Sample.** Ruled cases only, selected by **ruling time**: *ruled in the last 30 days* and *ruled since Aegis start*. Unresolved cases are excluded. Out-of-scope outcomes and arbitration timeouts end without a ruling: they are counted separately and never as resolved.
 - **Median and p90** interpolate linearly between the closest ruled cases (position q × (n − 1) in the sorted durations). **Longest** is the slowest ruled case in the sample. With no ruled case, all three show *no ruled cases*, never 0 hours. The sample size is shown next to them.
 - **Individual cases.** A scatter chart shows one point per ruled case, at its dispute time.
 - **Open arbitrations.** Frozen requests without an outcome, as of the latest execution. Out-of-scope and timed-out cases have ended and are not open. *Oldest open arbitration* is the hours since the oldest open case's freeze. It is blank when none is open.
@@ -223,7 +223,7 @@ Sentinel SAFE rewards are paid by Safe Foundation's rewards distributor on **Eth
 
 - **Only published amounts.** Nothing is calculated. The reward methodology for Sentinels is a proposal pending SafeDAO approval (`safe-fndn/safenet-staking-scripts`), so unpublished allocations are never estimated.
 - **No Sentinel split.** The published files have one amount per address for every reward type. A Sentinel address that also stakes cannot be split into subsidy and staking reward, and the column says *all reward types*.
-- **Current state.** No allocation has been published for any production Sentinel address. Production started after the latest published period: 18 roots, the latest covering rewards until 2026-10-06. The distributor's `merkleRoot()` equals that root, and `cumulativeClaimed` is 0 for every Sentinel. The panel says *No allocation published* rather than 0.
+- **Current state.** No allocation has been published for any Aegis Sentinel address. Aegis started after the latest published period: 18 roots, the latest covering rewards until 2026-10-06. The distributor's `merkleRoot()` equals that root, and `cumulativeClaimed` is 0 for every Sentinel. The panel says *No allocation published* rather than 0.
 
 ## Bonds
 
@@ -310,6 +310,6 @@ The table counts covered-chain requests only, so the 266 requests include one Po
 
 - **Abstain and offline cannot be told apart.** Neither leaves a trace on chain, so both are *No commit (abstain or offline)*.
 - **Reverted calls depend on traces.** Dune's `gnosis.traces` provides them. Reasons are decoded only for `Error(string)` reverts; custom errors such as `CommitWindowClosed` show without a reason, and are classified by timing.
-- **SAFE subsidies.** No production Sentinel allocation is published yet. A Sentinel that also stakes cannot be split, because the published data has one amount per address. The methodology is not published, so nothing is estimated.
+- **SAFE subsidies.** No Aegis Sentinel allocation is published yet. A Sentinel that also stakes cannot be split, because the published data has one amount per address. The methodology is not published, so nothing is estimated.
 - **Available bond token** is the Sentinel's USDC.e balance on Gnosis Chain. It is reconstructed from transfers since 2026-10-07 and checked against `balanceOf`. A Sentinel that later bonds from a different account would not be covered.
 - **Names** are labels from safenet-data. Two scheduled addresses have none and show the address.

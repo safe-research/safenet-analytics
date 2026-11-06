@@ -30,7 +30,7 @@ import { DuneClient } from "../src/dune.ts";
 import { loadKnownSafes } from "../src/known-traffic.ts";
 import { safeTxUrl, txUrl } from "../src/links.ts";
 import { loadParticipants } from "../src/participants.ts";
-import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, PRODUCTION, REWARDS_DISTRIBUTOR, SAFE_TOKEN } from "../src/safenet.ts";
+import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, AEGIS, REWARDS_DISTRIBUTOR, SAFE_TOKEN } from "../src/safenet.ts";
 import { loadSentinelRewards } from "../src/sentinel-rewards.ts";
 import { loadState } from "../src/state.ts";
 import { buildRequests, day, fetchSafenetLogs, rpcClient, status, upTo, usdc } from "./lib/recount.ts";
@@ -116,7 +116,7 @@ if (args.traces) {
   ]);
   const to = Math.max(head, ...bounds);
   const ranges: [number, number][] = [];
-  for (let s = PRODUCTION.sentinelOracle.deployBlock; s <= to; s += 100) ranges.push([s, Math.min(s + 99, to)]);
+  for (let s = AEGIS.sentinelOracle.deployBlock; s <= to; s += 100) ranges.push([s, Math.min(s + 99, to)]);
   let next = 0;
   type Trace = { error?: string; blockNumber: number; transactionHash: string; action: { from: string; input?: string } };
   await Promise.all(
@@ -124,7 +124,7 @@ if (args.traces) {
       while (next < ranges.length) {
         const [a, b] = ranges[next++];
         const traces = await rpc.call<Trace[]>("trace_filter", [
-          { fromBlock: `0x${a.toString(16)}`, toBlock: `0x${b.toString(16)}`, toAddress: [PRODUCTION.sentinelOracle.address] },
+          { fromBlock: `0x${a.toString(16)}`, toBlock: `0x${b.toString(16)}`, toAddress: [AEGIS.sentinelOracle.address] },
         ]);
         for (const t of traces) {
           const call = calls.get((t.action.input ?? "").slice(0, 10));
@@ -175,8 +175,8 @@ for (const s of sentinels) balances[s] = usdc(BigInt(await call(FEE_TOKEN.addres
 for (const s of sentinels) {
   const topic = `0x${addressArg(s)}`;
   const [inbound, outbound] = await Promise.all([
-    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, null, topic], PRODUCTION.sentinelOracle.deployBlock, head),
-    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, topic], PRODUCTION.sentinelOracle.deployBlock, head),
+    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, null, topic], AEGIS.sentinelOracle.deployBlock, head),
+    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, topic], AEGIS.sentinelOracle.deployBlock, head),
   ]);
   const net = inbound.reduce((x, l) => x + BigInt(l.data), 0n) - outbound.reduce((x, l) => x + BigInt(l.data), 0n);
   if (!near(usdc(net), balances[s])) issues.push(`${nameOf(s)}: USDC.e transfers since deployment ${usdc(net)} but balanceOf ${balances[s]}`);
@@ -443,7 +443,7 @@ reconcileArbitration();
 // end at the same block (Charter chains; the dispute table also lists test traffic, marked).
 function reconcileArbitration() {
   const w = dune.arbitration_windows;
-  const all = w?.rows.find((x) => x.time_window === "Production, all time");
+  const all = w?.rows.find((x) => x.time_window === "Aegis, all time");
   const sameBlock = (a?: Result, b?: Result) => a && b && boundOf(a) === boundOf(b);
   const n = (v: unknown) => Number(v ?? 0);
   const t = dune.sentinel_disputes;
@@ -463,7 +463,7 @@ function reconcileArbitration() {
     compare("windows vs daily", "arbitrated (all time) = sum of days", n(all.arbitrated), d!.rows.reduce((s, x) => s + n(x.arbitrated), 0));
   }
   const res = dune.arbitration_resolution;
-  const since = res?.rows.find((x) => x.time_window === "Ruled since production start");
+  const since = res?.rows.find((x) => x.time_window === "Ruled since Aegis start");
   if (all && since && sameBlock(w, res)) {
     compare("windows vs resolution", "ruled secure + insecure = ruled cases", n(all.ruled_secure) + n(all.ruled_insecure), n(since.ruled_cases));
     compare("windows vs resolution", "out of scope", n(all.out_of_scope), n(since.out_of_scope));

@@ -1,6 +1,6 @@
 # Validators
 
-The **Validators** section of [dune.com/safe/safenet](https://dune.com/safe/safenet) shows who attests for Safenet production. It covers:
+The **Validators** section of [dune.com/safe/safenet](https://dune.com/safe/safenet) shows who attests for Safenet Aegis. It covers:
 
 - membership of the attestation set and Ethereum staking registration, which are separate;
 - stake, with self-stake, delegated stake and stake shares;
@@ -17,9 +17,9 @@ Stake and withdrawals reuse the [Staking](staking.md) models and definitions unc
 | Data as of | `validator_overview/freshness` | Gnosis Chain block and time |
 | Validator overview | `validator_overview/table` | now |
 | Stake by validator status | `validator_stake_status/table` | now |
-| Signing participation by window | `validator_participation_windows/table` | rolling 24 h, 7 d, 30 d, production |
+| Signing participation by window | `validator_participation_windows/table` | rolling 24 h, 7 d, 30 d, Aegis |
 | Participation history | `validator_participation_daily/heatmap` (pivot table, validator × day) | last 30 days |
-| Stake distribution history | `validator_stake_daily/area` (stacked by validator), `validator_stake_split_daily/area` (self / delegated / unattributed) | all time, Beta then production |
+| Stake distribution history | `validator_stake_daily/area` (stacked by validator), `validator_stake_split_daily/area` (self / delegated / unattributed) | all time, Beta then Aegis |
 | Reward history | `validator_rewards_periods/bars` and `/table` | published periods |
 | Realized APR by validator | `staking_rewards_apr_by_validator/table` (shared with Staking, [staking.md](staking.md#realized-apr)) | completed reward periods |
 | Validator staker rewards | `validator_rewards_by_staker/table` | latest published root |
@@ -29,7 +29,7 @@ Panels titled *now* show current state. The others are history, and the two are 
 
 Each validator has one colour in every chart and image (`src/validators.ts`, checked by `test/validators.test.ts`). Names come from [safenet-data](https://github.com/safe-fndn/safenet-data/blob/main/assets/validator-info.json) through `safenet_participant_labels`; unknown validators show their address. Validator addresses link to gnosisscan, staker addresses to Etherscan, and ceremony and share transactions to gnosisscan.
 
-## How production attests
+## How Aegis attests
 
 Sources are `safe-research/safenet` at `4ed5101`: `contracts/src/Consensus.sol`, `FROSTCoordinator.sol` and `interfaces/IConsensus.sol`.
 
@@ -39,15 +39,15 @@ Sources are `safe-research/safenet` at `4ed5101`: `contracts/src/Consensus.sol`,
   - An epoch lasts until the next one's rollover block, which is a few hours.
   - At block 48971624 (2026-10-27) there were 155 epochs, and 34008 was active.
 - **Members.** Members of a group are the participants that confirmed its key generation: `FROSTCoordinator.KeyGenConfirmed(gid, participant, …)`.
-  - The coordinator (`0xc6b3…5b78`, deployed at Gnosis block 48617821) is shared with the Aegis testnet. Only groups named by production Consensus count; testnet and failed key generations never do.
+  - The coordinator (`0xc6b3…5b78`, deployed at Gnosis block 48617821) is shared with the Aegis testnet. Only groups named by Aegis Consensus count; testnet and failed key generations never do.
   - The genesis group's key was generated on 2026-10-14, with context 0. Its `KeyGen` therefore does not name Consensus, which is why groups are taken from Consensus, not from the KeyGen context.
-  - Nothing could be attested before 2026-10-14, consistent with the first production request that day.
+  - Nothing could be attested before 2026-10-14, consistent with the first Aegis request that day.
 - **Ceremonies.**
   - `Sign(initiator, gid, message, sid, sequence)` starts a ceremony, and `SignCompleted(sid, selectionRoot, signature)` completes it.
   - `SignShared(sid, selectionRoot, participant, z)` is one validator's share. The contract warns that a share is evidence of signing only under a selection root the consumer recognises.
   - Rule: **a validator signed a ceremony if and only if it has a `SignShared` with the selection root of that ceremony's `SignCompleted`.** This is also how safenet-data's `participation_rate_14d` and the Safenet explorer count.
   - An aggregate attestation (`TransactionAttested`) never counts for an individual validator.
-- **Production ceremonies** are those whose `Sign` initiator is production Consensus.
+- **Aegis ceremonies** are those whose `Sign` initiator is Aegis Consensus.
   - Anyone can call `sign()` on any group. One ceremony on epoch 33994's group was started by the Core Contributors validator address itself; it is not an attestation and is excluded.
   - The purpose is *transaction* when the signature id appears in a `TransactionAttested`, as the reward scripts count it. It is *epoch_rollover* when the id appears in an `EpochStaged`.
 
@@ -72,7 +72,7 @@ At block 48971624:
 
 ### Stake backing the live set
 
-Stake comes from the Staking section (`staking_validators`): active stake, and self-stake from the production registered staker.
+Stake comes from the Staking section (`staking_validators`): active stake, and self-stake from the Aegis registered staker.
 
 - **Total contract stake** is the Staking headline.
 - **Stake backing the live set** is stake on validators both registered for staking *and* in the current attestation set.
@@ -88,14 +88,14 @@ Stake comes from the Staking section (`staking_validators`): active stake, and s
 
 ### Observed signing participation
 
-Observed signing participation = recognised signature shares ÷ completed production ceremonies of the validator's groups.
+Observed signing participation = recognised signature shares ÷ completed Aegis ceremonies of the validator's groups.
 
 - Ceremonies are counted by completion time.
 - Pending ceremonies (no `SignCompleted`) are no opportunity.
 - With no eligible ceremony (not a member, or none happened) the rate is *n/a*: blank in the per-day pivot table, "n/a" in the overview, no row in the windows table. It is never 0%.
 - **Last signature share** is the time and transaction of the last recognised share. It never reflects staking activity.
 
-Production all time, at block 48971624:
+Aegis all time, at block 48971624:
 
 | Validator | Signed / eligible |
 | --- | --- |
@@ -122,7 +122,7 @@ This follows the reward scripts (`safe-fndn/safenet-staking-scripts`, `src/data/
 | delegated | everyone else's stake |
 | unattributed | stake on a validator with no registered staker that day; the split is unknown |
 
-Registrations are by era: `ValidatorStakerSet` on the Beta Consensus `0x2236…cEE9` before the production start (2026-10-07 13:51:55 UTC), and on production Consensus after. Days from 2026-10-07 are production.
+Registrations are by era: `ValidatorStakerSet` on the Beta Consensus `0x2236…cEE9` before the Aegis start (2026-10-07 13:51:55 UTC), and on Aegis Consensus after. Days from 2026-10-07 are Aegis.
 
 ### Rewards
 
@@ -136,18 +136,18 @@ Registrations are by era: `ValidatorStakerSet` on the Beta Consensus `0x2236…c
   - Roots since the launch reset (the last index with `tokenTotal` 0, "Clear rewards of test data for launch") are recorded; earlier ones were test data.
   - A root with a new `rewardsUntil` ends a period. A root with the same `rewardsUntil` is a re-issue, such as a KYC release, and is merged into its period.
   - So far: 17 roots. There are 13 Beta periods from 2026-04-07 to 2026-10-06, of about 346,151 SAFE each, and the first Aegis period, 2026-10-13 to 2026-10-27. Its 223,076.92 SAFE are 192,307.69 of staking rewards plus 30,769.23 of Sentinel grants. Its root `0xab63…711e` was set on chain on 2026-11-04.
-  - Production periods are two weeks from 2026-10-13. 2026-10-06 to 2026-10-13 is the gap between the programmes.
-  - An ended production period that is not published appears as *not yet published*, with no amounts.
+  - Aegis periods are two weeks from 2026-10-13. 2026-10-06 to 2026-10-13 is the gap between the programmes.
+  - An ended Aegis period that is not published appears as *not yet published*, with no amounts.
 - **Allocated** in a period = change in cumulative published amounts (cumulative + KYC-withheld) from the previous period's last root. It splits by recipient:
 
   | Recipient | Allocation |
   | --- | --- |
-  | Validator stakers | addresses registered as a validator's staker during the period, Beta or production, and the **commission beneficiaries** of a verified split: their **commission and own-stake reward together**; the published files do not split them. Greenfield's commission goes to its DelegateRegistry delegate `0xafb0…a56d`, which would otherwise count as a delegator. |
+  | Validator stakers | addresses registered as a validator's staker during the period, Beta or Aegis, and the **commission beneficiaries** of a verified split: their **commission and own-stake reward together**; the published files do not split them. Greenfield's commission goes to its DelegateRegistry delegate `0xafb0…a56d`, which would otherwise count as a delegator. |
   | Delegators | the rest, minus Sentinel grants |
   | Sentinel grants | from `sentinelTokenTotal`; none in Beta |
 
 - **Commission.** Not published. The sync derives the split from the published payouts and chain data, and records it only if it reproduces every published payout ([staking.md](staking.md#commission-split)). This covers Beta and Aegis: all 13 Beta periods are derived, with Beta's 1-SAFE minimum payout. A period whose payouts cannot be reproduced reads *split not verified* (Beta: *Beta: split not derivable*).
-  - 2026-10-13 to 2026-10-27 is derived with every payout reproduced exactly, and equals the reward scripts' own split for all 846 recipients (test fixture). Commission is 5,574.52 SAFE. The per-validator rewards and APR are in [staking.md](staking.md#first-production-period-2026-10-13-to-2026-10-27).
+  - 2026-10-13 to 2026-10-27 is derived with every payout reproduced exactly, and equals the reward scripts' own split for all 846 recipients (test fixture). Commission is 5,574.52 SAFE. The per-validator rewards and APR are in [staking.md](staking.md#first-Aegis-period-2026-10-13-to-2026-10-27).
   - A later period without a verified split reads *split not verified*.
 - **Claimed / claimable.**
   - Claims are the distributor's `Claimed(account, amount)` events (`safenet_reward_events`), attributed by **address only**.
@@ -165,7 +165,7 @@ All are shared, with `refresh: none`. They read Dune's decoded Consensus and FRO
 
 ### validator_epochs
 
-One row per production epoch:
+One row per Aegis epoch:
 
 - `epoch`, `group_id`;
 - `active_from_block`, `active_to_block` (exclusive);
@@ -180,7 +180,7 @@ One row per (epoch, validator) in its group: the epoch's fields, plus `confirmed
 
 ### validator_ceremonies
 
-One row per production ceremony and member of its group:
+One row per Aegis ceremony and member of its group:
 
 - `sid`, `group_id`, `epoch`, `validator`, `initiated_at`;
 - `completed`, `completed_at`, `completed_block`, `completed_tx`, `completed_tx_url`;
@@ -190,7 +190,7 @@ One row per production ceremony and member of its group:
 
 ### validator_staker_history
 
-One row per `ValidatorStakerSet` on Beta or production Consensus: `era`, `validator`, `staker`, `valid_from`, `valid_to` (exclusive), `tx_url`.
+One row per `ValidatorStakerSet` on Beta or Aegis Consensus: `era`, `validator`, `staker`, `valid_from`, `valid_to` (exclusive), `tx_url`.
 
 ### safenet_validator_rewards
 
@@ -217,8 +217,8 @@ Generated. `kind_row` is `root` or `entry`:
 ## Decoding and coverage
 
 - **Decoded tables** (since 2026-11-02):
-  - `safe_gnosis.SafenetAegisConsensus_evt_*` (`EpochStaged`, `TransactionAttested`, `ValidatorStakerSet`) from block 48635843 (2026-10-07), filtered to production Consensus.
-  - `safe_gnosis.SafenetAegisFROSTCoordinator_evt_*` (`KeyGenConfirmed`, `Sign`, `SignShared`, `SignCompleted`) from block 48617821 (2026-10-06). The coordinator is shared with the Aegis testnet: ceremonies need a `Sign` with `initiator` = production Consensus, and members a group named by it.
+  - `safe_gnosis.SafenetAegisConsensus_evt_*` (`EpochStaged`, `TransactionAttested`, `ValidatorStakerSet`) from block 48635843 (2026-10-07), filtered to Aegis Consensus.
+  - `safe_gnosis.SafenetAegisFROSTCoordinator_evt_*` (`KeyGenConfirmed`, `Sign`, `SignShared`, `SignCompleted`) from block 48617821 (2026-10-06). The coordinator is shared with the Aegis testnet: ceremonies need a `Sign` with `initiator` = Aegis Consensus, and members a group named by it.
   - `decoded-parity` showed every decoded event table equal to the raw logs, log by log, from the deploy blocks ([decoding.md](../decoding.md#switches)). Output columns are the same as when the models decoded raw logs.
 - **Raw logs:** Beta Consensus `ValidatorStakerSet` from block 45210396 (2026-03-18), in `validator_staker_history` only, because Beta is not decoded. Its topic0 is in `src/safenet.ts` (`VALIDATOR_STAKER_SET`), recomputed from the signature in the tests.
 
@@ -233,7 +233,7 @@ Generated. `kind_row` is `root` or `entry`:
    - `groupSignCount(gid)` = `Sign` events per group.
 
    Reads are batched through Multicall3.
-2. **Participation**: every validator-day of `validator_participation_daily` and the production-wide window are recounted from logs at Dune's `through_block`.
+2. **Participation**: every validator-day of `validator_participation_daily` and the Aegis-wide window are recounted from logs at Dune's `through_block`.
 3. **Stake**:
    - overview stake columns = `staking_by_validator` of the same refresh;
    - stake-status rows add up to the total, and the total = the Staking headline;
@@ -254,5 +254,5 @@ Result on 2026-11-05 (`verification/validators.json`, without Dune): every membe
 - **Claims are attributed by address.** A validator staker's claim also covers its own delegations, and delegators' claims are not attributed to validators.
 - **The reward methodology is a proposal pending SafeDAO approval.** Rates are shown, not payout decisions.
 - **Status is as of the refresh.** Current-state panels are as of the latest refresh. The overview's reward-basis rate covers an unsettled period.
-- **Coordinator events are shared with the testnet.** Attribution relies on production Consensus naming the groups and initiating the ceremonies.
+- **Coordinator events are shared with the testnet.** Attribution relies on Aegis Consensus naming the groups and initiating the ceremonies.
 - **No USD values or reward estimates.** The APR is realized only: completed, published periods ([staking.md](staking.md#realized-apr)).

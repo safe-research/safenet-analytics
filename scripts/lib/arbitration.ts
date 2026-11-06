@@ -9,8 +9,8 @@
 
 import type { RequestRecord } from "./recount.ts";
 
-// Start of the "Production, all time" window, as in network_summary.
-export const PRODUCTION_START = Date.parse("2026-10-07T00:00:00Z") / 1000;
+// Start of the "Aegis, all time" window, as in network_summary.
+export const AEGIS_START = Date.parse("2026-10-07T00:00:00Z") / 1000;
 
 export type ArbitrationState = "awaiting" | "ruled_secure" | "ruled_insecure" | "out_of_scope" | "timed_out";
 
@@ -34,7 +34,7 @@ export const RATE_WINDOWS = [
   { label: "Last 24 hours", since: (now: number) => now - DAY },
   { label: "Last 7 days", since: (now: number) => now - 7 * DAY },
   { label: "Last 30 days", since: (now: number) => now - 30 * DAY },
-  { label: "Production, all time", since: () => PRODUCTION_START },
+  { label: "Aegis, all time", since: () => AEGIS_START },
 ] as const;
 
 export type RateCounts = {
@@ -108,7 +108,7 @@ export const openHours = (r: Req, now: number) => (arbitrationState(r) === "awai
 
 export const RESOLUTION_WINDOWS = [
   { label: "Ruled in the last 30 days", since: (now: number) => now - 30 * DAY },
-  { label: "Ruled since production start", since: () => PRODUCTION_START },
+  { label: "Ruled since Aegis start", since: () => AEGIS_START },
 ] as const;
 
 // Resolution times of ruled cases, by ruling time. Unresolved cases are excluded; out-of-scope

@@ -84,27 +84,27 @@
     {
       "validator": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
       "staker": "0x888614448eb7c766864fafb1dd20ff0b47988a87",
-      "era": "production"
+      "era": "aegis"
     },
     {
       "validator": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
       "staker": "0xa656a512000c64d2f86fb7ca15fa95dd556f18c0",
-      "era": "production"
+      "era": "aegis"
     },
     {
       "validator": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
       "staker": "0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
-      "era": "production"
+      "era": "aegis"
     },
     {
       "validator": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
       "staker": "0x731bf32e20d1c5475dc85d742d4fd72faf43b889",
-      "era": "production"
+      "era": "aegis"
     },
     {
       "validator": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
       "staker": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
-      "era": "production"
+      "era": "aegis"
     }
   ],
   "roots": [

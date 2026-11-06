@@ -6,7 +6,7 @@
 //     every epoch, FROSTCoordinator.participantKey for every (group, validator) pair (reverts for
 //     non-members) and groupSignCount per group.
 //   - Participation: recounts recognised signature shares per ceremony and compares every
-//     validator-day and the production-wide window with the latest Dune results at their block.
+//     validator-day and the Aegis-wide window with the latest Dune results at their block.
 //   - Stake: the Validators stake columns equal the Staking section's results from the same refresh,
 //     and the stake-status rows add up to the headline; outstanding withdrawals per validator equal
 //     the Staking replay (scripts/lib/staking.ts).
@@ -23,7 +23,7 @@ import { parseArgs } from "node:util";
 import { DuneClient } from "../src/dune.ts";
 import { txUrl } from "../src/links.ts";
 import { loadParticipants } from "../src/participants.ts";
-import { EVENTS, FROST_COORDINATOR, PRODUCTION, REWARDS_DISTRIBUTOR, VALIDATOR_EVENTS } from "../src/safenet.ts";
+import { EVENTS, FROST_COORDINATOR, AEGIS, REWARDS_DISTRIBUTOR, VALIDATOR_EVENTS } from "../src/safenet.ts";
 import { loadState } from "../src/state.ts";
 import { loadValidatorRewards } from "../src/validator-rewards.ts";
 import { multicall } from "./lib/multicall.ts";
@@ -91,13 +91,13 @@ const atB = build(logs, B);
 const active = atB.activeAt(B)!;
 
 const membershipChecks: Record<string, unknown>[] = [];
-const [activeRead] = await multicall(gnosis, [{ to: PRODUCTION.consensus.address, signature: "getActiveEpoch()", args: [] }], B);
+const [activeRead] = await multicall(gnosis, [{ to: AEGIS.consensus.address, signature: "getActiveEpoch()", args: [] }], B);
 const chainActive = { epoch: Number(BigInt(`0x${activeRead.words[0]}`)), groupId: `0x${activeRead.words[1]}` };
 membershipChecks.push({ check: "active epoch and group", contract: chainActive, rebuilt: { epoch: active.epoch, groupId: active.groupId }, ok: chainActive.epoch === active.epoch && chainActive.groupId === active.groupId });
 
 const groupReads = await multicall(
   gnosis,
-  atB.epochs.map((e) => ({ to: PRODUCTION.consensus.address, signature: "getEpochGroupId(uint64)", args: [e.epoch.toString(16)] })),
+  atB.epochs.map((e) => ({ to: AEGIS.consensus.address, signature: "getEpochGroupId(uint64)", args: [e.epoch.toString(16)] })),
   B,
 );
 const groupMismatch = atB.epochs.filter((e, i) => `0x${groupReads[i].words[0]}` !== e.groupId).map((e) => e.epoch);
@@ -112,7 +112,7 @@ membershipChecks.push({ check: `participantKey for ${groupIds.length} groups x $
 
 const countReads = await multicall(gnosis, groupIds.map((g) => ({ to: FROST_COORDINATOR.address, signature: "groupSignCount(bytes32)", args: [g] })), B);
 // groupSignCount counts every sign() on the group. Anyone may call it, so ceremonies not initiated by
-// production Consensus exist; they are not attestations and are excluded from participation.
+// Aegis Consensus exist; they are not attestations and are excluded from participation.
 const signs = logs.coordinator.filter((l) => l.topics[0] === VALIDATOR_EVENTS.Sign.topic0 && Number(l.blockNumber) <= B);
 const countMismatch = groupIds.flatMap((g, i) => {
   const chain = Number(BigInt(`0x${countReads[i].words[0]}`));
@@ -121,7 +121,7 @@ const countMismatch = groupIds.flatMap((g, i) => {
 });
 membershipChecks.push({ check: "groupSignCount = Sign events per group (any initiator)", mismatches: countMismatch, ok: countMismatch.length === 0 });
 const excluded = signs
-  .filter((l) => atB.members.has(l.topics[2]) && l.topics[1] !== `0x${"0".repeat(24)}${PRODUCTION.consensus.address.slice(2)}`)
+  .filter((l) => atB.members.has(l.topics[2]) && l.topics[1] !== `0x${"0".repeat(24)}${AEGIS.consensus.address.slice(2)}`)
   .map((l) => ({ initiator: nameOf(`0x${l.topics[1].slice(26)}`), epoch: atB.epochs.find((e) => e.groupId === l.topics[2])?.epoch, tx: txUrl(100, l.transactionHash) }));
 for (const c of membershipChecks) if (!c.ok) issues.push(`membership check failed: ${c.check}`);
 
@@ -153,16 +153,16 @@ if (duneBlock) {
     }
     compared.push("validator_participation_daily");
   }
-  const prod = dune.validator_participation_windows?.rows.filter((r) => String(r.time_window).startsWith("Production"));
+  const prod = dune.validator_participation_windows?.rows.filter((r) => String(r.time_window).startsWith("Aegis"));
   if (prod?.length) {
     const p = participation(atDune, times, Date.parse("2026-10-07T13:51:55Z") / 1000);
     for (const r of prod) {
       const s = p.byValidator.get(String(r.address));
-      compare(`window production ${r.validator}`, "eligible", s?.eligible ?? 0, r.eligible);
-      compare(`window production ${r.validator}`, "signed", s?.signed ?? 0, r.signed);
-      compare(`window production ${r.validator}`, "transactions", p.transactions, r.transactions);
+      compare(`window Aegis ${r.validator}`, "eligible", s?.eligible ?? 0, r.eligible);
+      compare(`window Aegis ${r.validator}`, "signed", s?.signed ?? 0, r.signed);
+      compare(`window Aegis ${r.validator}`, "transactions", p.transactions, r.transactions);
     }
-    compared.push("validator_participation_windows (production)");
+    compared.push("validator_participation_windows (Aegis)");
   }
   const o = dune.validator_overview?.rows;
   if (o) {
@@ -297,7 +297,7 @@ for (const c of missed.slice(-3))
 const rollover = atB.ceremonies.filter((c) => c.purpose === "epoch_rollover" && c.completedTx).at(-1);
 if (rollover) representative.push({ case: "epoch rollover ceremony", epoch: rollover.epoch, signed: [...rollover.shares].filter(([, s]) => s).map(([m]) => nameOf(m)), completed: txUrl(100, rollover.completedTx!) });
 const unrecognised = atB.ceremonies.filter((c) => c.unrecognised.length);
-representative.push({ case: "ceremonies on production groups not initiated by Consensus (excluded)", ceremonies: excluded });
+representative.push({ case: "ceremonies on Aegis groups not initiated by Consensus (excluded)", ceremonies: excluded });
 representative.push({ case: "shares under another selection root (ignored)", count: unrecognised.reduce((a, c) => a + c.unrecognised.length, 0) });
 
 // ---------------------------------------------------------------------------------------------
@@ -311,7 +311,7 @@ const report = {
   attestation_set: [...(atB.members.get(active.groupId) ?? [])].map(nameOf),
   epochs: atB.epochs.length,
   ceremonies: { total: atB.ceremonies.length, completed: atB.ceremonies.filter((c) => c.completedBlock !== null).length },
-  participation_production: Object.fromEntries([...prodAll.byValidator].map(([v, s]) => [nameOf(v), `${s.signed}/${s.eligible}`])),
+  participation_aegis: Object.fromEntries([...prodAll.byValidator].map(([v, s]) => [nameOf(v), `${s.signed}/${s.eligible}`])),
   membership_checks: membershipChecks,
   reward_checks: rewardChecks,
   issues,

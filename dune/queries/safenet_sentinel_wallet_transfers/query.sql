@@ -1,10 +1,10 @@
--- Safenet production: USDC.e transfers of Sentinel accounts on Gnosis Chain, one row per transfer
+-- Safenet Aegis: USDC.e transfers of Sentinel accounts on Gnosis Chain, one row per transfer
 -- and Sentinel side, decoded from raw logs. Used for the Sentinels' available USDC.e (the bond
 -- token held in their own account). Temporary decoding like safenet_events (docs/decoding.md).
 -- Definitions: docs/metrics/sentinels.md#bonds.
 --
 -- Transfer(address indexed from, address indexed to, uint256 value) of USDC.e
--- 0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0. Sentinels are every address in a production
+-- 0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0. Sentinels are every address in an Aegis
 -- SentinelScheduled event. Transfers are read from 2026-10-07, when the Sentinel Oracle was
 -- deployed; scripts/verify-sentinels.ts checks that the resulting balances equal balanceOf on chain,
 -- which holds only if no Sentinel held USDC.e before that date.

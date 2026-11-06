@@ -14,7 +14,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { parseArgs } from "node:util";
 import { DuneClient } from "../src/dune.ts";
-import { COVERED_SAFE_CHAINS, EVENTS, ORACLE_STATE, PRODUCTION } from "../src/safenet.ts";
+import { COVERED_SAFE_CHAINS, EVENTS, ORACLE_STATE, AEGIS } from "../src/safenet.ts";
 import { loadState } from "../src/state.ts";
 
 const { values: args } = parseArgs({
@@ -26,7 +26,7 @@ const { values: args } = parseArgs({
   },
 });
 
-const ORACLE_TOPIC = `0x${"0".repeat(24)}${PRODUCTION.sentinelOracle.address.slice(2)}`;
+const ORACLE_TOPIC = `0x${"0".repeat(24)}${AEGIS.sentinelOracle.address.slice(2)}`;
 const STEP = 200_000;
 
 type Log = {
@@ -104,8 +104,8 @@ const throughBlock =
 
 const finalized = Number(await rpc<{ number: string }>("eth_getBlockByNumber", ["finalized", false]).then((b) => b.number));
 const head = throughBlock ?? finalized;
-const consensus = PRODUCTION.consensus.address;
-const oracle = PRODUCTION.sentinelOracle.address;
+const consensus = AEGIS.consensus.address;
+const oracle = AEGIS.sentinelOracle.address;
 const outcomeTopics = [
   EVENTS.OracleResult.topic0,
   EVENTS.DisputeResolved.topic0,
@@ -115,11 +115,11 @@ const outcomeTopics = [
 ];
 
 const [proposed, attested, newRequests, outcomes, disputes] = await Promise.all([
-  getLogs(consensus, [EVENTS.TransactionProposed.topic0], PRODUCTION.consensus.deployBlock, head),
-  getLogs(consensus, [EVENTS.TransactionAttested.topic0], PRODUCTION.consensus.deployBlock, head),
-  getLogs(oracle, [EVENTS.NewRequest.topic0], PRODUCTION.sentinelOracle.deployBlock, head),
-  getLogs(oracle, [outcomeTopics], PRODUCTION.sentinelOracle.deployBlock, head),
-  getLogs(oracle, [EVENTS.DisputeTriggered.topic0], PRODUCTION.sentinelOracle.deployBlock, head),
+  getLogs(consensus, [EVENTS.TransactionProposed.topic0], AEGIS.consensus.deployBlock, head),
+  getLogs(consensus, [EVENTS.TransactionAttested.topic0], AEGIS.consensus.deployBlock, head),
+  getLogs(oracle, [EVENTS.NewRequest.topic0], AEGIS.sentinelOracle.deployBlock, head),
+  getLogs(oracle, [outcomeTopics], AEGIS.sentinelOracle.deployBlock, head),
+  getLogs(oracle, [EVENTS.DisputeTriggered.topic0], AEGIS.sentinelOracle.deployBlock, head),
 ]);
 for (const logs of [proposed, attested, newRequests, outcomes]) logs.sort(order);
 
@@ -162,7 +162,7 @@ for (const [tx, ps] of proposalsByTx) {
   }
 }
 for (const tx of requestsByTx.keys())
-  if (!proposalsByTx.has(tx)) issues.push(`tx ${tx}: oracle request without production proposal`);
+  if (!proposalsByTx.has(tx)) issues.push(`tx ${tx}: oracle request without Aegis proposal`);
 
 type Outcome = "approved" | "denied" | "no_verdict";
 const outcomeOf = new Map<string, Outcome>();
@@ -186,7 +186,7 @@ for (const l of outcomes) {
   const req = requests.get(id);
   const d = day(await blockTime(l));
   if (!req) {
-    issues.push(`request ${id}: outcome without production request`);
+    issues.push(`request ${id}: outcome without Aegis request`);
     bump(d, "unmatched_events");
     continue;
   }
@@ -235,12 +235,12 @@ const summary = {
   to_block_time: new Date((await rpc<{ timestamp: string }>("eth_getBlockByNumber", [`0x${head.toString(16)}`, false]).then((b) => Number(b.timestamp))) * 1000).toISOString(),
   source_events: {
     TransactionProposed_all_oracles: proposed.length,
-    TransactionProposed_production_oracle: prodProposed.length,
+    TransactionProposed_aegis_oracle: prodProposed.length,
     NewRequest: newRequests.length,
     terminal_outcomes: outcomes.length,
     DisputeTriggered: disputes.length,
     TransactionAttested_all_oracles: attested.length,
-    TransactionAttested_production_oracle: prodAttested.length,
+    TransactionAttested_aegis_oracle: prodAttested.length,
     requests_without_outcome_yet: pending,
   },
   totals,
@@ -286,7 +286,7 @@ const comparison = (() => {
   return {
     dune_query_id: id,
     dune_execution_ended_at: result.execution_ended_at,
-    block_range: throughBlock === undefined ? "complete UTC days" : `${PRODUCTION.consensus.deployBlock}..${throughBlock}`,
+    block_range: throughBlock === undefined ? "complete UTC days" : `${AEGIS.consensus.deployBlock}..${throughBlock}`,
     compared_days: compared,
     counter,
     mismatches,

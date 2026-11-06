@@ -1,4 +1,4 @@
--- Safenet production: how long arbitration takes, and the arbitrations still open. Definitions:
+-- Safenet Aegis: how long arbitration takes, and the arbitrations still open. Definitions:
 -- docs/metrics/sentinels.md#arbitration-rate-and-resolution-time. Model: scripts/lib/arbitration.ts.
 --
 -- Resolution time: from DisputeTriggered, emitted when SentinelOracle `finalize` freezes the
@@ -30,7 +30,7 @@ windows as (
     select * from (
         values
             ('Ruled in the last 30 days', 1, now() - interval '30' day),
-            ('Ruled since production start', 2, timestamp '2026-10-07 00:00:00 UTC')
+            ('Ruled since Aegis start', 2, timestamp '2026-10-07 00:00:00 UTC')
     ) as t (time_window, sort_order, since)
 ),
 

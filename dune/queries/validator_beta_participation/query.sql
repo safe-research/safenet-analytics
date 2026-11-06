@@ -9,7 +9,7 @@
 -- SignCompleted. Beta had no settlement block (introduced for Aegis).
 --
 -- Read from raw logs in one scan, bounded to the Beta reward months (blocks 45525872 – 48643007,
--- 2026-04-06 – 2026-10-08); see docs/decoding.md. The coordinator emits production's event
+-- 2026-04-06 – 2026-10-08); see docs/decoding.md. The coordinator emits Aegis's event
 -- signatures (VALIDATOR_EVENTS); the Beta TransactionAttested has its own (BETA_TRANSACTION_ATTESTED).
 
 with

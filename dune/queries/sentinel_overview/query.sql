@@ -1,9 +1,9 @@
--- Safenet production: one row per Sentinel ever scheduled on the production Sentinel Oracle, with
+-- Safenet Aegis: one row per Sentinel ever scheduled on the Aegis Sentinel Oracle, with
 -- its current membership and all-time participation. Definitions: docs/metrics/sentinels.md.
 --
 -- Current status (now) comes from the latest membership term. The counts are history: requests for
 -- Safes on the Charter's chains (covered_chain, as in the Network & revenue section; Safenet's own
--- operational Safes included, test traffic excluded) since the first production request.
+-- operational Safes included, test traffic excluded) since the first Aegis request.
 --   eligible_requests   requests the Sentinel could respond to, response window closed
 --   participation_rate  valid reveals on them / eligible_requests (pending excluded from both)
 --   no_commit           eligible, never committed or tried: abstained or offline (indistinguishable)

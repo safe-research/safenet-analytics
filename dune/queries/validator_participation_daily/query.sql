@@ -2,7 +2,7 @@
 -- validator and day with at least one eligible ceremony. Definitions:
 -- docs/metrics/validators.md#observed-signing-participation.
 --
--- Eligible: completed production signing ceremonies of a group the validator belonged to, by the
+-- Eligible: completed Aegis signing ceremonies of a group the validator belonged to, by the
 -- day of SignCompleted. Signed: the validator's share has the completed selection root. Days
 -- without an eligible ceremony (not a member, or no ceremonies) have no row and stay blank, never 0.
 

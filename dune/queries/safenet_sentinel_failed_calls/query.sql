@@ -1,4 +1,4 @@
--- Safenet production: reverted Sentinel Oracle commit and reveal calls on Gnosis Chain, one row
+-- Safenet Aegis: reverted Sentinel Oracle commit and reveal calls on Gnosis Chain, one row
 -- per reverted call, decoded from gnosis.traces. Temporary decoding like safenet_events
 -- (docs/decoding.md); selectors in src/safenet.ts (ORACLE_FUNCTIONS), checked in
 -- test/safenet.test.ts. Definitions: docs/metrics/sentinels.md#late-and-invalid-submissions.
@@ -30,7 +30,7 @@ select
     tx_success,
     'https://gnosisscan.io/tx/0x' || lower(to_hex(tx_hash)) as tx_url
 from gnosis.traces
-where "to" = 0x4f61b8832978e83b80d69551aef07557dbe41d03 -- production SentinelOracle
+where "to" = 0x4f61b8832978e83b80d69551aef07557dbe41d03 -- Aegis SentinelOracle
     and bytearray_substring(input, 1, 4) in (0xe3ce094d, 0x386a15bc)
     and not success
     and block_number >= 48635850

@@ -1,6 +1,6 @@
 name: "Safenet: activity by Safe network"
 description: >
-  Safenet production (Aegis), all time: requests, completed results, attestations and unique Safes
+  Safenet Aegis, all time: requests, completed results, attestations and unique Safes
   by the network of the checked Safe (not the Gnosis Chain contracts' network). Networks outside the
   Charter are marked as test traffic. Managed in github.com/safe-research/safenet-analytics
   (docs/metrics/network-and-revenue.md).

@@ -77,14 +77,14 @@ test("Sentinel colours follow the name, not the order of appearance; daily rows 
 
 test("time series draw withdrawals below zero, areas from zero, and gaps where a series has no value", () => {
   const rows = [
-    { day: "2026-10-06", deposits: 10, out: 0, beta: 5, production: null },
-    { day: "2026-10-07", deposits: 0, out: -4, beta: 9, production: 9 },
+    { day: "2026-10-06", deposits: 10, out: 0, beta: 5, aegis: null },
+    { day: "2026-10-07", deposits: 0, out: -4, beta: 9, aegis: 9 },
   ];
   const html = timeSeriesHtml("Flows", rows, [
     { column: "deposits", name: "Deposits", color: "#2a78d6", kind: "column" },
     { column: "out", name: "Completed withdrawals", color: "#eb6834", kind: "column" },
     { column: "beta", name: "Beta", color: "#b5b3ab", kind: "area" },
-    { column: "production", name: "Production", color: "#2a78d6", kind: "area" },
+    { column: "aegis", name: "Aegis", color: "#2a78d6", kind: "area" },
   ], "footer");
   assert.equal((html.match(/<rect /g) ?? []).length, 2);
   assert.match(html, /2026-10-07 Completed withdrawals: -4/);
@@ -135,7 +135,7 @@ test("validator pages render only for queries with results; the heatmap shows n/
         { day: "2026-10-25", validator: "Gnosis", participation_pct: 100, eligible_ceremonies: 40 },
         { day: "2026-10-26", validator: "RockawayX", participation_pct: 50, eligible_ceremonies: 2 },
       ],
-      validator_rewards_periods: [{ period: "2026-10-13 – 2026-10-27 (production)", status: "not yet published", total_allocated: null }],
+      validator_rewards_periods: [{ period: "2026-10-13 – 2026-10-27 (Aegis)", status: "not yet published", total_allocated: null }],
     },
     "f",
   );
