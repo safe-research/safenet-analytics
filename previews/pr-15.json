@@ -1,39 +1,39 @@
 {
   "dashboards": {
     "arbitration": {
-      "desired": "9d594e8ddcb00b6a",
+      "desired": "0cb06fc4b601a405",
       "id": 222904,
-      "remote": "9319e53d40e7a7fd",
+      "remote": "18d5d2da4a31a9b5",
       "url": "https://dune.com/safe/safenet-arbitration-preview-pr-15"
     },
     "network-revenue": {
-      "desired": "59721983844dc998",
+      "desired": "6a2a53c7ca2ec7d5",
       "id": 222905,
-      "remote": "725a0c6bf1eb2ff5",
+      "remote": "8d07db3957a6c19b",
       "url": "https://dune.com/safe/safenet-network-revenue-preview-pr-15"
     },
     "overview": {
-      "desired": "d5fc7cea3fd78544",
+      "desired": "b14acdd3325110ae",
       "id": 222903,
-      "remote": "b664863285cb05c8",
+      "remote": "e41f6548b02cf11f",
       "url": "https://dune.com/safe/safenet-preview-pr-15"
     },
     "sentinels": {
-      "desired": "826b3b9fe1b83ef7",
+      "desired": "be2ad503b23fc8a7",
       "id": 222906,
-      "remote": "8c00e5a1b0ca1552",
+      "remote": "ce3691ce98035974",
       "url": "https://dune.com/safe/safenet-sentinels-preview-pr-15"
     },
     "staking": {
-      "desired": "318a24dbe6f994ec",
+      "desired": "fe93f7cd391dbb05",
       "id": 222907,
-      "remote": "4f27f27d831633a4",
+      "remote": "760a0f8584feb055",
       "url": "https://dune.com/safe/safenet-staking-preview-pr-15"
     },
     "validators": {
-      "desired": "3a2825d70c7ff70c",
+      "desired": "db6f3fd8f7e6b90b",
       "id": 222908,
-      "remote": "5a40fba74feb5b8a",
+      "remote": "4d7ba7d7623fcdd6",
       "url": "https://dune.com/safe/safenet-validators-preview-pr-15"
     }
   },
