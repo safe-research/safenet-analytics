@@ -8,39 +8,28 @@
 -- TransactionAttested. A share counts only under the selection root of the ceremony's
 -- SignCompleted. Beta had no settlement block (introduced for Aegis).
 --
--- Read from raw logs in one scan, bounded to the Beta reward months (blocks 45525872 – 48643007,
--- 2026-04-06 – 2026-10-08); see docs/decoding.md. The coordinator emits Aegis's event
--- signatures (VALIDATOR_EVENTS); the Beta TransactionAttested has its own (BETA_TRANSACTION_ATTESTED).
+-- Read from Dune's decoded Beta tables (safe_gnosis.SafenetBetaConsensus_evt_*,
+-- safe_gnosis.SafenetBetaFROSTCoordinator_evt_*), restricted to the two contract addresses and bounded
+-- to the Beta reward months (blocks 45525872 – 48643007, 2026-04-06 – 2026-10-08). decoded-parity
+-- compares them with the raw logs (docs/decoding.md#switches).
 
 with
 
-logs as (
-    select contract_address, topic0, topic1, topic2, data, block_time
-    from gnosis.logs
-    where contract_address in (
-            0xae27021ceb45316f1efe69d8e362ac07ed3bd7e4, -- Beta FROST coordinator
-            0x223624cbf099e5a8f8cd5af22afa424a1d1acee9 -- Beta Consensus
-        )
-        and topic0 in (
-            0x25a4d6e8d11a9fdc20ffdd826473485ae4cdd453271726c072a16836c1882e7c, -- SignShared
-            0x7f1641fa8e46c311f05dc0cb9f69f0ac0f27dd12388a5587c7983de9e99a028d, -- SignCompleted
-            0x72272729e643703db011cc155474c30d652f1a68712d921cc263a881efd7bce6 -- TransactionAttested (Beta)
-        )
-        and block_number between 45525872 and 48643007
-        and block_date between date '2026-04-06' and date '2026-10-08'
-),
-
--- Signature ids of attested transactions (Beta Consensus; data: epoch, signatureId, attestation).
+-- Signature ids of attested transactions (Beta Consensus).
 attested as (
-    select distinct bytearray_substring(data, 33, 32) as sid
-    from logs
-    where contract_address = 0x223624cbf099e5a8f8cd5af22afa424a1d1acee9
+    select distinct signatureId as sid
+    from safe_gnosis.SafenetBetaConsensus_evt_TransactionAttested
+    where contract_address = 0x223624cbf099e5a8f8cd5af22afa424a1d1acee9 -- Beta Consensus
+        and evt_block_number between 45525872 and 48643007
+        and evt_block_date between date '2026-04-06' and date '2026-10-08'
 ),
 
 completed as (
-    select topic1 as sid, topic2 as selection_root, min(block_time) as completed_at
-    from logs
-    where contract_address = 0xae27021ceb45316f1efe69d8e362ac07ed3bd7e4 and topic0 = 0x7f1641fa8e46c311f05dc0cb9f69f0ac0f27dd12388a5587c7983de9e99a028d
+    select sid, selectionRoot as selection_root, min(evt_block_time) as completed_at
+    from safe_gnosis.SafenetBetaFROSTCoordinator_evt_SignCompleted
+    where contract_address = 0xae27021ceb45316f1efe69d8e362ac07ed3bd7e4 -- Beta FROST coordinator
+        and evt_block_number between 45525872 and 48643007
+        and evt_block_date between date '2026-04-06' and date '2026-10-08'
     group by 1, 2
 ),
 
@@ -50,11 +39,12 @@ ceremonies as (
     join attested as a on a.sid = c.sid
 ),
 
--- SignShared(sid indexed, selectionRoot indexed, participant, z)
 shares as (
-    select distinct topic1 as sid, topic2 as selection_root, bytearray_substring(data, 13, 20) as validator
-    from logs
-    where contract_address = 0xae27021ceb45316f1efe69d8e362ac07ed3bd7e4 and topic0 = 0x25a4d6e8d11a9fdc20ffdd826473485ae4cdd453271726c072a16836c1882e7c
+    select distinct sid, selectionRoot as selection_root, participant as validator
+    from safe_gnosis.SafenetBetaFROSTCoordinator_evt_SignShared
+    where contract_address = 0xae27021ceb45316f1efe69d8e362ac07ed3bd7e4 -- Beta FROST coordinator
+        and evt_block_number between 45525872 and 48643007
+        and evt_block_date between date '2026-04-06' and date '2026-10-08'
 ),
 
 periods as (

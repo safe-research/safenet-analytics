@@ -9,7 +9,17 @@
 // Whether the decoded columns carry the right values is checked by the preview reconciliations
 // of the pull request that switches a model.
 
-import { EVENTS, FROST_COORDINATOR, AEGIS, REWARDS_DISTRIBUTOR, VALIDATOR_EVENTS, VALIDATOR_STAKER_SET } from "./safenet.ts";
+import {
+  AEGIS,
+  BETA_CONSENSUS,
+  BETA_COORDINATOR,
+  BETA_TRANSACTION_ATTESTED,
+  EVENTS,
+  FROST_COORDINATOR,
+  REWARDS_DISTRIBUTOR,
+  VALIDATOR_EVENTS,
+  VALIDATOR_STAKER_SET,
+} from "./safenet.ts";
 
 type Event = { signature: string; topic0: string };
 export type DecodedSource = {
@@ -64,6 +74,24 @@ export const DECODED_SOURCES: DecodedSource[] = [
     deployBlock: FROST_COORDINATOR.deployBlock,
     deployDate: "2026-10-06",
     events: [VALIDATOR_EVENTS.KeyGen, VALIDATOR_EVENTS.KeyGenConfirmed, VALIDATOR_EVENTS.Sign, VALIDATOR_EVENTS.SignShared, VALIDATOR_EVENTS.SignCompleted],
+  },
+  // Beta (check-decoded, 2026-11-05): only the events the models read. The Beta Consensus's
+  // TransactionAttested has its own signature (BETA_TRANSACTION_ATTESTED).
+  {
+    table: "safe_gnosis.SafenetBetaConsensus",
+    chain: "gnosis",
+    address: BETA_CONSENSUS.address,
+    deployBlock: BETA_CONSENSUS.deployBlock,
+    deployDate: "2026-03-18",
+    events: [BETA_TRANSACTION_ATTESTED, VALIDATOR_STAKER_SET],
+  },
+  {
+    table: "safe_gnosis.SafenetBetaFROSTCoordinator",
+    chain: "gnosis",
+    address: BETA_COORDINATOR.address,
+    deployBlock: BETA_COORDINATOR.deployBlock,
+    deployDate: "2026-03-18",
+    events: [VALIDATOR_EVENTS.SignShared, VALIDATOR_EVENTS.SignCompleted],
   },
   {
     table: "safe_ethereum.CumulativeMerkleDrop",

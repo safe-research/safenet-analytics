@@ -141,7 +141,8 @@ jobs:
         run: |
           if git diff --quiet origin/main...HEAD -- src/decoded-parity.ts dune/queries/safenet_events dune/queries/safenet_sentinel_texts \
             dune/queries/safenet_sentinel_failed_calls dune/queries/safenet_reward_events dune/queries/staking_validator_stakers \
-            dune/queries/validator_epochs dune/queries/validator_membership dune/queries/validator_ceremonies dune/queries/validator_staker_history; then
+            dune/queries/validator_epochs dune/queries/validator_membership dune/queries/validator_ceremonies dune/queries/validator_staker_history \
+            dune/queries/validator_beta_participation; then
             echo "No decoding change in this pull request; parity not checked."
             exit 0
           fi

@@ -161,7 +161,7 @@ Outstanding withdrawal requests per validator now come from `staking_withdrawals
 
 ## Models
 
-All are shared, with `refresh: none`. They read Dune's decoded Consensus and FROSTCoordinator tables; only the Beta part of `validator_staker_history` reads `gnosis.logs` (see [decoding.md](../decoding.md)).
+All are shared, with `refresh: none`. They read Dune's decoded Consensus and FROSTCoordinator tables, Aegis and Beta (see [decoding.md](../decoding.md)).
 
 ### validator_epochs
 
@@ -220,7 +220,7 @@ Generated. `kind_row` is `root` or `entry`:
   - `safe_gnosis.SafenetAegisConsensus_evt_*` (`EpochStaged`, `TransactionAttested`, `ValidatorStakerSet`) from block 48635843 (2026-10-07), filtered to Aegis Consensus.
   - `safe_gnosis.SafenetAegisFROSTCoordinator_evt_*` (`KeyGenConfirmed`, `Sign`, `SignShared`, `SignCompleted`) from block 48617821 (2026-10-06). The coordinator is shared with the Aegis testnet: ceremonies need a `Sign` with `initiator` = Aegis Consensus, and members a group named by it.
   - `decoded-parity` showed every decoded event table equal to the raw logs, log by log, from the deploy blocks ([decoding.md](../decoding.md#switches)). Output columns are the same as when the models decoded raw logs.
-- **Raw logs:** Beta Consensus `ValidatorStakerSet` from block 45210396 (2026-03-18), in `validator_staker_history` only, because Beta is not decoded. Its topic0 is in `src/safenet.ts` (`VALIDATOR_STAKER_SET`), recomputed from the signature in the tests.
+- **Beta:** `safe_gnosis.SafenetBetaConsensus_evt_ValidatorStakerSet` from block 45210396 (2026-03-18), in `validator_staker_history`, restricted to the Beta Consensus.
 
 ## Validation
 
