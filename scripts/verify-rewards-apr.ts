@@ -134,7 +134,8 @@ const blockAt = async (t: number) => {
   return lo;
 };
 
-// Beta periods (participation not recounted: the Beta Consensus is not decoded), then Aegis.
+// Beta periods (participation not recounted here: about 7 million Beta signing logs; Dune recounts
+// it from the decoded Beta tables, and it is compared with who the derived split paid), then Aegis.
 const periods = [...betaPeriods(), ...completedPeriods(Date.now() / 1000)];
 const settlements = new Map<number, number>();
 for (const p of periods.filter((x) => !isBeta(x))) {

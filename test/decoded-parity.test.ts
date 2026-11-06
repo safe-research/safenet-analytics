@@ -34,7 +34,7 @@ test("every decoded Safenet table a query reads is covered by the parity check",
   let reads = 0;
   for (const key of await readdir(queries)) {
     const sql = await readFile(join(queries, key, "query.sql"), "utf8");
-    for (const [table] of sql.matchAll(/\bsafe_gnosis\.SafenetAegis\w+_evt_\w+/gi)) {
+    for (const [table] of sql.matchAll(/\bsafe_gnosis\.Safenet(?:Aegis|Beta)\w+_evt_\w+/gi)) {
       reads++;
       assert.ok(covered.has(table.toLowerCase()), `${key} reads ${table}, which the parity check does not cover`);
     }

@@ -63,15 +63,20 @@ test("Beta Consensus is read only for the staker history and the Beta reward par
     const q = (await read(key)).toLowerCase();
     assert.equal(q.includes(BETA_CONSENSUS.address.slice(2)), ["validator_staker_history", "validator_beta_participation"].includes(key), key);
   }
+  // Beta participation from Dune's decoded Beta tables, restricted to the Beta contracts and months.
   const b = await read("validator_beta_participation");
-  for (const t of [VALIDATOR_EVENTS.SignShared.topic0, VALIDATOR_EVENTS.SignCompleted.topic0, BETA_TRANSACTION_ATTESTED.topic0]) assert.ok(b.includes(t), `topic ${t}`);
   assert.equal(hash(BETA_TRANSACTION_ATTESTED.signature), BETA_TRANSACTION_ATTESTED.topic0);
-  assert.ok(b.includes(BETA_COORDINATOR.address) && b.includes(BETA_CONSENSUS.address));
-  assert.ok(b.includes(`block_number between ${BETA_REWARD_LOGS.fromBlock} and ${BETA_REWARD_LOGS.toBlock}`));
-  assert.ok(b.includes(`block_date between date '${BETA_REWARD_LOGS.fromDate}' and date '${BETA_REWARD_LOGS.toDate}'`));
+  assert.ok(!/\bgnosis\.logs\b/.test(b), "no raw logs");
+  assert.ok(b.includes("safe_gnosis.SafenetBetaConsensus_evt_TransactionAttested") && b.includes(`contract_address = ${BETA_CONSENSUS.address}`));
+  for (const e of ["SignShared", "SignCompleted"])
+    assert.ok(b.includes(`safe_gnosis.SafenetBetaFROSTCoordinator_evt_${e}`), e);
+  assert.equal(b.split(`contract_address = ${BETA_COORDINATOR.address}`).length - 1, 2, "both coordinator reads restricted to the Beta coordinator");
+  assert.equal(b.split(`evt_block_number between ${BETA_REWARD_LOGS.fromBlock} and ${BETA_REWARD_LOGS.toBlock}`).length - 1, 3);
+  assert.equal(b.split(`evt_block_date between date '${BETA_REWARD_LOGS.fromDate}' and date '${BETA_REWARD_LOGS.toDate}'`).length - 1, 3);
   const h = await read("validator_staker_history");
   assert.ok(h.includes("safe_gnosis.SafenetAegisConsensus_evt_ValidatorStakerSet") && h.includes(`contract_address = ${AEGIS.consensus.address}`), "Aegis from the decoded table");
-  assert.ok(h.includes(`contract_address = ${BETA_CONSENSUS.address}`) && h.includes(VALIDATOR_STAKER_SET.topic0), "Beta from raw logs");
+  assert.ok(h.includes("safe_gnosis.SafenetBetaConsensus_evt_ValidatorStakerSet") && h.includes(`contract_address = ${BETA_CONSENSUS.address}`), "Beta from the decoded table");
+  assert.ok(!/\bgnosis\.logs\b/.test(h), "no raw logs");
 });
 
 test("validator panels read the shared models and stay within the scan limits", async () => {

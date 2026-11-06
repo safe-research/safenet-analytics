@@ -7,8 +7,8 @@
 -- Beta setting applies until the Aegis start (2026-10-07 13:51:55 UTC); an Aegis setting
 -- from its block on. Each applies until the next setting for the validator in the same era.
 -- Between the Aegis start and a validator's first Aegis setting there is no registered
--- staker (self-stake unknown). Aegis settings come from Dune's decoded Consensus table; Beta
--- Consensus is not decoded, so its settings are read from raw logs (docs/decoding.md).
+-- staker (self-stake unknown). Both come from Dune's decoded tables: SafenetAegisConsensus and
+-- SafenetBetaConsensus (docs/decoding.md#switches).
 
 with
 
@@ -27,17 +27,16 @@ sets as (
     union all
     select
         'beta',
-        bytearray_substring(topic1, 13, 20),
-        bytearray_substring(data, 13, 20),
-        block_time,
-        block_number,
-        tx_hash,
-        "index"
-    from gnosis.logs
+        validator,
+        staker,
+        evt_block_time,
+        evt_block_number,
+        evt_tx_hash,
+        evt_index
+    from safe_gnosis.SafenetBetaConsensus_evt_ValidatorStakerSet
     where contract_address = 0x223624cbf099e5a8f8cd5af22afa424a1d1acee9 -- Beta Consensus
-        and topic0 = 0xf0a005469b11e09422034ffe29da663a2969918f3663a27fae9fd5eed38778bb -- ValidatorStakerSet
-        and block_number >= 45210396 -- Beta Consensus deployment
-        and block_date >= date '2026-03-18'
+        and evt_block_number >= 45210396 -- Beta Consensus deployment
+        and evt_block_date >= date '2026-03-18'
 )
 
 select

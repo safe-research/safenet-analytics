@@ -59,13 +59,11 @@ test("the metric SQL does not read Beta, testnet or shared coordinator contracts
 
 // Raw logs are read only by the decoding models; everything else reads the models by reference.
 const RAW_LOG_MODELS = [
-  "validator_beta_participation", // Beta coordinator and Consensus, read from raw logs (docs/decoding.md)
   "safenet_fee_flows",
   "safenet_guards",
   "safenet_guard_status",
   "safenet_sentinel_failed_calls",
   "safenet_sentinel_wallet_transfers",
-  "validator_staker_history", // Beta Consensus only; Beta is not decoded
 ];
 
 test("only the decoding models read raw logs; other queries read them by reference", async () => {

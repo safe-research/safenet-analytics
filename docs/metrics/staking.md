@@ -332,7 +332,7 @@ One row per completed Aegis reward period and (staker, validator) with stake in 
 
 ### validator_beta_participation
 
-One row per Beta reward period and validator with recognised shares: `signed`, `transactions`, `participation`. It reads raw `gnosis.logs` of the Beta coordinator and the Beta Consensus in one scan, bounded to blocks 45525872 – 48643007 (2026-04-06 – 2026-10-08). `refresh: none`.
+One row per Beta reward period and validator with recognised shares: `signed`, `transactions`, `participation`. It reads Dune's decoded Beta tables (`SafenetBetaFROSTCoordinator_evt_SignShared` / `_SignCompleted`, `SafenetBetaConsensus_evt_TransactionAttested`), restricted to the Beta contracts and bounded to blocks 45525872 – 48643007 (2026-04-06 – 2026-10-08). `refresh: none`.
 
 ### staking_period_validators
 
