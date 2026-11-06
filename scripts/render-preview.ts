@@ -244,12 +244,18 @@ ${table}`,
 }
 
 // Several counters side by side (staking headline).
-export function countersHtml(title: string, items: { label: string; value: unknown }[], footer: string) {
+// A counter shows a whole number unless `decimals` is set (as `stringDecimal` on Dune), then `suffix`.
+export type Counter = { label: string; value: unknown; decimals?: number; suffix?: string };
+const counterValue = (i: Counter) =>
+  i.value === null || i.value === undefined
+    ? "–"
+    : `${num(i.value).toLocaleString("en-US", { minimumFractionDigits: i.decimals ?? 0, maximumFractionDigits: i.decimals ?? 0 })}${esc(i.suffix ?? "")}`;
+export function countersHtml(title: string, items: Counter[], footer: string) {
   return page(
     title,
     1400,
     `<div style="display:flex;flex-wrap:wrap;gap:24px 48px">${items
-      .map((i) => `<div><div class="hero" style="font-size:40px">${i.value === null || i.value === undefined ? "–" : fmt(Math.round(num(i.value)))}</div><div class="label">${esc(i.label)}</div></div>`)
+      .map((i) => `<div><div class="hero" style="font-size:40px">${counterValue(i)}</div><div class="label">${esc(i.label)}</div></div>`)
       .join("")}</div>`,
     footer,
   );
@@ -584,7 +590,15 @@ const TABLES: Record<string, { title: string; cols: Col[] }> = {
 };
 
 // Staking section (docs/metrics/staking.md). Names match the image list in .github/workflows/preview.yml.
-const STAKING_QUERIES = ["staking_overview", "staking_daily", "staking_flow_summary", "staking_withdrawals_outstanding", "staking_by_validator"];
+const STAKING_QUERIES = [
+  "staking_overview",
+  "staking_daily",
+  "staking_flow_summary",
+  "staking_withdrawals_outstanding",
+  "staking_by_validator",
+  "staking_rewards_apr",
+  "staking_rewards_apr_by_validator",
+];
 const BETA = "#b5b3ab";
 export function stakingPages(results: Record<string, Row[]>, footer: string): [string, string, number, number][] {
   const pages: [string, string, number, number][] = [];
@@ -701,6 +715,76 @@ export function stakingPages(results: Record<string, Row[]>, footer: string): [s
       ], footer, "Validator"),
       996,
       300 + 64 * v.length,
+    ]);
+  const rowsHeight = (n: number) => 160 + 30 * Math.max(1, n);
+  const round2 = (x: unknown) => (x === null || x === undefined ? null : Math.round(num(x) * 100) / 100);
+  const round0 = (x: unknown) => (x === null || x === undefined ? null : Math.round(num(x)));
+  const a = results.staking_rewards_apr;
+  if (a?.length) {
+    const head = a[0];
+    pages.push([
+      "staking_apr",
+      `${countersHtml(`Realized staking APR, latest published Aegis period: ${head.period}`, [
+        { label: "Realized APR, eligible stake", value: head.pool_apr, decimals: 2, suffix: "%" },
+        { label: "Delegators, net of commission", value: head.delegator_apr, decimals: 2, suffix: "%" },
+        { label: "On all stake", value: head.apr_all_stake, decimals: 2, suffix: "%" },
+      ], footer)}${tableHtml("Realized staking APR by reward period, Beta and Aegis (completed periods only)", a.map((r) => ({
+        ...r,
+        pool_apr: round2(r.pool_apr),
+        delegator_apr: round2(r.delegator_apr),
+        apr_all_stake: round2(r.apr_all_stake),
+        stake_rewards: round2(r.stake_rewards),
+        sentinel_grants: round2(r.sentinel_grants),
+        eligible_stake: round0(r.eligible_stake),
+        total_stake: round0(r.total_stake),
+      })), [
+        ["period", "Period"],
+        ["programme", "Programme"],
+        ["status", "Status"],
+        ["pool_apr", "APR eligible (%)"],
+        ["delegator_apr", "Delegators net (%)"],
+        ["apr_all_stake", "All stake (%)"],
+        ["stake_rewards", "Stake rewards"],
+        ["sentinel_grants", "Sentinel grants (excl.)"],
+        ["eligible_stake", "Avg eligible stake"],
+        ["total_stake", "Avg total stake"],
+        ["ineligible_validators", "Ineligible"],
+        ["split_status", "Commission split"],
+      ], `${footer} Beta and Aegis had different budgets (Beta 4.5M SAFE over 26 weeks, Aegis 5M over 52): not a trend. A period without APR is not published yet, which is not 0.`)}`,
+      1448,
+      420 + rowsHeight(a.length),
+    ]);
+  }
+  const b = results.staking_rewards_apr_by_validator;
+  if (b?.length)
+    pages.push([
+      "staking_apr_by_validator",
+      tableHtml("Realized staking APR by validator (completed periods)", b.map((r) => ({
+        ...r,
+        participation: pct(r.participation),
+        delegator_apr: round2(r.delegator_apr),
+        gross_apr: round2(r.gross_apr),
+        self_stake_apr: round2(r.self_stake_apr),
+        avg_stake: round0(r.avg_stake),
+        avg_self_stake: round0(r.avg_self_stake),
+        reward: round2(r.reward),
+        commission: round2(r.commission),
+      })), [
+        ["period", "Period"],
+        ["programme", "Programme"],
+        ["validator", "Validator"],
+        ["status", "Status"],
+        ["participation", "Participation (%)"],
+        ["delegator_apr", "Delegator APR net (%)"],
+        ["gross_apr", "Gross APR (%)"],
+        ["self_stake_apr", "Self-stake APR (%)"],
+        ["avg_stake", "Avg stake"],
+        ["avg_self_stake", "Avg self-stake"],
+        ["reward", "Reward"],
+        ["commission", "Commission"],
+      ], footer),
+      1448,
+      rowsHeight(b.length),
     ]);
   return pages;
 }

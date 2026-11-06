@@ -108,6 +108,25 @@ test("staking pages render only for queries with results, and an empty outstandi
   assert.match(pages[1][1], /No outstanding withdrawals/);
 });
 
+test("APR pages show the latest published period and leave unpublished periods blank, not 0", () => {
+  const pages = stakingPages(
+    {
+      staking_rewards_apr: [
+        { period: "2026-10-13 – 2026-10-27 (Aegis)", status: "published", pool_apr: 8.8904597, delegator_apr: 8.489, apr_all_stake: 7.3648, stake_rewards: 192307.69, eligible_stake: 56394566.8 },
+        { period: "2026-10-27 – 2026-11-10 (Aegis)", status: "not yet published", pool_apr: null, eligible_stake: 60000000 },
+      ],
+      staking_rewards_apr_by_validator: [{ period: "2026-10-13 – 2026-10-27", validator: "Gnosis", status: "eligible", participation: 1, delegator_apr: 7.3171, gross_apr: 7.7022 }],
+    },
+    "f",
+  );
+  assert.deepEqual(pages.map((p) => p[0]), ["staking_apr", "staking_apr_by_validator"]);
+  assert.match(pages[0][1], /latest published Aegis period: 2026-10-13 – 2026-10-27/);
+  assert.match(pages[0][1], />8\.89%<\/div>/, "APR counters keep two decimals, as on Dune");
+  assert.match(pages[0][1], />8\.49%<\/div>/);
+  assert.ok(!/>0<\/td>/.test(pages[0][1].split("not yet published")[1] ?? ""), "unpublished APR rendered as 0");
+  assert.match(pages[1][1], /7\.32/);
+});
+
 test("validator pages render only for queries with results; the heatmap shows n/a days blank and names ceremonies", () => {
   assert.deepEqual(validatorPages({}, "f"), []);
   const pages = validatorPages(

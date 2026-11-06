@@ -39,6 +39,7 @@ export type Ceremony = {
   completedTx: string | null;
   selectionRoot: string | null;
   purpose: "transaction" | "epoch_rollover" | "other";
+  attestedBlock: number | null; // TransactionAttested / EpochStaged naming the signature id
   // member -> recognised share (tx), or null if the member did not sign under the completed root
   shares: Map<string, string | null>;
   unrecognised: string[]; // members with a share under another root
@@ -68,8 +69,12 @@ export function build(logs: ValidatorLogs, to: number) {
   for (const e of epochs) if (!epochOfGroup.has(e.groupId)) epochOfGroup.set(e.groupId, e.epoch);
 
   const purposes = new Map<string, Ceremony["purpose"]>();
-  for (const l of consensus)
-    purposes.set(l.topics[0] === EVENTS.TransactionAttested.topic0 ? w(l.data, 2) : w(l.data, 4), l.topics[0] === EVENTS.TransactionAttested.topic0 ? "transaction" : "epoch_rollover");
+  const attested = new Map<string, number>();
+  for (const l of consensus) {
+    const sid = l.topics[0] === EVENTS.TransactionAttested.topic0 ? w(l.data, 2) : w(l.data, 4);
+    purposes.set(sid, l.topics[0] === EVENTS.TransactionAttested.topic0 ? "transaction" : "epoch_rollover");
+    if (!attested.has(sid)) attested.set(sid, Number(l.blockNumber));
+  }
 
   const ceremonies = new Map<string, Ceremony>();
   for (const l of coordinator.filter((x) => x.topics[0] === V.Sign.topic0 && x.topics[1] === CONSENSUS_WORD && members.has(x.topics[2]))) {
@@ -83,6 +88,7 @@ export function build(logs: ValidatorLogs, to: number) {
       completedTx: null,
       selectionRoot: null,
       purpose: purposes.get(sid) ?? "other",
+      attestedBlock: attested.get(sid) ?? null,
       shares: new Map([...members.get(l.topics[2])!].map((m) => [m, null])),
       unrecognised: [],
     });

@@ -1,0 +1,2701 @@
+{
+  "generated_at": "2026-11-05T19:52:02.687Z",
+  "ethereum_block": 26350756,
+  "gnosis_block": 49127504,
+  "ens": {
+    "name": "rewards.safenet-gov.eth",
+    "cid": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em",
+    "history": [
+      {
+        "cid": "bafybeiczeo7uiupwte7dfa3yaus6dogwauxbookpvcgmxebbga5jtp7afq",
+        "block": 26240372,
+        "tx": "https://etherscan.io/tx/0xdc77adedb9b9428a9660888d28e66e37a057a9ca4a11b2af03c44d0baf90aa6a"
+      },
+      {
+        "cid": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em",
+        "block": 26341873,
+        "tx": "https://etherscan.io/tx/0x19d4cfd896f0a72343ebb88b7260addf7c6803849fce7fd4922147c837c3ce4f"
+      }
+    ]
+  },
+  "periods": [
+    {
+      "period": "2026-04-21",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346151.4740229314,
+      "eligible_stake": 23107793.423908558,
+      "total_stake": 23107793.423908558,
+      "pool_apr": 39.054630895852526,
+      "apr_all_stake": 39.054630895852526,
+      "delegator_apr": 39.58900878743764,
+      "split": "verified"
+    },
+    {
+      "period": "2026-05-05",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346152.50111563347,
+      "eligible_stake": 49412719.835457034,
+      "total_stake": 49412719.835457034,
+      "pool_apr": 18.263900950422386,
+      "apr_all_stake": 18.263900950422386,
+      "delegator_apr": 17.302218594523552,
+      "split": "verified"
+    },
+    {
+      "period": "2026-05-19",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346149.782157051,
+      "eligible_stake": 50674734.16135086,
+      "total_stake": 50674734.16135086,
+      "pool_apr": 17.808913001473837,
+      "apr_all_stake": 17.808913001473837,
+      "delegator_apr": 16.878692844011443,
+      "split": "verified"
+    },
+    {
+      "period": "2026-06-02",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346153.75634323084,
+      "eligible_stake": 52447780.25414071,
+      "total_stake": 52447780.25414071,
+      "pool_apr": 17.2070636536076,
+      "apr_all_stake": 17.2070636536076,
+      "delegator_apr": 16.32399911993283,
+      "split": "verified"
+    },
+    {
+      "period": "2026-06-16",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346154.0088376284,
+      "eligible_stake": 54030140.34824938,
+      "total_stake": 54030140.34824938,
+      "pool_apr": 16.70313913300114,
+      "apr_all_stake": 16.70313913300114,
+      "delegator_apr": 15.849138166122158,
+      "split": "verified"
+    },
+    {
+      "period": "2026-06-30",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346153.0839043181,
+      "eligible_stake": 54712296.22201191,
+      "total_stake": 54712296.22201191,
+      "pool_apr": 16.494839414472104,
+      "apr_all_stake": 16.494839414472104,
+      "delegator_apr": 15.650377455040221,
+      "split": "verified"
+    },
+    {
+      "period": "2026-07-14",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346153.78927449835,
+      "eligible_stake": 54813158.81009419,
+      "total_stake": 54813158.81009419,
+      "pool_apr": 16.464520541621223,
+      "apr_all_stake": 16.464520541621223,
+      "delegator_apr": 15.620249201273797,
+      "split": "verified"
+    },
+    {
+      "period": "2026-07-28",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346151.55924255954,
+      "eligible_stake": 60152282.47974673,
+      "total_stake": 60152282.47974673,
+      "pool_apr": 15.003031106458215,
+      "apr_all_stake": 15.003031106458215,
+      "delegator_apr": 14.279398394760822,
+      "split": "verified"
+    },
+    {
+      "period": "2026-08-11",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346154.81529595517,
+      "eligible_stake": 69924415.48946892,
+      "total_stake": 69924415.48946892,
+      "pool_apr": 12.906436869685,
+      "apr_all_stake": 12.906436869685,
+      "delegator_apr": 12.193982376559928,
+      "split": "verified"
+    },
+    {
+      "period": "2026-08-25",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346152.3435980802,
+      "eligible_stake": 73824745.7172466,
+      "total_stake": 73824745.7172466,
+      "pool_apr": 12.224472991095778,
+      "apr_all_stake": 12.224472991095778,
+      "delegator_apr": 11.514776362921488,
+      "split": "verified"
+    },
+    {
+      "period": "2026-09-08",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346153.45738831355,
+      "eligible_stake": 76978175.23633072,
+      "total_stake": 76978175.23633072,
+      "pool_apr": 11.723732228447453,
+      "apr_all_stake": 11.723732228447453,
+      "delegator_apr": 11.080400428677446,
+      "split": "verified"
+    },
+    {
+      "period": "2026-09-22",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346150.3601799904,
+      "eligible_stake": 77121815.92931224,
+      "total_stake": 77121815.92931224,
+      "pool_apr": 11.701791875179168,
+      "apr_all_stake": 11.701791875179168,
+      "delegator_apr": 11.056785270719924,
+      "split": "verified"
+    },
+    {
+      "period": "2026-10-06",
+      "programme": "Beta",
+      "status": "published",
+      "settlement_block": null,
+      "stake_rewards": 346156.8434474798,
+      "eligible_stake": 73877549.61357406,
+      "total_stake": 73877549.61357406,
+      "pool_apr": 12.21589436257366,
+      "apr_all_stake": 12.21589436257366,
+      "delegator_apr": 11.66809388980461,
+      "split": "verified"
+    },
+    {
+      "period": "2026-10-27",
+      "programme": "Aegis",
+      "status": "published",
+      "settlement_block": 48960594,
+      "stake_rewards": 192307.6923076923,
+      "eligible_stake": 56394566.78928315,
+      "total_stake": 68077321.29467198,
+      "pool_apr": 8.890459753809191,
+      "apr_all_stake": 7.364767250512631,
+      "delegator_apr": 8.488972757946573,
+      "split": "verified"
+    }
+  ],
+  "by_validator": [
+    {
+      "period": "2026-04-21",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 5600335.4040681,
+      "avg_self_stake": 3500000,
+      "gross_apr": 36.30540474942202,
+      "delegator_apr": 34.49013451195091,
+      "self_stake_apr": 36.305404749422024,
+      "commission": 1462.3964073414586
+    },
+    {
+      "period": "2026-04-21",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 2651891.697386798,
+      "avg_self_stake": 0,
+      "gross_apr": 41.475140624984995,
+      "delegator_apr": 41.475140624984995,
+      "self_stake_apr": null,
+      "commission": 0
+    },
+    {
+      "period": "2026-04-21",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 5303903.567139614,
+      "avg_self_stake": 3197817.9831515625,
+      "gross_apr": 37.33317981263008,
+      "delegator_apr": 37.33317981263008,
+      "self_stake_apr": 37.333179812630085,
+      "commission": 0
+    },
+    {
+      "period": "2026-04-21",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 2271770.927229018,
+      "avg_self_stake": 0,
+      "gross_apr": 43.79793659833982,
+      "delegator_apr": 43.79793659833982,
+      "self_stake_apr": null,
+      "commission": 0
+    },
+    {
+      "period": "2026-04-21",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 4619744.372633412,
+      "avg_self_stake": 1654026.153176256,
+      "gross_apr": 38.74307713059233,
+      "delegator_apr": 38.74307713059233,
+      "self_stake_apr": 38.743077130592326,
+      "commission": 0
+    },
+    {
+      "period": "2026-04-21",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 2660147.4554516138,
+      "avg_self_stake": 1428645.8333333333,
+      "gross_apr": 42.354391078175816,
+      "delegator_apr": 42.3543910781758,
+      "self_stake_apr": 42.35439107817581,
+      "commission": 0
+    },
+    {
+      "period": "2026-05-05",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 6960847.663452001,
+      "avg_self_stake": 3536038.3326512896,
+      "gross_apr": 18.83573392225857,
+      "delegator_apr": 17.893947226145638,
+      "self_stake_apr": 18.835733922258566,
+      "commission": 1237.155016509629
+    },
+    {
+      "period": "2026-05-05",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9970970.61982007,
+      "avg_self_stake": 3623549.6944560246,
+      "gross_apr": 17.058556912609593,
+      "delegator_apr": 16.205629066979114,
+      "self_stake_apr": 17.058556912609596,
+      "commission": 2076.5613362336467
+    },
+    {
+      "period": "2026-05-05",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8700157.13509166,
+      "avg_self_stake": 3686555.782004053,
+      "gross_apr": 18.33981721433322,
+      "delegator_apr": 17.422826353616554,
+      "self_stake_apr": 18.339817214333216,
+      "commission": 1763.3965118030762
+    },
+    {
+      "period": "2026-05-05",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8609030.664100505,
+      "avg_self_stake": 3590428.1963983034,
+      "gross_apr": 18.43144575530152,
+      "delegator_apr": 17.50987346753644,
+      "self_stake_apr": 18.431445755301517,
+      "commission": 1773.9745042633651
+    },
+    {
+      "period": "2026-05-05",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8509357.390750092,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 18.511583795333213,
+      "delegator_apr": 17.586004605566547,
+      "self_stake_apr": 18.511583795333205,
+      "commission": 1755.793754408473
+    },
+    {
+      "period": "2026-05-05",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 6662356.362242703,
+      "avg_self_stake": 3500000,
+      "gross_apr": 18.83985263018378,
+      "delegator_apr": 17.897859998674587,
+      "self_stake_apr": 18.83985263018378,
+      "commission": 1142.5980679491404
+    },
+    {
+      "period": "2026-05-19",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 7018219.1649174215,
+      "avg_self_stake": 3558606.886332672,
+      "gross_apr": 18.432483124343182,
+      "delegator_apr": 17.510858968126023,
+      "self_stake_apr": 18.43248312434318,
+      "commission": 1222.9718208013342
+    },
+    {
+      "period": "2026-05-19",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10176984.80647348,
+      "avg_self_stake": 3770783.5804554555,
+      "gross_apr": 16.63291390870701,
+      "delegator_apr": 15.80126821327166,
+      "self_stake_apr": 16.63291390870701,
+      "commission": 2043.4974090944602
+    },
+    {
+      "period": "2026-05-19",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9343428.9262346,
+      "avg_self_stake": 3868870.8860237533,
+      "gross_apr": 17.51856226423754,
+      "delegator_apr": 16.642634151025668,
+      "self_stake_apr": 17.518562264237545,
+      "commission": 1839.3005514419497
+    },
+    {
+      "period": "2026-05-19",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8649116.036764482,
+      "avg_self_stake": 3669763.7807794055,
+      "gross_apr": 18.204419883729177,
+      "delegator_apr": 17.294198889542717,
+      "self_stake_apr": 18.204419883729177,
+      "commission": 1738.4206425167813
+    },
+    {
+      "period": "2026-05-19",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8559649.97225681,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 18.30466121193314,
+      "delegator_apr": 17.38942815133648,
+      "self_stake_apr": 18.304661211933144,
+      "commission": 1753.8226074624008
+    },
+    {
+      "period": "2026-05-19",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 6927335.254704068,
+      "avg_self_stake": 3500000,
+      "gross_apr": 18.19300226942844,
+      "delegator_apr": 17.28335215595702,
+      "self_stake_apr": 18.193002269428444,
+      "commission": 1195.820894434144
+    },
+    {
+      "period": "2026-06-02",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 7039683.34608716,
+      "avg_self_stake": 3583422.603392361,
+      "gross_apr": 17.631269690194532,
+      "delegator_apr": 16.749706205684806,
+      "self_stake_apr": 17.63126969019453,
+      "commission": 1168.6790600509266
+    },
+    {
+      "period": "2026-06-02",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10274512.66187616,
+      "avg_self_stake": 3847965.835865147,
+      "gross_apr": 16.21910408143333,
+      "delegator_apr": 15.408148877361663,
+      "self_stake_apr": 16.219104081433326,
+      "commission": 1998.985816402585
+    },
+    {
+      "period": "2026-06-02",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9451649.426566422,
+      "avg_self_stake": 3868870.8860237533,
+      "gross_apr": 16.96168603474405,
+      "delegator_apr": 16.113601733006853,
+      "self_stake_apr": 16.961686034744055,
+      "commission": 1816.036596283123
+    },
+    {
+      "period": "2026-06-02",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8649118.474733973,
+      "avg_self_stake": 3669763.7807794055,
+      "gross_apr": 17.63071118188117,
+      "delegator_apr": 16.749175622787114,
+      "self_stake_apr": 17.630711181881175,
+      "commission": 1683.6354832021946
+    },
+    {
+      "period": "2026-06-02",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8681169.948350852,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 17.5251531106568,
+      "delegator_apr": 16.648895455123952,
+      "self_stake_apr": 17.5251531106568,
+      "commission": 1719.9783999445617
+    },
+    {
+      "period": "2026-06-02",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8351646.396526144,
+      "avg_self_stake": 3500000,
+      "gross_apr": 17.57569811301556,
+      "delegator_apr": 16.69691320736478,
+      "self_stake_apr": 17.575698113015562,
+      "commission": 1635.3356353838437
+    },
+    {
+      "period": "2026-06-16",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 7145191.930749889,
+      "avg_self_stake": 3601608.0855324073,
+      "gross_apr": 17.142114919309673,
+      "delegator_apr": 16.28500917334419,
+      "self_stake_apr": 17.142114919309673,
+      "commission": 1164.9634260451817
+    },
+    {
+      "period": "2026-06-16",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10387591.19269195,
+      "avg_self_stake": 3936738.305620482,
+      "gross_apr": 15.885574877837138,
+      "delegator_apr": 15.09129613394528,
+      "self_stake_apr": 15.885574877837138,
+      "commission": 1965.2836875189034
+    },
+    {
+      "period": "2026-06-16",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9605555.299347498,
+      "avg_self_stake": 3868870.8860237533,
+      "gross_apr": 16.595066839539157,
+      "delegator_apr": 15.7653134975622,
+      "self_stake_apr": 16.59506683953916,
+      "commission": 1825.7661066716437
+    },
+    {
+      "period": "2026-06-16",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8649118.521397894,
+      "avg_self_stake": 3669763.7807794055,
+      "gross_apr": 17.12853787376806,
+      "delegator_apr": 16.27211098007966,
+      "self_stake_apr": 17.12853787376806,
+      "commission": 1635.6807228254033
+    },
+    {
+      "period": "2026-06-16",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8713014.017977297,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 17.09569018294159,
+      "delegator_apr": 16.240905673794504,
+      "self_stake_apr": 17.09569018294159,
+      "commission": 1688.2699188999106
+    },
+    {
+      "period": "2026-06-16",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9529669.386084858,
+      "avg_self_stake": 3500000,
+      "gross_apr": 16.631208105907984,
+      "delegator_apr": 15.799647700612585,
+      "self_stake_apr": 16.631208105907984,
+      "commission": 1923.1912454482137
+    },
+    {
+      "period": "2026-06-30",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 7229685.235833966,
+      "avg_self_stake": 3617839.932242064,
+      "gross_apr": 16.94149615472566,
+      "delegator_apr": 16.09442134698937,
+      "self_stake_apr": 16.94149615472566,
+      "commission": 1173.5080637146932
+    },
+    {
+      "period": "2026-06-30",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10389560.828016594,
+      "avg_self_stake": 3936738.305620482,
+      "gross_apr": 15.849532846008014,
+      "delegator_apr": 15.057056203707614,
+      "self_stake_apr": 15.849532846008017,
+      "commission": 1961.4234455540889
+    },
+    {
+      "period": "2026-06-30",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9614135.161585055,
+      "avg_self_stake": 3868870.8860237533,
+      "gross_apr": 16.47467314447929,
+      "delegator_apr": 15.650939487255323,
+      "self_stake_apr": 16.474673144479286,
+      "commission": 1815.2313903552943
+    },
+    {
+      "period": "2026-06-30",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8649118.666381724,
+      "avg_self_stake": 3669763.7807794055,
+      "gross_apr": 16.92917221479232,
+      "delegator_apr": 16.082713604052707,
+      "self_stake_apr": 16.929172214792317,
+      "commission": 1616.6424510643947
+    },
+    {
+      "period": "2026-06-30",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8957447.76401403,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 16.82890015806197,
+      "delegator_apr": 15.987455150158874,
+      "self_stake_apr": 16.828900158061973,
+      "commission": 1740.8133247700232
+    },
+    {
+      "period": "2026-06-30",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9872348.566180533,
+      "avg_self_stake": 3500000,
+      "gross_apr": 16.1851159270586,
+      "delegator_apr": 15.375860130705671,
+      "self_stake_apr": 16.1851159270586,
+      "commission": 1977.9737038323374
+    },
+    {
+      "period": "2026-07-14",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 7259570.873006411,
+      "avg_self_stake": 3634614.154133598,
+      "gross_apr": 16.93480903559468,
+      "delegator_apr": 16.088068583814945,
+      "self_stake_apr": 16.934809035594675,
+      "commission": 1177.3031467804076
+    },
+    {
+      "period": "2026-07-14",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10351173.086997382,
+      "avg_self_stake": 3936738.305620482,
+      "gross_apr": 15.902060343484239,
+      "delegator_apr": 15.10695732631003,
+      "self_stake_apr": 15.90206034348424,
+      "commission": 1956.2167198345123
+    },
+    {
+      "period": "2026-07-14",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9618824.358164147,
+      "avg_self_stake": 3868870.8860237533,
+      "gross_apr": 16.4984834840334,
+      "delegator_apr": 15.673559309831727,
+      "self_stake_apr": 16.498483484033397,
+      "commission": 1819.3385938588535
+    },
+    {
+      "period": "2026-07-14",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8649120.982183255,
+      "avg_self_stake": 3669763.7807794055,
+      "gross_apr": 16.936470722881484,
+      "delegator_apr": 16.08964718673741,
+      "self_stake_apr": 16.936470722881484,
+      "commission": 1617.3401704723774
+    },
+    {
+      "period": "2026-07-14",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9029515.516237382,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 16.694972170532452,
+      "delegator_apr": 15.86022356200583,
+      "self_stake_apr": 16.694972170532452,
+      "commission": 1750.0340361643136
+    },
+    {
+      "period": "2026-07-14",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9904953.993505618,
+      "avg_self_stake": 3500000,
+      "gross_apr": 16.054701178947674,
+      "delegator_apr": 15.251966120000288,
+      "self_stake_apr": 16.054701178947674,
+      "commission": 1972.0749507246073
+    },
+    {
+      "period": "2026-07-28",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 7488294.567284102,
+      "avg_self_stake": 3645743.2436673283,
+      "gross_apr": 12.86621404074185,
+      "delegator_apr": 12.222903338704757,
+      "self_stake_apr": 12.86621404074185,
+      "commission": 948.1468891652743
+    },
+    {
+      "period": "2026-07-28",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 11845253.524247617,
+      "avg_self_stake": 3936738.305620482,
+      "gross_apr": 14.931514354626648,
+      "delegator_apr": 14.184938636895316,
+      "self_stake_apr": 14.931514354626648,
+      "commission": 2264.6650947260287
+    },
+    {
+      "period": "2026-07-28",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 11955509.966489235,
+      "avg_self_stake": 3998295.3244038383,
+      "gross_apr": 14.621478139128394,
+      "delegator_apr": 13.890404232171976,
+      "self_stake_apr": 14.621478139128394,
+      "commission": 2231.297752228022
+    },
+    {
+      "period": "2026-07-28",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8658233.953256272,
+      "avg_self_stake": 3669763.7807794055,
+      "gross_apr": 16.247828428793245,
+      "delegator_apr": 15.43543700735358,
+      "self_stake_apr": 16.247828428793245,
+      "commission": 1554.4182257312252
+    },
+    {
+      "period": "2026-07-28",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9130875.811382253,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 15.935393975822585,
+      "delegator_apr": 15.138624277031457,
+      "self_stake_apr": 15.935393975822583,
+      "commission": 1701.3887487886175
+    },
+    {
+      "period": "2026-07-28",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 11074114.657087253,
+      "avg_self_stake": 3500000,
+      "gross_apr": 15.196912834221344,
+      "delegator_apr": 14.437067192510275,
+      "self_stake_apr": 15.19691283422134,
+      "commission": 2207.4578676193782
+    },
+    {
+      "period": "2026-08-11",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 7772624.78534164,
+      "avg_self_stake": 3665539.285416667,
+      "gross_apr": 13.595510944283362,
+      "delegator_apr": 12.915735397069197,
+      "self_stake_apr": 13.595510944283365,
+      "commission": 1070.8643316256505
+    },
+    {
+      "period": "2026-08-11",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 13390015.522446724,
+      "avg_self_stake": 3936738.305620482,
+      "gross_apr": 13.025820420254751,
+      "delegator_apr": 12.374529399242014,
+      "self_stake_apr": 13.025820420254753,
+      "commission": 2361.525588670822
+    },
+    {
+      "period": "2026-08-11",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 14094353.017695,
+      "avg_self_stake": 4004104.3484396064,
+      "gross_apr": 12.557706626027363,
+      "delegator_apr": 11.929821294725995,
+      "self_stake_apr": 12.557706626027366,
+      "commission": 2430.0621315211115
+    },
+    {
+      "period": "2026-08-11",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9025291.184478968,
+      "avg_self_stake": 3669763.7807794055,
+      "gross_apr": 13.827577470668018,
+      "delegator_apr": 13.136198597134614,
+      "self_stake_apr": 13.827577470668018,
+      "commission": 1420.2131246481883
+    },
+    {
+      "period": "2026-08-11",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10303954.690816665,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 13.53740088815967,
+      "delegator_apr": 12.86053084375169,
+      "self_stake_apr": 13.537400888159672,
+      "commission": 1749.9163983785138
+    },
+    {
+      "period": "2026-08-11",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 15338176.288689911,
+      "avg_self_stake": 3500000,
+      "gross_apr": 11.809262516467651,
+      "delegator_apr": 11.21879939064427,
+      "self_stake_apr": 11.809262516467653,
+      "commission": 2681.0984125083105
+    },
+    {
+      "period": "2026-08-25",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 8636767.01059186,
+      "avg_self_stake": 3667610.4,
+      "gross_apr": 13.743168518900472,
+      "delegator_apr": 13.05601009295545,
+      "self_stake_apr": 13.74316851890047,
+      "commission": 1309.7087585567278
+    },
+    {
+      "period": "2026-08-25",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 13904464.851388292,
+      "avg_self_stake": 3938559.9549734583,
+      "gross_apr": 12.826047407741203,
+      "delegator_apr": 12.184745037354142,
+      "self_stake_apr": 12.826047407741203,
+      "commission": 2451.4032346224603
+    },
+    {
+      "period": "2026-08-25",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 14136772.226243677,
+      "avg_self_stake": 4136683.001611974,
+      "gross_apr": 10.386432679070737,
+      "delegator_apr": 9.8671110451172,
+      "self_stake_apr": 10.386432679070735,
+      "commission": 1991.9363688064793
+    },
+    {
+      "period": "2026-08-25",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 9661575.252446074,
+      "avg_self_stake": 3669763.7807794055,
+      "gross_apr": 13.682190568005716,
+      "delegator_apr": 12.99808103960543,
+      "self_stake_apr": 13.682190568005717,
+      "commission": 1572.2403967680627
+    },
+    {
+      "period": "2026-08-25",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10313620.035204353,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 13.328518452816141,
+      "delegator_apr": 12.662092530175334,
+      "self_stake_apr": 13.328518452816141,
+      "commission": 1725.3857555360948
+    },
+    {
+      "period": "2026-08-25",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 17171546.34137235,
+      "avg_self_stake": 3500000,
+      "gross_apr": 11.005118578925288,
+      "delegator_apr": 10.454862649979024,
+      "self_stake_apr": 11.00511857892529,
+      "commission": 2885.4764945439015
+    },
+    {
+      "period": "2026-09-08",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10542348.10428094,
+      "avg_self_stake": 3667610.4,
+      "gross_apr": 12.204321578200332,
+      "delegator_apr": 11.594105499290318,
+      "self_stake_apr": 12.204321578200334,
+      "commission": 1609.0700492103094
+    },
+    {
+      "period": "2026-09-08",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 14171324.111645428,
+      "avg_self_stake": 4000000.578938239,
+      "gross_apr": 11.78252541908335,
+      "delegator_apr": 11.193399148129187,
+      "self_stake_apr": 11.782525419083353,
+      "commission": 2298.3757438052116
+    },
+    {
+      "period": "2026-09-08",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 13712689.956204703,
+      "avg_self_stake": 4253677.759498871,
+      "gross_apr": 12.056721137342224,
+      "delegator_apr": 11.453885080475114,
+      "self_stake_apr": 12.05672113734222,
+      "commission": 2187.1580987200214
+    },
+    {
+      "period": "2026-09-08",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 11012326.233790122,
+      "avg_self_stake": 3669763.7807794055,
+      "gross_apr": 12.410357649230486,
+      "delegator_apr": 11.78983976676896,
+      "self_stake_apr": 12.410357649230486,
+      "commission": 1747.5802266458045
+    },
+    {
+      "period": "2026-09-08",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10388399.103964755,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 12.44192618595224,
+      "delegator_apr": 11.819829876654628,
+      "self_stake_apr": 12.44192618595224,
+      "commission": 1628.4589894617563
+    },
+    {
+      "period": "2026-09-08",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 17151087.726444766,
+      "avg_self_stake": 3500000,
+      "gross_apr": 10.239422808082049,
+      "delegator_apr": 9.727451667677947,
+      "self_stake_apr": 10.23942280808205,
+      "commission": 2680.6981182164714
+    },
+    {
+      "period": "2026-09-22",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10542687.749212902,
+      "avg_self_stake": 3667610.4,
+      "gross_apr": 12.447025803790517,
+      "delegator_apr": 11.824674513600993,
+      "self_stake_apr": 12.447025803790517,
+      "commission": 1641.150290906742
+    },
+    {
+      "period": "2026-09-22",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 14202072.666918179,
+      "avg_self_stake": 4000000.578938239,
+      "gross_apr": 11.780037599707823,
+      "delegator_apr": 11.191035719722432,
+      "self_stake_apr": 11.780037599707823,
+      "commission": 2304.837122025572
+    },
+    {
+      "period": "2026-09-22",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 13717430.507626949,
+      "avg_self_stake": 4253677.759498871,
+      "gross_apr": 12.063955665458478,
+      "delegator_apr": 11.460757882185556,
+      "self_stake_apr": 12.063955665458476,
+      "commission": 2189.567274180673
+    },
+    {
+      "period": "2026-09-22",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10966038.767515069,
+      "avg_self_stake": 3633973.2687739045,
+      "gross_apr": 12.195415904834247,
+      "delegator_apr": 11.585645109592535,
+      "self_stake_apr": 12.195415904834249,
+      "commission": 1714.8578558642223
+    },
+    {
+      "period": "2026-09-22",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10511614.129907666,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 12.425902535898945,
+      "delegator_apr": 11.804607409103996,
+      "self_stake_apr": 12.425902535898944,
+      "commission": 1655.7244915795266
+    },
+    {
+      "period": "2026-09-22",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 17181972.108131476,
+      "avg_self_stake": 3500000,
+      "gross_apr": 10.13497745863376,
+      "delegator_apr": 9.62822858570207,
+      "self_stake_apr": 10.13497745863376,
+      "commission": 2659.3571296958307
+    },
+    {
+      "period": "2026-10-06",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10538133.42974047,
+      "avg_self_stake": 3667610.4,
+      "gross_apr": 13.076557239266965,
+      "delegator_apr": 12.422729377303614,
+      "self_stake_apr": 13.076557239266963,
+      "commission": 1723.0123661225261
+    },
+    {
+      "period": "2026-10-06",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 14204959.227666242,
+      "avg_self_stake": 4000000.578938239,
+      "gross_apr": 12.050052774275796,
+      "delegator_apr": 11.447550135562008,
+      "self_stake_apr": 12.050052774275796,
+      "commission": 2358.3343340693773
+    },
+    {
+      "period": "2026-10-06",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 13784760.00408033,
+      "avg_self_stake": 4253677.759498871,
+      "gross_apr": 12.366895577323453,
+      "delegator_apr": 11.748550798457279,
+      "self_stake_apr": 12.366895577323449,
+      "commission": 2260.5186082283385
+    },
+    {
+      "period": "2026-10-06",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 7305589.819733427,
+      "avg_self_stake": 0,
+      "gross_apr": 12.93418044103054,
+      "delegator_apr": 12.93418044103054,
+      "self_stake_apr": null,
+      "commission": 0
+    },
+    {
+      "period": "2026-10-06",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 10939308.746621199,
+      "avg_self_stake": 3563691.805316921,
+      "gross_apr": 13.043394941541086,
+      "delegator_apr": 12.391225194464033,
+      "self_stake_apr": 13.043394941541088,
+      "commission": 1844.9906655360844
+    },
+    {
+      "period": "2026-10-06",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": null,
+      "avg_stake": 17104798.385732383,
+      "avg_self_stake": 3500000,
+      "gross_apr": 10.867533675762663,
+      "delegator_apr": 10.324156991974533,
+      "self_stake_apr": 10.867533675762665,
+      "commission": 2835.4910472941297
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "Core Contributors",
+      "validator_address": "0xcc00de0ea14c08669b26dcbfe365dbd9890b04d9",
+      "eligible": true,
+      "participation": "415/416",
+      "avg_stake": 11934168.79454403,
+      "avg_self_stake": 3737610.4,
+      "gross_apr": 9.69490801731523,
+      "delegator_apr": 9.210162616449468,
+      "self_stake_apr": 9.694908017315228,
+      "commission": 1523.9839941249356
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "Greenfield",
+      "validator_address": "0x7b0a8efa45de81f11f2846ec28259b62155a2b37",
+      "eligible": true,
+      "participation": "416/416",
+      "avg_stake": 13862162.651189057,
+      "avg_self_stake": 3678555.4265939174,
+      "gross_apr": 9.017154683528936,
+      "delegator_apr": 8.566296949352488,
+      "self_stake_apr": 9.017154683528936,
+      "commission": 1761.0688522283292
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "RockawayX",
+      "validator_address": "0xb0e735d4a3b70195420e0ae933689a55750cfcd2",
+      "eligible": false,
+      "participation": "53/416",
+      "avg_stake": 7122567.411922095,
+      "avg_self_stake": 265567.933749939,
+      "gross_apr": 0,
+      "delegator_apr": 0,
+      "self_stake_apr": 0,
+      "commission": 0
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "Blockchain Capital",
+      "validator_address": "0xd8997c2a94052c4fb79b53b3e255c1f07c99305b",
+      "eligible": false,
+      "participation": "0/416",
+      "avg_stake": 3765679.118464993,
+      "avg_self_stake": 0,
+      "gross_apr": 0,
+      "delegator_apr": 0,
+      "self_stake_apr": null,
+      "commission": 0
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "Safe Labs",
+      "validator_address": "0xf6ea21d702983c443f58a267265912fe03d2ff0b",
+      "eligible": true,
+      "participation": "416/416",
+      "avg_stake": 11598830.137270492,
+      "avg_self_stake": 3222966.8075615456,
+      "gross_apr": 9.857752743381926,
+      "delegator_apr": 9.857752743381926,
+      "self_stake_apr": 9.857752743381926,
+      "commission": 0
+    },
+    {
+      "period": "2026-10-27",
+      "validator": "Gnosis",
+      "validator_address": "0x3d58a5475c1336b0a755c3abd298ceb9b7bb9cde",
+      "eligible": true,
+      "participation": "416/416",
+      "avg_stake": 18999405.206279576,
+      "avg_self_stake": 3500000,
+      "gross_apr": 7.7022039152748425,
+      "delegator_apr": 7.317093719511101,
+      "self_stake_apr": 7.702203915274844,
+      "commission": 2289.471386985383
+    }
+  ],
+  "checks": [
+    {
+      "check": "bafybeiczeo7uiupwte7dfa3yaus6dogwauxbookpvcgmxebbga5jtp7afq: 208 proofs add up to tokenTotal",
+      "ok": true
+    },
+    {
+      "check": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em: 880 proofs add up to tokenTotal",
+      "ok": true
+    },
+    {
+      "check": "ENS contenthash pins the latest recorded root",
+      "ok": true,
+      "detail": {
+        "cid": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em",
+        "root": "0xab638c08ac00981fb708a6d9e0c4667605579aa945629231313ba6c87d1d711e"
+      }
+    },
+    {
+      "check": "distributor merkleRoot() = latest published root",
+      "ok": true,
+      "detail": {
+        "block": 26350756,
+        "root": "0xab638c08ac00981fb708a6d9e0c4667605579aa945629231313ba6c87d1d711e"
+      }
+    },
+    {
+      "check": "2026-10-27: root set on chain",
+      "ok": true,
+      "detail": "https://etherscan.io/tx/0x19d4cfd896f0a72343ebb88b7260addf7c6803849fce7fd4922147c837c3ce4f"
+    },
+    {
+      "check": "Aegis per-address payouts recomputed from IPFS = recorded",
+      "ok": true,
+      "detail": {
+        "rows": 846
+      }
+    },
+    {
+      "check": "2026-10-27: tokenTotal − Sentinel − Beta + unpaid = 5M × elapsed / 52 weeks",
+      "ok": true,
+      "detail": {
+        "lhs": "192307692307692307692307"
+      }
+    },
+    {
+      "check": "2026-04-21 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 5600335.4040681,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-04-21 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 2651891.697386798,
+        "self": 0,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-04-21 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 5303903.567139614,
+        "self": 3197817.9831515625,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-04-21 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 2271770.927229018,
+        "self": 0,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-04-21 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 4619744.372633412,
+        "self": 1654026.153176256,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-04-21 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 2660147.4554516138,
+        "self": 1428645.8333333333,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-04-21: every payout (98 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "2",
+        "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-04-21: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-05-05 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 6960847.663452001,
+        "self": 3536038.3326512896,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-05 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9970970.61982007,
+        "self": 3623549.6944560246,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-05 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8700157.13509166,
+        "self": 3686555.782004053,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-05 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8609030.664100505,
+        "self": 3590428.1963983034,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-05 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8509357.390750092,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-05 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 6662356.362242703,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-05: every payout (113 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-05-05: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-05-19 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 7018219.1649174215,
+        "self": 3558606.886332672,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-19 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10176984.80647348,
+        "self": 3770783.5804554555,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-19 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9343428.9262346,
+        "self": 3868870.8860237533,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-19 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8649116.036764482,
+        "self": 3669763.7807794055,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-19 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8559649.97225681,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-19 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 6927335.254704068,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-05-19: every payout (134 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-05-19: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-06-02 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 7039683.34608716,
+        "self": 3583422.603392361,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-02 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10274512.66187616,
+        "self": 3847965.835865147,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-02 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9451649.426566422,
+        "self": 3868870.8860237533,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-02 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8649118.474733973,
+        "self": 3669763.7807794055,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-02 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8681169.948350852,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-02 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8351646.396526144,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-02: every payout (138 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-06-02: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-06-16 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 7145191.930749889,
+        "self": 3601608.0855324073,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-16 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10387591.19269195,
+        "self": 3936738.305620482,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-16 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9605555.299347498,
+        "self": 3868870.8860237533,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-16 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8649118.521397894,
+        "self": 3669763.7807794055,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-16 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8713014.017977297,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-16 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9529669.386084858,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-16: every payout (145 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-06-16: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-06-30 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 7229685.235833966,
+        "self": 3617839.932242064,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-30 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10389560.828016594,
+        "self": 3936738.305620482,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-30 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9614135.161585055,
+        "self": 3868870.8860237533,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-30 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8649118.666381724,
+        "self": 3669763.7807794055,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-30 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8957447.76401403,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-30 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9872348.566180533,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-06-30: every payout (150 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-06-30: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-07-14 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 7259570.873006411,
+        "self": 3634614.154133598,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-14 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10351173.086997382,
+        "self": 3936738.305620482,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-14 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9618824.358164147,
+        "self": 3868870.8860237533,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-14 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8649120.982183255,
+        "self": 3669763.7807794055,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-14 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9029515.516237382,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-14 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9904953.993505618,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-14: every payout (153 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-07-14: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-07-28 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 7488294.567284102,
+        "self": 3645743.2436673283,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-28 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 11845253.524247617,
+        "self": 3936738.305620482,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-28 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 11955509.966489235,
+        "self": 3998295.3244038383,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-28 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8658233.953256272,
+        "self": 3669763.7807794055,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-28 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9130875.811382253,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-28 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 11074114.657087253,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-07-28: every payout (161 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-07-28: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-08-11 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 7772624.78534164,
+        "self": 3665539.285416667,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-11 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 13390015.522446724,
+        "self": 3936738.305620482,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-11 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 14094353.017695,
+        "self": 4004104.3484396064,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-11 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9025291.184478968,
+        "self": 3669763.7807794055,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-11 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10303954.690816665,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-11 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 15338176.288689911,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-11: every payout (164 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-08-11: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-08-25 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 8636767.01059186,
+        "self": 3667610.4,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-25 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 13904464.851388292,
+        "self": 3938559.9549734583,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-25 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 14136772.226243677,
+        "self": 4136683.001611974,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-25 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 9661575.252446074,
+        "self": 3669763.7807794055,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-25 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10313620.035204353,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-25 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 17171546.34137235,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-08-25: every payout (173 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-08-25: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-09-08 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10542348.10428094,
+        "self": 3667610.4,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-08 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 14171324.111645428,
+        "self": 4000000.578938239,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-08 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 13712689.956204703,
+        "self": 4253677.759498871,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-08 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 11012326.233790122,
+        "self": 3669763.7807794055,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-08 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10388399.103964755,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-08 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 17151087.726444766,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-08: every payout (175 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-09-08: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-09-22 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10542687.749212902,
+        "self": 3667610.4,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-22 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 14202072.666918179,
+        "self": 4000000.578938239,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-22 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 13717430.507626949,
+        "self": 4253677.759498871,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-22 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10966038.767515069,
+        "self": 3633973.2687739045,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-22 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10511614.129907666,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-22 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 17181972.108131476,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-09-22: every payout (177 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-09-22: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-10-06 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10538133.42974047,
+        "self": 3667610.4,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-06 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 14204959.227666242,
+        "self": 4000000.578938239,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-06 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 13784760.00408033,
+        "self": 4253677.759498871,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-06 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 7305589.819733427,
+        "self": 0,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-06 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 10939308.746621199,
+        "self": 3563691.805316921,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-06 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 17104798.385732383,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-06: every payout (186 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "1",
+        "address": "0xbf994ad264baa1acdfe18433606a0f5d35c804f4",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-10-06: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-10-27 Core Contributors: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 11934168.79454403,
+        "self": 3737610.4,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Core Contributors: participation 415/416 ≥ 75%, as the derived reward says",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Greenfield: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 13862162.651189057,
+        "self": 3678555.4265939174,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Greenfield: participation 416/416 ≥ 75%, as the derived reward says",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 RockawayX: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 7122567.411922095,
+        "self": 265567.933749939,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 RockawayX: participation 53/416 < 75%, as the derived reward says",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Blockchain Capital: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 3765679.118464993,
+        "self": 0,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Blockchain Capital: participation 0/416 < 75%, as the derived reward says",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Safe Labs: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 11598830.137270492,
+        "self": 3222966.8075615456,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Safe Labs: participation 416/416 ≥ 75%, as the derived reward says",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Gnosis: time-weighted stake and self-stake = recorded split",
+      "ok": true,
+      "detail": {
+        "stake": 18999405.206279576,
+        "self": 3500000,
+        "diff_base_units": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    {
+      "check": "2026-10-27 Gnosis: participation 416/416 ≥ 75%, as the derived reward says",
+      "ok": true
+    },
+    {
+      "check": "2026-10-27 Gnosis: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 56129.37272185745,
+        "recorded": 56129.37272185745,
+        "diff_base_units": "-2"
+      }
+    },
+    {
+      "check": "2026-10-27 Greenfield: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 47944.15639003096,
+        "recorded": 47944.15639003096,
+        "diff_base_units": "2"
+      }
+    },
+    {
+      "check": "2026-10-27 RockawayX: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 0,
+        "recorded": 0,
+        "diff_base_units": "0"
+      }
+    },
+    {
+      "check": "2026-10-27 Core Contributors: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 44378.33868950833,
+        "recorded": 44378.33868950833,
+        "diff_base_units": "0"
+      }
+    },
+    {
+      "check": "2026-10-27 Blockchain Capital: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 0,
+        "recorded": 0,
+        "diff_base_units": "0"
+      }
+    },
+    {
+      "check": "2026-10-27 Safe Labs: reward from the formula on the replay = recorded",
+      "ok": true,
+      "detail": {
+        "replay": 43855.82450629556,
+        "recorded": 43855.82450629556,
+        "diff_base_units": "2"
+      }
+    },
+    {
+      "check": "2026-10-27: staking payouts + unpaid = budget",
+      "ok": true,
+      "detail": {
+        "budget": "192307692307692307692307",
+        "unpaid": "500"
+      }
+    },
+    {
+      "check": "2026-10-27: validator rewards cover the payouts up to rounding",
+      "ok": true,
+      "detail": {
+        "dust_base_units": "496"
+      }
+    },
+    {
+      "check": "2026-10-27: every payout (844 addresses) re-derived from the replay within rounding",
+      "ok": true,
+      "detail": {
+        "max_diff_base_units": "0",
+        "address": "",
+        "unexplained": []
+      }
+    },
+    {
+      "check": "2026-10-27: every staker with eligible stake is paid (none excluded, e.g. sanctioned)",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "check": "2026-10-27: stakers only on ineligible validators are not paid",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "issues": [],
+  "dune": {
+    "skipped": "DUNE_API_KEY not set"
+  },
+  "representative": [
+    {
+      "case": "deposit during the period",
+      "staker": "https://etherscan.io/address/0x6fe95669af152f96e3c81bf6ae16e75ef7bb1558",
+      "validator": "Core Contributors",
+      "amount": 1,
+      "tx": "https://etherscan.io/tx/0xb2fb38301d59dcd111b65cfeeb386e8a0458ceab7bde4b6c49d802d980d2b815",
+      "avg_stake_in_period": 548050.6019320437,
+      "payout": 1936.0792416909567
+    },
+    {
+      "case": "withdrawal request during the period",
+      "staker": "https://etherscan.io/address/0x3b747c372c2088963abc2194b7d5ade238965b33",
+      "validator": "Gnosis",
+      "amount": 1,
+      "tx": "https://etherscan.io/tx/0x738f04e344ad7fd1ad0488a835c49d6b327e0a4ffb755438467a25de67e7f669",
+      "avg_stake_in_period": 0.05935433201058201,
+      "payout": 0.000166581286019882
+    },
+    {
+      "case": "staker on an ineligible validator: no reward",
+      "staker": "https://etherscan.io/address/0xfb2ad9007f2d62a973f71af206242ee4bd790b2c",
+      "validator": "RockawayX",
+      "avg_stake": 490157.1261439994,
+      "participation": "53/416"
+    },
+    {
+      "case": "withheld until KYC (counted as allocated)",
+      "address": "https://etherscan.io/address/0x6d081448c04d9ef7cf8ecf54207b1931ecc25312",
+      "withheld": 15384.615384615385,
+      "sentinel_grant": 15384.615384615385
+    },
+    {
+      "case": "withheld until KYC (counted as allocated)",
+      "address": "https://etherscan.io/address/0xc84a0928632382e75c543acced101b9525027362",
+      "withheld": 15384.615384615385,
+      "sentinel_grant": 15384.615384615385
+    },
+    {
+      "case": "commission paid to a DelegateRegistry beneficiary, not the staker",
+      "validator": "Greenfield",
+      "beneficiary": "https://etherscan.io/address/0xafb08a3e32e6b049fe434d9e7453c11efd0aa56d",
+      "commission": 1761.0688522283292
+    },
+    {
+      "case": "withdrew everything before the period: zero stake, no reward",
+      "staker": "https://etherscan.io/address/0xb1b9d5aa5d6e87a9688b42c6e5f772a29c3d14ac",
+      "tx": "https://etherscan.io/tx/0xcba3fe3004bc45c0ea34c251f8cdee597be6272368b59e9b007fa3927b8f4aac",
+      "in_payouts": false
+    }
+  ]
+}

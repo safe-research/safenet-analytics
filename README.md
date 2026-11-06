@@ -6,7 +6,7 @@ Safenet production analytics on Dune, managed from GitHub. The overview is [dune
 | --- | --- | --- |
 | Overview | [safe/safenet](https://dune.com/safe/safenet) | data freshness, headline counters (requests, completed results, attestations, Safes checked, gross fees, active stake), arbitration rate (last 30 days), activity, results, fees and active stake charts |
 | Network & revenue | [safe/safenet-network-revenue](https://dune.com/safe/safenet-network-revenue) | all transaction-check and fee panels, latest requests, definitions |
-| Staking | [safe/safenet-staking-withdrawals](https://dune.com/safe/safenet-staking-withdrawals) | stake, flows, withdrawals, stake by validator, definitions |
+| Staking | [safe/safenet-staking-withdrawals](https://dune.com/safe/safenet-staking-withdrawals) | stake, flows, withdrawals, stake by validator, realized APR of completed reward periods, definitions |
 | Validators | [safe/safenet-validators](https://dune.com/safe/safenet-validators) | attestation set, participation, stake history, rewards, withdrawal exposure, definitions |
 | Sentinels | [safe/safenet-sentinels](https://dune.com/safe/safenet-sentinels) | participation, verdicts, coverage, earnings, bonds, definitions |
 | Arbitration | [safe/safenet-arbitration](https://dune.com/safe/safenet-arbitration) | arbitration rate by request cohort and per proposal day, time from freeze to ruling, open cases, every dispute with Sentinel votes, ruling and timing |
@@ -43,6 +43,8 @@ docs/                         documentation
 | Arbitration: rate by request cohort and per proposal day, resolution time (freeze to ruling), open arbitrations | `arbitration_windows`, `arbitration_daily`, `arbitration_resolution`, `sentinel_disputes` | [docs/metrics/sentinels.md](docs/metrics/sentinels.md#arbitration-rate-and-resolution-time) |
 | Sentinel models (not displayed): membership terms, responses per request, reverted calls, Sentinel USDC.e transfers, SAFE rewards distributor events, published SAFE allocations | `safenet_sentinel_terms`, `safenet_sentinel_responses`, `safenet_sentinel_failed_calls`, `safenet_sentinel_wallet_transfers`, `safenet_reward_events`, `safenet_sentinel_rewards` | [docs/metrics/sentinels.md](docs/metrics/sentinels.md) |
 | Staking: active stake, stakers and outstanding withdrawals now, flows by window, active stake history, deposits and completed withdrawals, net capital flow, withdrawal requests, outstanding withdrawals, stake by validator (self-stake and delegated) | `staking_overview`, `staking_flow_summary`, `staking_daily`, `staking_withdrawals_outstanding`, `staking_by_validator` | [docs/metrics/staking.md](docs/metrics/staking.md) |
+| Realized staking APR of completed reward periods: headline, history, by validator (gross, delegators net of commission, self-stake) | `staking_rewards_apr`, `staking_rewards_apr_by_validator` | [docs/metrics/staking.md](docs/metrics/staking.md#realized-apr) |
+| APR models (not displayed): time-weighted stake per period, validators per period (stake, participation, eligibility), Beta reward participation, reward periods and verified per-validator rewards | `staking_period_stake`, `staking_period_validators`, `validator_beta_participation`, `safenet_reward_breakdown` | [docs/metrics/staking.md](docs/metrics/staking.md#staking_period_stake) |
 | Staking models (not displayed, shared with the Validators section): events, validator stakers, withdrawals, positions, validators | `staking_events`, `staking_validator_stakers`, `staking_withdrawals`, `staking_positions`, `staking_validators` | [docs/metrics/staking.md](docs/metrics/staking.md#models) |
 | Validators: overview (attestation set, staking registration, stake and shares, participation, last signature share), stake by status, participation by window and per day, stake history, rewards by period and by staker, withdrawal exposure | `validator_overview`, `validator_stake_status`, `validator_participation_windows`, `validator_participation_daily`, `validator_stake_daily`, `validator_stake_split_daily`, `validator_rewards_periods`, `validator_rewards_by_staker`, `validator_withdrawal_exposure` | [docs/metrics/validators.md](docs/metrics/validators.md) |
 | Validator models (not displayed): epochs, attestation-set membership, signing ceremonies, staker history, published rewards | `validator_epochs`, `validator_membership`, `validator_ceremonies`, `validator_staker_history`, `safenet_validator_rewards` | [docs/metrics/validators.md](docs/metrics/validators.md#models) |
@@ -73,7 +75,9 @@ npm run verify:transaction-checks  # recompute the first metric from Gnosis Chai
 npm run verify:network-revenue     # recount the Network & revenue section and check fees against USDC.e flows
 npm run sync:known-traffic         # regenerate the known operational/test Safes query
 npm run sync:participants          # refresh participant labels from safe-fndn/safenet-data
-npm run sync:sentinel-rewards      # refresh published SAFE allocations of Sentinels from safe-fndn/safenet-data
+npm run sync:sentinel-rewards      # refresh published SAFE allocations of Sentinels (safenet-data git for Beta, ENS → IPFS for Aegis)
 npm run verify:sentinels           # recount the Sentinels section from chain data (add -- --traces for reverted calls)
+npm run sync:validator-rewards     # refresh published staking rewards (Beta: safenet-data git; Aegis: ENS → IPFS) and derive the commission split
+npm run verify:rewards-apr         # check the realized APR against the published rewards, a stake replay and signing events
 npm run dune -- deploy --preview --sha <sha>   # preview deploy (normally done by CI)
 ```

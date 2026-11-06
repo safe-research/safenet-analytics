@@ -21,6 +21,7 @@ Stake and withdrawals reuse the [Staking](staking.md) models and definitions unc
 | Participation history | `validator_participation_daily/heatmap` (pivot table, validator × day) | last 30 days |
 | Stake distribution history | `validator_stake_daily/area` (stacked by validator), `validator_stake_split_daily/area` (self / delegated / unattributed) | all time, Beta then production |
 | Reward history | `validator_rewards_periods/bars` and `/table` | published periods |
+| Realized APR by validator | `staking_rewards_apr_by_validator/table` (shared with Staking, [staking.md](staking.md#realized-apr)) | completed reward periods |
 | Validator staker rewards | `validator_rewards_by_staker/table` | latest published root |
 | Withdrawal exposure | `validator_withdrawal_exposure/bars` (horizontal, stacked) | now |
 
@@ -125,24 +126,29 @@ Registrations are by era: `ValidatorStakerSet` on the Beta Consensus `0x2236…c
 
 ### Rewards
 
-The source is [safenet-data `assets/rewards`](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards), copied by `npm run sync:validator-rewards` into `dune/data/validator-rewards.json` and the `safenet_validator_rewards` query.
+`npm run sync:validator-rewards` is incremental: it reuses what is recorded and downloads only rewards DBs whose CID is new, with the previous period's DB to compare against. A run without a new ENS contenthash downloads nothing and leaves every file unchanged. A new validator staker or beneficiary, or `--full`, reads everything again. It copies the published rewards into `dune/data/validator-rewards.json` and the `safenet_validator_rewards` and `safenet_reward_breakdown` queries. There are two sources:
+
+- **Beta:** [safenet-data `assets/rewards`](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards), at its last rewards commit `276526f` (`BETA_REWARDS_REF`). The mirror is frozen and will not be updated.
+- **Aegis:** the source of truth on chain. The resolver's `ContenthashChanged` history for the ENS name `rewards.safenet-gov.eth` pins each rewards DB on IPFS, which is fetched as a CAR (`src/rewards-ipfs.ts`). Every block is verified against its CID, and the root CID must equal the contenthash. The first pinned DB is the Beta-final one (root `0x6689…`, the same as git). The second is the first Aegis period. Gateways are tried in order (`IPFS_GATEWAY_URL`, default Filebase then Pinata), because Pinata's public gateway refuses content not pinned with it.
 
 - **Periods.**
   - Each published `latest.json` is a Merkle root of the Ethereum distributor.
   - Roots since the launch reset (the last index with `tokenTotal` 0, "Clear rewards of test data for launch") are recorded; earlier ones were test data.
   - A root with a new `rewardsUntil` ends a period. A root with the same `rewardsUntil` is a re-issue, such as a KYC release, and is merged into its period.
-  - So far: 16 roots, 13 Beta periods from 2026-04-07 to 2026-10-06, of about 346,151 SAFE each.
+  - So far: 17 roots. There are 13 Beta periods from 2026-04-07 to 2026-10-06, of about 346,151 SAFE each, and the first Aegis period, 2026-10-13 to 2026-10-27. Its 223,076.92 SAFE are 192,307.69 of staking rewards plus 30,769.23 of Sentinel grants. Its root `0xab63…711e` was set on chain on 2026-11-04.
   - Production periods are two weeks from 2026-10-13. 2026-10-06 to 2026-10-13 is the gap between the programmes.
   - An ended production period that is not published appears as *not yet published*, with no amounts.
 - **Allocated** in a period = change in cumulative published amounts (cumulative + KYC-withheld) from the previous period's last root. It splits by recipient:
 
   | Recipient | Allocation |
   | --- | --- |
-  | Validator stakers | addresses registered as a validator's staker during the period, Beta or production: their **commission and own-stake reward together**; the published files do not split them |
+  | Validator stakers | addresses registered as a validator's staker during the period, Beta or production, and the **commission beneficiaries** of a verified split: their **commission and own-stake reward together**; the published files do not split them. Greenfield's commission goes to its DelegateRegistry delegate `0xafb0…a56d`, which would otherwise count as a delegator. |
   | Delegators | the rest, minus Sentinel grants |
   | Sentinel grants | from `sentinelTokenTotal`; none in Beta |
 
-- **Commission.** Not published. A split is recorded only from `cmd:rewards --split` of the reward scripts at a pinned commit, and only if its per-address totals equal the published amounts exactly. No production period is published yet, so there are no split rows: production reads *split not verified*, Beta reads *not published*. Older Beta parameters are not assumed to apply.
+- **Commission.** Not published. The sync derives the split from the published payouts and chain data, and records it only if it reproduces every published payout ([staking.md](staking.md#commission-split)). This covers Beta and Aegis: all 13 Beta periods are derived, with Beta's 1-SAFE minimum payout. A period whose payouts cannot be reproduced reads *split not verified* (Beta: *Beta: split not derivable*).
+  - 2026-10-13 to 2026-10-27 is derived with every payout reproduced exactly, and equals the reward scripts' own split for all 846 recipients (test fixture). Commission is 5,574.52 SAFE. The per-validator rewards and APR are in [staking.md](staking.md#first-production-period-2026-10-13-to-2026-10-27).
+  - A later period without a verified split reads *split not verified*.
 - **Claimed / claimable.**
   - Claims are the distributor's `Claimed(account, amount)` events (`safenet_reward_events`), attributed by **address only**.
   - Claimable = published cumulative (not withheld) − claimed, shown when the latest root is set on chain.
@@ -190,8 +196,10 @@ One row per `ValidatorStakerSet` on Beta or production Consensus: `era`, `valida
 
 Generated. `kind_row` is `root` or `entry`:
 
-- **roots**: `root_order`, `merkle_root`, `rewards_until`, `root_kind` (period / reissue), `token_total`, `sentinel_amount` (sentinelTokenTotal), `unpaid_amount`;
-- **entries**: per validator staker address, `cumulative_amount` and `kyc_amount` under each root.
+- **roots**: `root_order`, `merkle_root`, `rewards_until`, `root_kind` (period / reissue), `source_commit` (safenet-data commit for Beta, IPFS CID for Aegis), `token_total`, `sentinel_amount` (sentinelTokenTotal), `unpaid_amount`;
+- **entries**: per validator staker address and verified commission beneficiary, `cumulative_amount` and `kyc_amount` under each root.
+
+`safenet_reward_breakdown` (period totals and verified per-validator rewards) is described in [staking.md](staking.md#safenet_reward_breakdown).
 
 ## Freshness and empty states
 
@@ -231,20 +239,20 @@ Generated. `kind_row` is `root` or `entry`:
    - stake-status rows add up to the total, and the total = the Staking headline;
    - outstanding withdrawals per validator = the Staking replay (`scripts/lib/staking.ts`) at the Staking `through_block`.
 4. **Rewards**:
-   - the latest root's 208 proof files add up exactly to `tokenTotal` (cumulative + KYC-withheld);
+   - the latest root's proof files (880 for 2026-10-27) add up exactly to `tokenTotal` (cumulative + KYC-withheld);
    - `tokenTotal` never decreases;
    - each period's final root appears in the distributor's on-chain root updates;
    - no staker has claimed more than its published amount;
    - Dune rows match the published amounts and the on-chain claims.
 5. **Representative cases** with gnosisscan links: RockawayX leaving after epoch 33924, ceremonies a member did not sign, an epoch-rollover ceremony, and the excluded self-initiated ceremony.
 
-Result on 2026-10-27 (`verification/validators.json`, without Dune): every membership and reward check passed at block 48971624. The Dune comparison runs in the pull request's preview comment.
+Result on 2026-11-05 (`verification/validators.json`, without Dune): every membership and reward check passed at block 49121646, including 14 periods with their final roots set on chain. The Dune comparison runs in the pull request's preview comment. The realized APR and the commission split are verified by `npm run verify:rewards-apr` ([staking.md](staking.md#realized-apr-verificationrewards_aprjson)).
 
 ## Limitations
 
-- **No published production rewards yet.** The first production period (2026-10-13 to 2026-10-27) is not published, so there is no production commission split, and Beta has none.
+- **Commission splits are recorded per period by hand.** They are recorded with the reward scripts and checked exactly against the published payouts. Beta has none.
 - **Claims are attributed by address.** A validator staker's claim also covers its own delegations, and delegators' claims are not attributed to validators.
 - **The reward methodology is a proposal pending SafeDAO approval.** Rates are shown, not payout decisions.
 - **Status is as of the refresh.** Current-state panels are as of the latest refresh. The overview's reward-basis rate covers an unsettled period.
 - **Coordinator events are shared with the testnet.** Attribution relies on production Consensus naming the groups and initiating the ceremonies.
-- **No APY, USD values or reward estimates.**
+- **No USD values or reward estimates.** The APR is realized only: completed, published periods ([staking.md](staking.md#realized-apr)).

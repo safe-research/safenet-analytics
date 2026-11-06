@@ -70,6 +70,10 @@ jobs:
       - name: Check validators against contract state and signing events
         if: ${{ always() && !inputs.query }}
         run: npm run verify:validators -- --out verification/validators.local.json
+      # Checks the realized APR against the ENS-pinned rewards, a stake replay and signing events.
+      - name: Check realized APR against published rewards and a stake replay
+        if: ${{ always() && !inputs.query }}
+        run: npm run verify:rewards-apr -- --out verification/rewards_apr.local.json
       - uses: actions/upload-artifact@v7
         if: always()
         with:

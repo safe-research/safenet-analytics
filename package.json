@@ -22,7 +22,8 @@
     "verify:sentinels": "node scripts/verify-sentinels.ts",
     "verify:staking": "node scripts/verify-staking.ts",
     "sync:validator-rewards": "node scripts/sync-validator-rewards.ts",
-    "verify:validators": "node scripts/verify-validators.ts"
+    "verify:validators": "node scripts/verify-validators.ts",
+    "verify:rewards-apr": "node scripts/verify-rewards-apr.ts"
   },
   "dependencies": {
     "yaml": "^2.9.1"

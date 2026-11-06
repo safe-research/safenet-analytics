@@ -42,11 +42,13 @@ widgets:
     position: { row: 41, col: 3, size_x: 3, size_y: 8 }
   - visualization: validator_rewards_periods/table
     position: { row: 49, col: 0, size_x: 6, size_y: 8 }
-  - visualization: validator_rewards_by_staker/table
+  - visualization: staking_rewards_apr_by_validator/table
     position: { row: 57, col: 0, size_x: 6, size_y: 7 }
+  - visualization: validator_rewards_by_staker/table
+    position: { row: 64, col: 0, size_x: 6, size_y: 7 }
 
   - text_file: text/validators_definitions.md
-    position: { row: 64, col: 0, size_x: 6, size_y: 11 }
+    position: { row: 71, col: 0, size_x: 6, size_y: 11 }
 
   - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · [Staking]({{dashboard:staking}}) · **Validators** · [Sentinels]({{dashboard:sentinels}}) · [Arbitration]({{dashboard:arbitration}})"
-    position: { row: 75, col: 0, size_x: 6, size_y: 2 }
+    position: { row: 82, col: 0, size_x: 6, size_y: 2 }

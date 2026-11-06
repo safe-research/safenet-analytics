@@ -141,6 +141,22 @@ export const ORACLE_FUNCTIONS = {
 // is the scheduling block plus this delay; SentinelRemoved takes effect at once.
 export const SENTINEL_GOVERNANCE_DELAY_BLOCKS = 51_840;
 
+// Gnosis DelegateRegistry on Ethereum, in which a validator's staker can name another address to
+// receive its commission (safenet-staking-scripts src/indexing/validator-beneficiaries.ts: delegate id
+// keccak256("Safenet Beta validator commission beneficiary"), indexed from its seed block 24878000).
+// Used to derive the commission split (scripts/lib/derive-split.ts).
+export const DELEGATE_REGISTRY = {
+  chain: "ethereum",
+  address: "0x469788fe6e9e9681c6ebf3bf78e7fd26fc015446",
+  fromBlock: 24878000,
+  commissionId: "0x45c518fef2d01542b884830ef4eaae3137aebc8a3df6e4c4b73c585f85e709b0",
+  commissionIdText: "Safenet Beta validator commission beneficiary",
+  events: {
+    SetDelegate: { signature: "SetDelegate(address,bytes32,address)", topic0: "0xa9a7fd460f56bddb880a465a9c3e9730389c70bc53108148f16d55a87a6c468e" },
+    ClearDelegate: { signature: "ClearDelegate(address,bytes32,address)", topic0: "0x9c4f00c4291262731946e308dc2979a56bd22cce8f95906b975065e96cd5a064" },
+  },
+} as const;
+
 // Safe Foundation's SAFE rewards distributor on Ethereum ("Safenet Aegis Rewards",
 // CumulativeMerkleDrop, verified on Etherscan and Sourcify). Rewards, Sentinel subsidies included,
 // are published as Merkle proofs in safe-fndn/safenet-data assets/rewards (src/sentinel-rewards.ts).
@@ -226,6 +242,18 @@ export const GENESIS_GROUP_ID = "0x965f661dcdfa091ff92d5f6a81877bb714b87aa17507b
 // Beta Consensus, read only for the validator → staker history before the production start.
 export const BETA_CONSENSUS = { address: "0x223624cbf099e5a8f8cd5af22afa424a1d1acee9", deployBlock: 45210396 } as const;
 
+// Beta signing, for Beta reward participation (validator_beta_participation): the FROST coordinator
+// the Beta Consensus names (getCoordinator(), deployed at block 45210395 on 2026-03-18), and the Beta
+// Consensus TransactionAttested, whose signature differs from production's. The coordinator emits
+// the same Sign / SignShared / SignCompleted events as production's (VALIDATOR_EVENTS). Reward periods
+// ran from 2026-04-07 to 2026-10-06; logs are read from the day before to two days after.
+export const BETA_COORDINATOR = { address: "0xae27021ceb45316f1efe69d8e362ac07ed3bd7e4", deployBlock: 45210395 } as const;
+export const BETA_TRANSACTION_ATTESTED = {
+  signature: "TransactionAttested(bytes32,uint256,address,uint64,bytes32,((uint256,uint256),uint256))",
+  topic0: "0x72272729e643703db011cc155474c30d652f1a68712d921cc263a881efd7bce6",
+} as const;
+export const BETA_REWARD_LOGS = { fromBlock: 45525872, toBlock: 48643007, fromDate: "2026-04-06", toDate: "2026-10-08" } as const;
+
 export const VALIDATOR_EVENTS = {
   EpochStaged: {
     signature: "EpochStaged(uint64,uint64,uint64,bytes32,(uint256,uint256),bytes32,((uint256,uint256),uint256))",
@@ -258,6 +286,9 @@ export const DECODING_CANDIDATES = [
   // Shared by production and the Aegis testnet; its events cannot be attributed to production alone.
   { name: "FROSTCoordinator", chain: "gnosis", address: "0xc6b34da4c99c043a093214d58423a8be39585b78" },
   { name: "Safenet7702Executor", chain: "gnosis", address: "0x4dfe88adf2d7c3fbd2e334ce820b9adfa541215c" },
+  // Beta (read from raw logs; listed so the check reports whether Dune has decoded them).
+  { name: "BetaConsensus", chain: "gnosis", address: BETA_CONSENSUS.address },
+  { name: "BetaFROSTCoordinator", chain: "gnosis", address: BETA_COORDINATOR.address },
   { name: "Staking", chain: "ethereum", address: STAKING.address },
   { name: "CumulativeMerkleDrop (SAFE rewards)", chain: "ethereum", address: REWARDS_DISTRIBUTOR.address },
 ] as const;

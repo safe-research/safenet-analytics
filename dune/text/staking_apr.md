@@ -1,0 +1,3 @@
+### Realized staking APR (completed reward periods)
+
+What staking earned in each **completed** two-week reward period, from the published rewards and the stake that actually earned them. **History only**: not current stake, not an estimate of future returns. Two programmes are shown, always labelled. **Beta** (grey, 2026-04-07 – 2026-10-06; 4.5M SAFE over 26 weeks) and **Aegis** (colour, from 2026-10-13; 5M SAFE over 52 weeks) had different budgets, so their levels are not a trend. The headline is the latest Aegis period. Rewards are those [published on chain](https://github.com/safe-research/safenet-analytics/blob/main/docs/metrics/staking.md#realized-apr). A period that has ended but is not published yet is listed without rewards or APR, never as 0.

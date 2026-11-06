@@ -1,0 +1,101 @@
+name: Sync rewards
+
+# Looks for newly published staking rewards: the ENS name rewards.safenet-gov.eth pins each rewards DB
+# on IPFS, one fixed two-week period at a time (docs/metrics/staking.md#realized-apr). When the sync
+# changes the generated data, it pushes a branch and opens (or updates) an issue with a one-click link
+# to create the pull request. Nothing reaches production without a person opening, reviewing and
+# merging that pull request. The sync also derives the commission split from the published payouts
+# and chain data (docs/metrics/staking.md#commission-split).
+#
+# It pushes only its own rewards-sync/* branch, with GITHUB_TOKEN, never main: no deploy key, because
+# main's ruleset lets every write deploy key bypass it (docs/setup.md). It does not open the pull
+# request itself: the safe-research organization does not let GitHub Actions create pull requests,
+# and a pull request a person opens starts Validate and Preview by itself. Pushes made with
+# GITHUB_TOKEN start no workflows, so when a pull request for the branch is already open, its preview
+# is dispatched explicitly.
+
+on:
+  schedule:
+    - cron: "47 4 * * *" # daily, 04:47 UTC, before Refresh (05:17)
+  workflow_dispatch:
+
+concurrency:
+  group: rewards-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write # the rewards-sync/* branch only
+  issues: write # the "rewards published" issue with the link to create the pull request
+  pull-requests: read
+  actions: write # dispatch Validate, and Preview of an open pull request
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GNOSIS_RPC_URL: ${{ secrets.GNOSIS_RPC_URL }}
+      ETHEREUM_RPC_URL: ${{ secrets.ETHEREUM_RPC_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+
+      - name: Sync published rewards (Beta from safenet-data git, Aegis from ENS → IPFS)
+        run: |
+          npm run -s sync:validator-rewards | tee "$RUNNER_TEMP/sync.txt"
+          npm run -s sync:sentinel-rewards | tee -a "$RUNNER_TEMP/sync.txt"
+
+      - name: Push the branch, and open or update the issue
+        run: |
+          if git diff --quiet; then echo "No new published rewards."; exit 0; fi
+          root=$(node -e 'const d=require("./dune/data/validator-rewards.json"); const r=d.roots.at(-1); console.log(r.rewards_until.slice(0,10) + "-" + r.merkle_root.slice(2,10))')
+          branch="rewards-sync/$root"
+          title="Sync published rewards through $root"
+          npm run typecheck && npm test && npm run validate
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -A dune
+          git commit -m "$title"
+          # A branch of a previous run for the same root is replaced: the sync is deterministic.
+          case "$branch" in rewards-sync/*) ;; *) echo "refusing to push $branch"; exit 1 ;; esac
+          git push --force origin "HEAD:refs/heads/$branch"
+          gh workflow run validate.yml --ref "$branch"
+
+          # Already a pull request for the branch (opened by a person): start its preview again.
+          pr=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$pr" ]; then
+            gh workflow run preview.yml --ref main -f pr="$pr"
+            echo "Updated $branch; dispatched the preview of pull request #$pr" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Otherwise an issue with a link that creates the pull request (title and "Closes #issue" filled in).
+          issue=$(gh issue list --state open --search "\"$title\" in:title" --json number,title \
+            | jq -r --arg t "$title" 'map(select(.title == $t)) | .[0].number // empty')
+          if [ -z "$issue" ]; then
+            issue=$(gh issue create --title "$title" --body "Preparing…" | sed 's#.*/##')
+          fi
+          link="https://github.com/$GITHUB_REPOSITORY/compare/main...$branch?expand=1&title=$(jq -rn --arg t "$title" '$t|@uri')&body=$(jq -rn --arg b "Closes #$issue. Synced by .github/workflows/sync-rewards.yml." '$b|@uri')"
+          {
+            echo "New staking rewards were published (ENS \`rewards.safenet-gov.eth\`), and the sync pushed them to \`$branch\`."
+            echo
+            echo "### → [Create the pull request]($link)"
+            echo
+            echo "Opening it starts Validate and the private Dune preview. Before merging, check the preview and \`verify:rewards-apr\` in its comment. Merging closes this issue."
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/sync.txt"
+            echo '```'
+            echo
+            echo "If the output says *commission split not derivable*, the published payouts could not be reproduced (for example, the reward rules changed): the dashboards then show the pool APR and the APR on all stake, and per-validator rewards and the delegator APR read *split not verified* (docs/metrics/staking.md#commission-split)."
+          } > "$RUNNER_TEMP/body.md"
+          gh issue edit "$issue" --body-file "$RUNNER_TEMP/body.md"
+          echo "Pushed $branch; issue #$issue links to creating the pull request" >> "$GITHUB_STEP_SUMMARY"

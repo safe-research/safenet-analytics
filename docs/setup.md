@@ -22,6 +22,24 @@
    - The layout looks as intended. The 6-column grid in `src/config.ts` is taken from the official CLI's examples and is not documented by Dune. If widths look wrong, adjust `GRID_COLUMNS` and the positions in `dune/dashboards/`.
    - Move new dashboards into the safe team's **Safenet** folder (one-time UI step; the API cannot assign folders, see [dune-api.md](dune-api.md)).
 
+## Rewards sync
+
+*Sync rewards* (`.github/workflows/sync-rewards.yml`) runs daily at 04:47 UTC and by hand.
+
+- **What it syncs:** the published staking rewards. Aegis comes from the ENS name `rewards.safenet-gov.eth` via IPFS; Beta comes from the frozen safenet-data git history. It also derives the commission split from the published payouts and chain data; no reward scripts run ([staking.md](metrics/staking.md#commission-split)).
+- **Incremental:** a day without a new ENS contenthash downloads no rewards data and changes no file, so nothing else happens.
+- **When the data changes:**
+  - it pushes `rewards-sync/<rewardsUntil>-<root>` and dispatches Validate on it;
+  - it opens an **issue** titled *Sync published rewards through …*, or updates the open one with the same title;
+  - the issue has a **Create the pull request** link, with the title and `Closes #<issue>` filled in.
+
+  Opening that pull request starts Validate and Preview like any other, and merging it closes the issue.
+- **Why an issue, not a pull request:** the `safe-research` organization does not let GitHub Actions create pull requests. A person opening the pull request also means its checks run normally.
+- **An open pull request for the branch:** the sync updates the branch and dispatches that pull request's preview, because pushes made with `GITHUB_TOKEN` start no workflows.
+- **Credentials:** it uses `GITHUB_TOKEN` and pushes only its own branch. It needs no deploy key, deliberately: every write deploy key bypasses `main`'s ruleset (step 4 above).
+
+No setup is needed. Optional secrets `GNOSIS_RPC_URL` and `ETHEREUM_RPC_URL` are used if set.
+
 ## Local use
 
 Requires Node.js 22.18 or later (`.nvmrc`); Node runs the TypeScript sources directly.

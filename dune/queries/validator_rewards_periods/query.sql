@@ -5,10 +5,11 @@
 -- published amounts from the previous period's last root (re-issues of the same period, such as KYC
 -- releases, are merged into it). Amounts include KYC-withheld SAFE.
 --   validator_stakers   addresses registered as a validator's staker during the period (Beta or
---                       production Consensus): their commission and own-stake reward together
+--                       production Consensus), and the commission beneficiaries of a verified split
+--                       (DelegateRegistry delegates): their commission and own-stake reward together
 --   delegators          everything else allocated in the period, minus Sentinel grants
---   commission          not in the published files. Shown only from a verified --split of the reward
---                       scripts (none yet); Beta periods: not published
+--   commission          not in the published files. Shown only from a verified split, derived from the
+--                       published payouts and chain data (safenet_reward_breakdown), Beta and Aegis
 -- Production periods (two weeks from 2026-10-13) that have ended but are not published yet are listed
 -- with no amounts, never 0. 2026-10-06 to 2026-10-13 is the gap between Beta and production.
 
@@ -35,16 +36,34 @@ periods as (
 ordered as (
     select
         *,
-        coalesce(lag(period_end) over (order by period_end), timestamp '2026-04-07 00:00:00') as period_start,
+        -- Production periods start on 2026-10-13 at the earliest: 2026-10-06 to 2026-10-13 is the gap
+        if(period_end > timestamp '2026-10-13 00:00:00',
+            greatest(coalesce(lag(period_end) over (order by period_end), timestamp '2026-10-13 00:00:00'), timestamp '2026-10-13 00:00:00'),
+            coalesce(lag(period_end) over (order by period_end), timestamp '2026-04-07 00:00:00')) as period_start,
         lag(last_root) over (order by period_end) as previous_root,
         coalesce(lag(token_total) over (order by period_end), cast(0 as uint256)) as previous_total,
         coalesce(lag(sentinel_total) over (order by period_end), cast(0 as uint256)) as previous_sentinel_total
     from periods
 ),
 
--- validator staker addresses and the times they were registered
+breakdown as (
+    select * from {{query:safenet_reward_breakdown}}
+),
+
+-- validator staker addresses and the times they were registered, and the commission beneficiaries
+-- of verified periods (for that period only)
 stakers as (
     select staker, valid_from, valid_to from {{query:validator_staker_history}}
+    union all
+    select distinct beneficiary, date_add('day', -14, period_end), period_end
+    from breakdown
+    where kind_row = 'validator' and cast(commission_raw as double) > 0
+),
+
+commission as (
+    select period_end, cast(commission_raw as double) / 1e18 as commission, split_source
+    from breakdown
+    where kind_row = 'period' and split_source is not null
 ),
 
 staker_amounts as (
@@ -82,10 +101,13 @@ published as (
         cast(o.unpaid as double) / 1e18 as unpaid_carried,
         o.reissues,
         c.new_root is not null as root_on_chain,
-        o.merkle_root
+        o.merkle_root,
+        cm.commission,
+        cm.split_source
     from ordered as o
     left join staker_amounts as sa on sa.period_end = o.period_end
     left join on_chain as c on c.new_root = o.merkle_root
+    left join commission as cm on cm.period_end = o.period_end
 ),
 
 -- production periods that have ended (two weeks from 2026-10-13) but are not published
@@ -107,8 +129,12 @@ select
     validator_stakers as validator_stakers_allocated,
     total_allocated - validator_stakers - sentinel_grants as delegators_allocated,
     sentinel_grants,
-    cast(null as double) as commission,
-    if(era = 'beta', 'not published', 'split not verified') as commission_status,
+    commission,
+    case
+        when split_source is not null then 'verified: ' || split_source
+        when era = 'beta' then 'Beta: split not derivable'
+        else 'split not verified'
+    end as commission_status,
     unpaid_carried,
     reissues,
     root_on_chain,

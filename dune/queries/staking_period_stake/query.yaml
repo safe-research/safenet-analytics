@@ -1,0 +1,11 @@
+name: "Safenet: time-weighted stake per reward period"
+description: >
+  Safenet Staking on Ethereum: time-weighted active stake of every (staker, validator) over each
+  completed Aegis reward period, from every deposit and withdrawal request at its block time, with
+  the part while the validator was registered and the part held by its registered staker. Shared
+  model for the realized APR; not shown on the dashboard. Managed in
+  github.com/safe-research/safenet-analytics (docs/metrics/staking.md).
+private: false
+tags: [safenet]
+refresh: none
+performance: medium

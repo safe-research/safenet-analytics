@@ -1,6 +1,6 @@
 {
   "source": "safe-fndn/safenet-data",
-  "ref": "f74222fa8b395cc06d39636f56f0bba7c19e4576",
+  "ref": "276526f6c0b204fa7d5aa4f788c0b7983b08bc7f",
   "addresses": [
     "0x0637ccf4b63df46265cf4afcd7b0c9d06b98c3ca",
     "0x101d59dbb8c5e70f45d52634f23800fca4fbe031",
@@ -8,6 +8,10 @@
     "0x6d081448c04d9ef7cf8ecf54207b1931ecc25312",
     "0xb28eb357bfa420c17bae3e6bfdb50094fb5babf2",
     "0xc84a0928632382e75c543acced101b9525027362"
+  ],
+  "cids": [
+    "bafybeiczeo7uiupwte7dfa3yaus6dogwauxbookpvcgmxebbga5jtp7afq",
+    "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em"
   ],
   "roots": [
     {
@@ -117,7 +121,26 @@
       "published_at": "2026-10-08T04:42:11Z",
       "rewards_until": "2026-10-06T00:00:00.000Z",
       "merkle_root": "0x668901980a6c69b801f37cdef375059369dab712db8651a463d1d336b65cfdef"
+    },
+    {
+      "commit": "bafybeibncjvxsa22w64cnpv43pr6zzhggnlkoe3hldpfxwjosex5oxz2em",
+      "published_at": "2026-11-04T13:53:35.000Z",
+      "rewards_until": "2026-10-27T00:00:00.000Z",
+      "merkle_root": "0xab638c08ac00981fb708a6d9e0c4667605579aa945629231313ba6c87d1d711e"
     }
   ],
-  "entries": []
+  "entries": [
+    {
+      "address": "0x6d081448c04d9ef7cf8ecf54207b1931ecc25312",
+      "merkle_root": "0xab638c08ac00981fb708a6d9e0c4667605579aa945629231313ba6c87d1d711e",
+      "cumulative_amount": "0",
+      "kyc_amount": "15384615384615384615384"
+    },
+    {
+      "address": "0xc84a0928632382e75c543acced101b9525027362",
+      "merkle_root": "0xab638c08ac00981fb708a6d9e0c4667605579aa945629231313ba6c87d1d711e",
+      "cumulative_amount": "0",
+      "kyc_amount": "15384615384615384615384"
+    }
+  ]
 }
