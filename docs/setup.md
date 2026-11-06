@@ -26,14 +26,19 @@
 
 *Sync rewards* (`.github/workflows/sync-rewards.yml`) runs daily at 04:47 UTC and by hand.
 
-- It syncs the published staking rewards: the ENS name `rewards.safenet-gov.eth` → IPFS for Aegis, frozen safenet-data git for Beta.
-- Both syncs are incremental: a day without a new ENS contenthash downloads no rewards data and changes no file, so no pull request is opened.
-- When the generated data changes, it pushes `rewards-sync/<rewardsUntil>-<root>` and opens a pull request, then dispatches Validate and Preview for it.
-- It uses `GITHUB_TOKEN` and pushes only that branch. It needs no deploy key, deliberately: every write deploy key bypasses `main`'s ruleset (step 4 above).
+- **What it syncs:** the published staking rewards. Aegis comes from the ENS name `rewards.safenet-gov.eth` via IPFS; Beta comes from the frozen safenet-data git history. It also derives the commission split from the published payouts and chain data; no reward scripts run ([staking.md](metrics/staking.md#commission-split)).
+- **Incremental:** a day without a new ENS contenthash downloads no rewards data and changes no file, so nothing else happens.
+- **When the data changes:**
+  - it pushes `rewards-sync/<rewardsUntil>-<root>` and dispatches Validate on it;
+  - it opens an **issue** titled *Sync published rewards through …*, or updates the open one with the same title;
+  - the issue has a **Create the pull request** link, with the title and `Closes #<issue>` filled in.
 
-One-time setup: under *Settings → Actions → General*, enable **Allow GitHub Actions to create and approve pull requests**. Optional secrets `GNOSIS_RPC_URL` and `ETHEREUM_RPC_URL` are used if set.
+  Opening that pull request starts Validate and Preview like any other, and merging it closes the issue.
+- **Why an issue, not a pull request:** the `safe-research` organization does not let GitHub Actions create pull requests. A person opening the pull request also means its checks run normally.
+- **An open pull request for the branch:** the sync updates the branch and dispatches that pull request's preview, because pushes made with `GITHUB_TOKEN` start no workflows.
+- **Credentials:** it uses `GITHUB_TOKEN` and pushes only its own branch. It needs no deploy key, deliberately: every write deploy key bypasses `main`'s ruleset (step 4 above).
 
-The sync also derives the commission split from the published payouts and chain data; no reward scripts run ([staking.md](metrics/staking.md#commission-split)). Pushes made with `GITHUB_TOKEN` start no workflows, so if `main`'s ruleset requires checks from `pull_request` runs, push any commit to the branch, or close and reopen the pull request.
+No setup is needed. Optional secrets `GNOSIS_RPC_URL` and `ETHEREUM_RPC_URL` are used if set.
 
 ## Local use
 
