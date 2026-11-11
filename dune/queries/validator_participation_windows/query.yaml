@@ -30,3 +30,4 @@ visualizations:
         - { name: reward_basis_rate, title: Reward basis rate, type: normal, alignContent: right, isHidden: false, numberFormat: "0.0%" }
         - { name: address, title: Address, type: normal, alignContent: left, isHidden: true }
         - { name: sort_order, title: Order, type: normal, alignContent: right, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }

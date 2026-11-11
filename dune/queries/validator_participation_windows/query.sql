@@ -29,7 +29,8 @@ counts as (
         count(*) as eligible,
         count_if(c.signed) as signed,
         count_if(c.purpose = 'transaction' and c.signed) as signed_transactions,
-        count_if(c.purpose = 'transaction' and c.first_row) as first_rows_transactions
+        count_if(c.purpose = 'transaction' and c.first_row) as first_rows_transactions,
+        max(c.completed_block) as last_completed_block
     from windows as w
     join {{query:validator_ceremonies}} as c
         on c.completed and c.completed_at >= w.since
@@ -53,7 +54,8 @@ select
     t.signed_transactions,
     if(t.transactions = 0, null, 1.0 * t.signed_transactions / t.transactions) as reward_basis_rate,
     '0x' || lower(to_hex(t.validator)) as address,
-    t.sort_order
+    t.sort_order,
+    max(t.last_completed_block) over () as through_block -- for the verification
 from with_totals as t
 left join {{query:safenet_participant_labels}} as l on l.address = t.validator and l.role = 'validator'
 order by t.sort_order, validator

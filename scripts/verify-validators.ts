@@ -78,13 +78,18 @@ if (key) {
     if (id) dune[q] = await client.latestResults(id, 2000).catch(() => undefined);
   }
 }
-const duneBlock = dune.validator_overview?.rows.length ? Number(dune.validator_overview.rows[0].through_block) : undefined;
+// Each query is recounted at its own through_block: Refresh executes them one after another, and
+// a ceremony completed in between is in one result but not the other.
+const blockOf = (r: Result | undefined) => (r?.rows.length && r.rows[0].through_block != null ? Number(r.rows[0].through_block) : undefined);
+const duneBlock = blockOf(dune.validator_overview);
+const dailyBlock = blockOf(dune.validator_participation_daily) ?? duneBlock;
+const windowsBlock = blockOf(dune.validator_participation_windows) ?? duneBlock;
 
 // ---------------------------------------------------------------------------------------------
 // Membership at block B, against contract state
 
 const B = await gnosis.finalized();
-const logs = await fetchValidatorLogs(gnosis, Math.max(B, duneBlock ?? 0));
+const logs = await fetchValidatorLogs(gnosis, Math.max(B, duneBlock ?? 0, dailyBlock ?? 0, windowsBlock ?? 0));
 const times = new Map<number, number>();
 for (const l of [...logs.consensus, ...logs.coordinator]) if (l.blockTimestamp) times.set(Number(l.blockNumber), Number(l.blockTimestamp));
 const atB = build(logs, B);
@@ -126,16 +131,17 @@ const excluded = signs
 for (const c of membershipChecks) if (!c.ok) issues.push(`membership check failed: ${c.check}`);
 
 // ---------------------------------------------------------------------------------------------
-// Participation vs Dune, at Dune's block
+// Participation vs Dune, at each query's block
 
 const compared: string[] = [];
 if (duneBlock) {
   const atDune = build(logs, duneBlock);
   const day = (t: number) => new Date(t * 1000).toISOString().slice(0, 10);
   const daily = dune.validator_participation_daily;
-  if (daily) {
+  if (daily && dailyBlock) {
+    const atDaily = dailyBlock === duneBlock ? atDune : build(logs, dailyBlock);
     const mine = new Map<string, { eligible: number; signed: number }>();
-    for (const c of atDune.ceremonies) {
+    for (const c of atDaily.ceremonies) {
       if (c.completedBlock === null) continue;
       const d = day(times.get(c.completedBlock)!);
       for (const [m, share] of c.shares) {
@@ -154,8 +160,9 @@ if (duneBlock) {
     compared.push("validator_participation_daily");
   }
   const prod = dune.validator_participation_windows?.rows.filter((r) => String(r.time_window).startsWith("Aegis"));
-  if (prod?.length) {
-    const p = participation(atDune, times, Date.parse("2026-10-07T13:51:55Z") / 1000);
+  if (prod?.length && windowsBlock) {
+    const atWindows = windowsBlock === duneBlock ? atDune : build(logs, windowsBlock);
+    const p = participation(atWindows, times, Date.parse("2026-10-07T13:51:55Z") / 1000);
     for (const r of prod) {
       const s = p.byValidator.get(String(r.address));
       compare(`window Aegis ${r.validator}`, "eligible", s?.eligible ?? 0, r.eligible);
@@ -315,7 +322,7 @@ const report = {
   membership_checks: membershipChecks,
   reward_checks: rewardChecks,
   issues,
-  dune: key ? { compared, through_block: duneBlock ?? null, staking_block: stakingBlock ?? null, mismatches } : { skipped: "DUNE_API_KEY not set" },
+  dune: key ? { compared, through_block: duneBlock ?? null, daily_block: dailyBlock ?? null, windows_block: windowsBlock ?? null, staking_block: stakingBlock ?? null, mismatches } : { skipped: "DUNE_API_KEY not set" },
   representative,
 };
 await mkdir(dirname(args.out!), { recursive: true });
