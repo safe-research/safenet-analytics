@@ -204,6 +204,7 @@ Generated. `kind_row` is `root` or `entry`:
 ## Freshness and empty states
 
 - `validator_overview` reports `as_of_time` and `through_block`: the Gnosis Chain head Dune had at execution.
+- `validator_participation_daily` and `validator_participation_windows` report `through_block`: the block of the last completed ceremony they count.
 - Stake columns follow the Staking queries' Ethereum data of the same refresh.
 - Empty or not-applicable states:
 
@@ -233,7 +234,7 @@ Generated. `kind_row` is `root` or `entry`:
    - `groupSignCount(gid)` = `Sign` events per group.
 
    Reads are batched through Multicall3.
-2. **Participation**: every validator-day of `validator_participation_daily` and the Aegis-wide window are recounted from logs at Dune's `through_block`.
+2. **Participation**: every validator-day of `validator_participation_daily` and the Aegis-wide window of `validator_participation_windows` are recounted from logs, each at its own query's `through_block` (the block of the last completed ceremony in the result). Refresh executes the queries one after another, so a ceremony can complete between them.
 3. **Stake**:
    - overview stake columns = `staking_by_validator` of the same refresh;
    - stake-status rows add up to the total, and the total = the Staking headline;
