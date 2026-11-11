@@ -1,0 +1,819 @@
+{
+  "dashboards": {
+    "arbitration": {
+      "desired": "c15e64db710a7441",
+      "id": 223054,
+      "remote": "a4f3b357766469e2",
+      "url": "https://dune.com/safe/safenet-arbitration-preview-pr-19"
+    },
+    "network-revenue": {
+      "desired": "46269b45a918fdb0",
+      "id": 223055,
+      "remote": "37c4abb74712895a",
+      "url": "https://dune.com/safe/safenet-network-revenue-preview-pr-19"
+    },
+    "overview": {
+      "desired": "8c77742233085924",
+      "id": 223053,
+      "remote": "c64e5087eacd013e",
+      "url": "https://dune.com/safe/safenet-preview-pr-19"
+    },
+    "sentinels": {
+      "desired": "050f64dddac33fff",
+      "id": 223056,
+      "remote": "3542244fedd68165",
+      "url": "https://dune.com/safe/safenet-sentinels-preview-pr-19"
+    },
+    "staking": {
+      "desired": "22619f0cc04e5cf0",
+      "id": 223057,
+      "remote": "ac04a37328f297cd",
+      "url": "https://dune.com/safe/safenet-staking-preview-pr-19"
+    },
+    "validators": {
+      "desired": "9d028b3275d244f1",
+      "id": 223058,
+      "remote": "ec593f10cbcbf0c2",
+      "url": "https://dune.com/safe/safenet-validators-preview-pr-19"
+    }
+  },
+  "executions": {
+    "validator_participation_windows": {
+      "credits": 0.103617648,
+      "ended_at": "2026-11-11T16:46:44.747530321Z",
+      "execution_id": "01M75R29MHGA738R7GZ9RRDWR1",
+      "query_id": 9111118,
+      "sql": "d9e665cfafcc4544"
+    }
+  },
+  "protected": {
+    "safe/safenet-beta": {
+      "checked_at": "2026-11-11T16:45:49.572Z",
+      "dashboard_id": 206254,
+      "fingerprint": "c8c83283706867c5",
+      "query_ids": [
+        6766099,
+        6766101,
+        6766102,
+        6766104,
+        6766105,
+        6766182,
+        6939635,
+        6939866,
+        6939942,
+        8122056,
+        8204106
+      ],
+      "visualization_ids": [
+        10634367,
+        10634368,
+        10634369,
+        10634372,
+        10634373,
+        10634376,
+        10634377,
+        10634538,
+        10847140,
+        10847372,
+        10847380,
+        10847383,
+        10847486,
+        10847490,
+        12111148,
+        12196771
+      ]
+    }
+  },
+  "queries": {
+    "arbitration_daily": {
+      "desired": "45e79ec308941c10",
+      "id": 9111060,
+      "remote": "45e79ec308941c10"
+    },
+    "arbitration_resolution": {
+      "desired": "cd3cde70b5a405e5",
+      "id": 9111061,
+      "remote": "cd3cde70b5a405e5"
+    },
+    "arbitration_windows": {
+      "desired": "898b85a597bf2a8d",
+      "id": 9111062,
+      "remote": "898b85a597bf2a8d"
+    },
+    "fee_allocation": {
+      "desired": "ffaca8e60385e2e9",
+      "id": 9111068,
+      "remote": "ffaca8e60385e2e9"
+    },
+    "fee_config": {
+      "desired": "60627fc7f938064c",
+      "id": 9111069,
+      "remote": "60627fc7f938064c"
+    },
+    "fee_revenue_daily": {
+      "desired": "8ea2fc28edd80adc",
+      "id": 9111070,
+      "remote": "8ea2fc28edd80adc"
+    },
+    "guard_adoption": {
+      "desired": "ee6b0b785f2cd10d",
+      "id": 9111074,
+      "remote": "ee6b0b785f2cd10d"
+    },
+    "latest_requests": {
+      "desired": "efad278fe5a31371",
+      "id": 9111075,
+      "remote": "efad278fe5a31371"
+    },
+    "network_breakdown": {
+      "desired": "bf5c7894ffcb9b29",
+      "id": 9111076,
+      "remote": "bf5c7894ffcb9b29"
+    },
+    "network_summary": {
+      "desired": "a4c5524e8d282138",
+      "id": 9111077,
+      "remote": "a4c5524e8d282138"
+    },
+    "results_daily": {
+      "desired": "d275f3fe5e7493c6",
+      "id": 9111078,
+      "remote": "d275f3fe5e7493c6"
+    },
+    "safenet_events": {
+      "desired": "dae9b249926a4b99",
+      "id": 9111057,
+      "remote": "dae9b249926a4b99"
+    },
+    "safenet_fee_flows": {
+      "desired": "83ca48e24c2c3488",
+      "id": 9111063,
+      "remote": "83ca48e24c2c3488"
+    },
+    "safenet_guard_status": {
+      "desired": "0ff39a83c7ded9ea",
+      "id": 9111073,
+      "remote": "0ff39a83c7ded9ea"
+    },
+    "safenet_guards": {
+      "desired": "d15daba0dcaa932e",
+      "id": 9111072,
+      "remote": "d15daba0dcaa932e"
+    },
+    "safenet_known_traffic": {
+      "desired": "9db00a3dfbf9aca7",
+      "id": 9111058,
+      "remote": "9db00a3dfbf9aca7"
+    },
+    "safenet_participant_labels": {
+      "desired": "6ca7136d6c7b5148",
+      "id": 9111065,
+      "remote": "6ca7136d6c7b5148"
+    },
+    "safenet_requests": {
+      "desired": "ffc2d830faab603e",
+      "id": 9111059,
+      "remote": "ffc2d830faab603e"
+    },
+    "safenet_reward_breakdown": {
+      "desired": "461d7947a1829115",
+      "id": 9111080,
+      "remote": "461d7947a1829115"
+    },
+    "safenet_reward_events": {
+      "desired": "e14c5db2503504d1",
+      "id": 9111081,
+      "remote": "e14c5db2503504d1"
+    },
+    "safenet_sentinel_failed_calls": {
+      "desired": "9092fcca7a04d0f3",
+      "id": 9111064,
+      "remote": "9092fcca7a04d0f3"
+    },
+    "safenet_sentinel_responses": {
+      "desired": "49542b531930ff2f",
+      "id": 9111067,
+      "remote": "49542b531930ff2f"
+    },
+    "safenet_sentinel_rewards": {
+      "desired": "fe273895173be71e",
+      "id": 9111082,
+      "remote": "fe273895173be71e"
+    },
+    "safenet_sentinel_terms": {
+      "desired": "5b245df68bdbccc1",
+      "id": 9111066,
+      "remote": "5b245df68bdbccc1"
+    },
+    "safenet_sentinel_texts": {
+      "desired": "41f2096389866a29",
+      "id": 9111083,
+      "remote": "41f2096389866a29"
+    },
+    "safenet_sentinel_wallet_transfers": {
+      "desired": "7c64da9da11e2e2c",
+      "id": 9111084,
+      "remote": "7c64da9da11e2e2c"
+    },
+    "safenet_validator_rewards": {
+      "desired": "9a976c1dd08efa7a",
+      "id": 9111085,
+      "remote": "9a976c1dd08efa7a"
+    },
+    "sentinel_bonds": {
+      "desired": "58b6cc6bca51a74b",
+      "id": 9111086,
+      "remote": "58b6cc6bca51a74b"
+    },
+    "sentinel_coverage": {
+      "desired": "eae1ed7149be4743",
+      "id": 9111087,
+      "remote": "eae1ed7149be4743"
+    },
+    "sentinel_disputes": {
+      "desired": "8f8cd978f8299b34",
+      "id": 9111088,
+      "remote": "8f8cd978f8299b34"
+    },
+    "sentinel_earnings": {
+      "desired": "aa9fae1afdfc3b9e",
+      "id": 9111089,
+      "remote": "aa9fae1afdfc3b9e"
+    },
+    "sentinel_earnings_daily": {
+      "desired": "6985669b5afa8ad7",
+      "id": 9111090,
+      "remote": "6985669b5afa8ad7"
+    },
+    "sentinel_overview": {
+      "desired": "01b1f35ef6d43f18",
+      "id": 9111091,
+      "remote": "01b1f35ef6d43f18"
+    },
+    "sentinel_participation_daily": {
+      "desired": "76c46c5ec90151ae",
+      "id": 9111092,
+      "remote": "76c46c5ec90151ae"
+    },
+    "sentinel_verdicts": {
+      "desired": "b2851c039deae7ac",
+      "id": 9111093,
+      "remote": "b2851c039deae7ac"
+    },
+    "sentinel_windows": {
+      "desired": "702d402698a2e15b",
+      "id": 9111094,
+      "remote": "702d402698a2e15b"
+    },
+    "staking_by_validator": {
+      "desired": "5cbed3a48ba3902e",
+      "id": 9111099,
+      "remote": "5cbed3a48ba3902e"
+    },
+    "staking_daily": {
+      "desired": "09413617d9d92b35",
+      "id": 9111100,
+      "remote": "09413617d9d92b35"
+    },
+    "staking_events": {
+      "desired": "a1a449a318ce0093",
+      "id": 9111095,
+      "remote": "a1a449a318ce0093"
+    },
+    "staking_flow_summary": {
+      "desired": "338a8cd359c22bc0",
+      "id": 9111101,
+      "remote": "338a8cd359c22bc0"
+    },
+    "staking_overview": {
+      "desired": "12ea2a24243a09f2",
+      "id": 9111103,
+      "remote": "12ea2a24243a09f2"
+    },
+    "staking_period_stake": {
+      "desired": "1a0c0987e785e07a",
+      "id": 9111105,
+      "remote": "1a0c0987e785e07a"
+    },
+    "staking_period_validators": {
+      "desired": "9c0f8dcbfe98c0da",
+      "id": 9111111,
+      "remote": "9c0f8dcbfe98c0da"
+    },
+    "staking_positions": {
+      "desired": "b3d6c72f24c6451e",
+      "id": 9111097,
+      "remote": "b3d6c72f24c6451e"
+    },
+    "staking_rewards_apr": {
+      "desired": "6ba536cf3cce0953",
+      "id": 9111112,
+      "remote": "6ba536cf3cce0953"
+    },
+    "staking_rewards_apr_by_validator": {
+      "desired": "abafbee795659404",
+      "id": 9111113,
+      "remote": "abafbee795659404"
+    },
+    "staking_validator_stakers": {
+      "desired": "ec0a735a9f674b05",
+      "id": 9111096,
+      "remote": "ec0a735a9f674b05"
+    },
+    "staking_validators": {
+      "desired": "51bf27b16b50af74",
+      "id": 9111098,
+      "remote": "51bf27b16b50af74"
+    },
+    "staking_withdrawals": {
+      "desired": "d33c191341cc3341",
+      "id": 9111102,
+      "remote": "d33c191341cc3341"
+    },
+    "staking_withdrawals_outstanding": {
+      "desired": "17cbcdd7525c1d5a",
+      "id": 9111114,
+      "remote": "17cbcdd7525c1d5a"
+    },
+    "transaction_checks_daily": {
+      "desired": "c34fb611f2e98882",
+      "id": 9111115,
+      "remote": "c34fb611f2e98882"
+    },
+    "validator_beta_participation": {
+      "desired": "6143f63a69c825b9",
+      "id": 9111106,
+      "remote": "6143f63a69c825b9"
+    },
+    "validator_ceremonies": {
+      "desired": "3c6ab0b6e6d98622",
+      "id": 9111110,
+      "remote": "3c6ab0b6e6d98622"
+    },
+    "validator_epochs": {
+      "desired": "4fc10b9b6568208d",
+      "id": 9111107,
+      "remote": "4fc10b9b6568208d"
+    },
+    "validator_membership": {
+      "desired": "738d73b97f9073b3",
+      "id": 9111108,
+      "remote": "738d73b97f9073b3"
+    },
+    "validator_overview": {
+      "desired": "e089905bdcfeb2f0",
+      "id": 9111116,
+      "remote": "e089905bdcfeb2f0"
+    },
+    "validator_participation_daily": {
+      "desired": "2d0e2f3f06ac4681",
+      "id": 9111117,
+      "remote": "2d0e2f3f06ac4681"
+    },
+    "validator_participation_windows": {
+      "desired": "802be2958e18fc41",
+      "id": 9111118,
+      "remote": "802be2958e18fc41"
+    },
+    "validator_rewards_by_staker": {
+      "desired": "ac6653470e975346",
+      "id": 9111119,
+      "remote": "ac6653470e975346"
+    },
+    "validator_rewards_periods": {
+      "desired": "de4041a248afbf83",
+      "id": 9111120,
+      "remote": "de4041a248afbf83"
+    },
+    "validator_stake_daily": {
+      "desired": "b0b15ab27335a0ad",
+      "id": 9111121,
+      "remote": "b0b15ab27335a0ad"
+    },
+    "validator_stake_split_daily": {
+      "desired": "b98e055d561bf082",
+      "id": 9111122,
+      "remote": "b98e055d561bf082"
+    },
+    "validator_stake_status": {
+      "desired": "b59f183e94d23f85",
+      "id": 9111123,
+      "remote": "b59f183e94d23f85"
+    },
+    "validator_staker_history": {
+      "desired": "4485bb5301a23329",
+      "id": 9111104,
+      "remote": "4485bb5301a23329"
+    },
+    "validator_withdrawal_exposure": {
+      "desired": "85296cc12d9db2ef",
+      "id": 9111124,
+      "remote": "85296cc12d9db2ef"
+    }
+  },
+  "version": 1,
+  "visualizations": {
+    "arbitration_daily/chart": {
+      "desired": "57d63409cfe794d3",
+      "id": 13162278,
+      "query_id": 9111060,
+      "remote": "57d63409cfe794d3"
+    },
+    "arbitration_resolution/oldest_open": {
+      "desired": "f58b975b646b293c",
+      "id": 13162281,
+      "query_id": 9111061,
+      "remote": "f58b975b646b293c"
+    },
+    "arbitration_resolution/open": {
+      "desired": "71a1b7859b3c0d02",
+      "id": 13162280,
+      "query_id": 9111061,
+      "remote": "71a1b7859b3c0d02"
+    },
+    "arbitration_resolution/table": {
+      "desired": "561d29fa47967211",
+      "id": 13162279,
+      "query_id": 9111061,
+      "remote": "561d29fa47967211"
+    },
+    "arbitration_windows/rate_30d": {
+      "desired": "8a65f97e13afaeef",
+      "id": 13162283,
+      "query_id": 9111062,
+      "remote": "8a65f97e13afaeef"
+    },
+    "arbitration_windows/table": {
+      "desired": "b42df6ae4f959a26",
+      "id": 13162282,
+      "query_id": 9111062,
+      "remote": "b42df6ae4f959a26"
+    },
+    "fee_allocation/table": {
+      "desired": "0af63050f1695b24",
+      "id": 13162284,
+      "query_id": 9111068,
+      "remote": "0af63050f1695b24"
+    },
+    "fee_config/table": {
+      "desired": "e4cde42d1cad3254",
+      "id": 13162285,
+      "query_id": 9111069,
+      "remote": "e4cde42d1cad3254"
+    },
+    "fee_revenue_daily/cumulative": {
+      "desired": "2eca8d9080a5e279",
+      "id": 13162287,
+      "query_id": 9111070,
+      "remote": "2eca8d9080a5e279"
+    },
+    "fee_revenue_daily/daily": {
+      "desired": "823008fcde1b6f5b",
+      "id": 13162286,
+      "query_id": 9111070,
+      "remote": "823008fcde1b6f5b"
+    },
+    "guard_adoption/counter": {
+      "desired": "461394a3ff7c98d5",
+      "id": 13162288,
+      "query_id": 9111074,
+      "remote": "461394a3ff7c98d5"
+    },
+    "guard_adoption/table": {
+      "desired": "a60e0637e1f9ef6d",
+      "id": 13162289,
+      "query_id": 9111074,
+      "remote": "a60e0637e1f9ef6d"
+    },
+    "latest_requests/table": {
+      "desired": "2880e93d5b9fb932",
+      "id": 13162290,
+      "query_id": 9111075,
+      "remote": "2880e93d5b9fb932"
+    },
+    "network_breakdown/bars": {
+      "desired": "e8957e0c54bdb652",
+      "id": 13162291,
+      "query_id": 9111076,
+      "remote": "e8957e0c54bdb652"
+    },
+    "network_breakdown/table": {
+      "desired": "f641c75d3eff5ce7",
+      "id": 13162292,
+      "query_id": 9111076,
+      "remote": "f641c75d3eff5ce7"
+    },
+    "network_summary/attestations": {
+      "desired": "84150bcffd6a550e",
+      "id": 13162296,
+      "query_id": 9111077,
+      "remote": "84150bcffd6a550e"
+    },
+    "network_summary/completed_results": {
+      "desired": "aa4210981a1d684f",
+      "id": 13162295,
+      "query_id": 9111077,
+      "remote": "aa4210981a1d684f"
+    },
+    "network_summary/freshness": {
+      "desired": "b02f583091b022e5",
+      "id": 13162294,
+      "query_id": 9111077,
+      "remote": "b02f583091b022e5"
+    },
+    "network_summary/gross_fees": {
+      "desired": "596e6e81c18b31ba",
+      "id": 13162298,
+      "query_id": 9111077,
+      "remote": "596e6e81c18b31ba"
+    },
+    "network_summary/safes_checked": {
+      "desired": "ec1a20b097987e9c",
+      "id": 13162297,
+      "query_id": 9111077,
+      "remote": "ec1a20b097987e9c"
+    },
+    "network_summary/windows": {
+      "desired": "54d2756e23b8e324",
+      "id": 13162293,
+      "query_id": 9111077,
+      "remote": "54d2756e23b8e324"
+    },
+    "results_daily/stacked": {
+      "desired": "fa6303680c0a59f5",
+      "id": 13162299,
+      "query_id": 9111078,
+      "remote": "fa6303680c0a59f5"
+    },
+    "results_daily/table": {
+      "desired": "830845564058ee69",
+      "id": 13162300,
+      "query_id": 9111078,
+      "remote": "830845564058ee69"
+    },
+    "sentinel_bonds/table": {
+      "desired": "956f9948e8b688a3",
+      "id": 13162301,
+      "query_id": 9111086,
+      "remote": "956f9948e8b688a3"
+    },
+    "sentinel_coverage/bars": {
+      "desired": "c7e00db82577427b",
+      "id": 13162302,
+      "query_id": 9111087,
+      "remote": "c7e00db82577427b"
+    },
+    "sentinel_coverage/table": {
+      "desired": "693f1366d55ff2ae",
+      "id": 13162303,
+      "query_id": 9111087,
+      "remote": "693f1366d55ff2ae"
+    },
+    "sentinel_disputes/durations": {
+      "desired": "17bca486bf1123f4",
+      "id": 13162305,
+      "query_id": 9111088,
+      "remote": "17bca486bf1123f4"
+    },
+    "sentinel_disputes/table": {
+      "desired": "5eb91c87b56e452d",
+      "id": 13162304,
+      "query_id": 9111088,
+      "remote": "5eb91c87b56e452d"
+    },
+    "sentinel_earnings/table": {
+      "desired": "22aa9c4e15d2d0b5",
+      "id": 13162306,
+      "query_id": 9111089,
+      "remote": "22aa9c4e15d2d0b5"
+    },
+    "sentinel_earnings_daily/bars": {
+      "desired": "1fee795eafeeeec3",
+      "id": 13162307,
+      "query_id": 9111090,
+      "remote": "1fee795eafeeeec3"
+    },
+    "sentinel_overview/freshness": {
+      "desired": "5c3d025b294a699f",
+      "id": 13162309,
+      "query_id": 9111091,
+      "remote": "5c3d025b294a699f"
+    },
+    "sentinel_overview/table": {
+      "desired": "b769063af4803980",
+      "id": 13162308,
+      "query_id": 9111091,
+      "remote": "b769063af4803980"
+    },
+    "sentinel_participation_daily/heatmap": {
+      "desired": "59e9326316a640d2",
+      "id": 13162310,
+      "query_id": 9111092,
+      "remote": "59e9326316a640d2"
+    },
+    "sentinel_verdicts/bars": {
+      "desired": "501bb38792de4010",
+      "id": 13162311,
+      "query_id": 9111093,
+      "remote": "501bb38792de4010"
+    },
+    "sentinel_verdicts/table": {
+      "desired": "2b11063884d5fa42",
+      "id": 13162312,
+      "query_id": 9111093,
+      "remote": "2b11063884d5fa42"
+    },
+    "sentinel_windows/table": {
+      "desired": "3d4f8765eb2e183e",
+      "id": 13162313,
+      "query_id": 9111094,
+      "remote": "3d4f8765eb2e183e"
+    },
+    "staking_by_validator/bars": {
+      "desired": "83f63f9902400374",
+      "id": 13162314,
+      "query_id": 9111099,
+      "remote": "83f63f9902400374"
+    },
+    "staking_by_validator/table": {
+      "desired": "70c6518c7dc3a56f",
+      "id": 13162315,
+      "query_id": 9111099,
+      "remote": "70c6518c7dc3a56f"
+    },
+    "staking_daily/active_stake": {
+      "desired": "085b47b8bb8befe0",
+      "id": 13162316,
+      "query_id": 9111100,
+      "remote": "085b47b8bb8befe0"
+    },
+    "staking_daily/flows": {
+      "desired": "4674d607ba7faa0f",
+      "id": 13162317,
+      "query_id": 9111100,
+      "remote": "4674d607ba7faa0f"
+    },
+    "staking_daily/net_flow": {
+      "desired": "e2f213a0fcb30ebe",
+      "id": 13162318,
+      "query_id": 9111100,
+      "remote": "e2f213a0fcb30ebe"
+    },
+    "staking_daily/requests": {
+      "desired": "6b52109332144486",
+      "id": 13162319,
+      "query_id": 9111100,
+      "remote": "6b52109332144486"
+    },
+    "staking_flow_summary/table": {
+      "desired": "c6907bea48033f68",
+      "id": 13162320,
+      "query_id": 9111101,
+      "remote": "c6907bea48033f68"
+    },
+    "staking_overview/active_stake": {
+      "desired": "8c39b3ac7ce8c01b",
+      "id": 13162322,
+      "query_id": 9111103,
+      "remote": "8c39b3ac7ce8c01b"
+    },
+    "staking_overview/claimable": {
+      "desired": "f5bc0b5300dc7e9d",
+      "id": 13162325,
+      "query_id": 9111103,
+      "remote": "f5bc0b5300dc7e9d"
+    },
+    "staking_overview/freshness": {
+      "desired": "45d3a7035457fd19",
+      "id": 13162326,
+      "query_id": 9111103,
+      "remote": "45d3a7035457fd19"
+    },
+    "staking_overview/outstanding": {
+      "desired": "e4e3a1971c45f040",
+      "id": 13162324,
+      "query_id": 9111103,
+      "remote": "e4e3a1971c45f040"
+    },
+    "staking_overview/stakers": {
+      "desired": "7935e14587e96c7c",
+      "id": 13162323,
+      "query_id": 9111103,
+      "remote": "7935e14587e96c7c"
+    },
+    "staking_rewards_apr/headline": {
+      "desired": "f6ec3e1093e03d82",
+      "id": 13162327,
+      "query_id": 9111112,
+      "remote": "f6ec3e1093e03d82"
+    },
+    "staking_rewards_apr/history": {
+      "desired": "6b6d67f753ac3978",
+      "id": 13162328,
+      "query_id": 9111112,
+      "remote": "6b6d67f753ac3978"
+    },
+    "staking_rewards_apr/table": {
+      "desired": "1a8e67579fdcb118",
+      "id": 13162329,
+      "query_id": 9111112,
+      "remote": "1a8e67579fdcb118"
+    },
+    "staking_rewards_apr_by_validator/bars": {
+      "desired": "90976c53121306e9",
+      "id": 13162330,
+      "query_id": 9111113,
+      "remote": "90976c53121306e9"
+    },
+    "staking_rewards_apr_by_validator/table": {
+      "desired": "fa85a5b0c466862a",
+      "id": 13162331,
+      "query_id": 9111113,
+      "remote": "fa85a5b0c466862a"
+    },
+    "staking_withdrawals_outstanding/table": {
+      "desired": "7c15cad834ccc72b",
+      "id": 13162332,
+      "query_id": 9111114,
+      "remote": "7c15cad834ccc72b"
+    },
+    "transaction_checks_daily/daily_chart": {
+      "desired": "6a5c3b7ef243d5ee",
+      "id": 13162333,
+      "query_id": 9111115,
+      "remote": "6a5c3b7ef243d5ee"
+    },
+    "transaction_checks_daily/total_requests": {
+      "desired": "304582789b70bee4",
+      "id": 13162334,
+      "query_id": 9111115,
+      "remote": "304582789b70bee4"
+    },
+    "validator_overview/freshness": {
+      "desired": "be39aaa932e3a50e",
+      "id": 13162336,
+      "query_id": 9111116,
+      "remote": "be39aaa932e3a50e"
+    },
+    "validator_overview/table": {
+      "desired": "3f0936bb9939514d",
+      "id": 13162335,
+      "query_id": 9111116,
+      "remote": "3f0936bb9939514d"
+    },
+    "validator_participation_daily/heatmap": {
+      "desired": "cfeb3a63772515ae",
+      "id": 13162337,
+      "query_id": 9111117,
+      "remote": "cfeb3a63772515ae"
+    },
+    "validator_participation_windows/table": {
+      "desired": "df9eec4b219198b5",
+      "id": 13162338,
+      "query_id": 9111118,
+      "remote": "df9eec4b219198b5"
+    },
+    "validator_rewards_by_staker/table": {
+      "desired": "921fce664a1f48cf",
+      "id": 13162339,
+      "query_id": 9111119,
+      "remote": "921fce664a1f48cf"
+    },
+    "validator_rewards_periods/bars": {
+      "desired": "8a37ac4093052b07",
+      "id": 13162340,
+      "query_id": 9111120,
+      "remote": "8a37ac4093052b07"
+    },
+    "validator_rewards_periods/table": {
+      "desired": "7419cf3bbd8d20f9",
+      "id": 13162341,
+      "query_id": 9111120,
+      "remote": "7419cf3bbd8d20f9"
+    },
+    "validator_stake_daily/area": {
+      "desired": "b625c41922a34c75",
+      "id": 13162342,
+      "query_id": 9111121,
+      "remote": "b625c41922a34c75"
+    },
+    "validator_stake_split_daily/area": {
+      "desired": "6cf6570de851f3a8",
+      "id": 13162343,
+      "query_id": 9111122,
+      "remote": "6cf6570de851f3a8"
+    },
+    "validator_stake_status/table": {
+      "desired": "d5f0debb154a2b94",
+      "id": 13162344,
+      "query_id": 9111123,
+      "remote": "d5f0debb154a2b94"
+    },
+    "validator_withdrawal_exposure/bars": {
+      "desired": "6d079fcbb91a8ee4",
+      "id": 13162345,
+      "query_id": 9111124,
+      "remote": "6d079fcbb91a8ee4"
+    }
+  }
+}
