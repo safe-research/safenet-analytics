@@ -327,9 +327,9 @@
       "remote": "b7f0f156b20e74aa"
     },
     "transaction_checks_daily": {
-      "desired": "bccac3f2d6c41ca4",
+      "desired": "53ea5cda5d1ca1b8",
       "id": 8996965,
-      "remote": "bccac3f2d6c41ca4"
+      "remote": "53ea5cda5d1ca1b8"
     },
     "validator_beta_participation": {
       "desired": "55131f8ec04e35fe",
