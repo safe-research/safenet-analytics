@@ -1,4 +1,4 @@
-name: "Safenet: transaction checks per day"
+name: "Safenet: transaction checks"
 description: >
   Safenet Aegis (Gnosis Chain): transaction-check requests, completed checks
   (approved or denied verdicts) and attestations per UTC day for the last 30 days, with the
