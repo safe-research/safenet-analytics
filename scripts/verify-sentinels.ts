@@ -433,56 +433,69 @@ const grantFor = (s: string, to: number) => {
   return Number(amount(root) - amount(prev)) / 10 ** SAFE_TOKEN.decimals;
 };
 
+// Realized APR rows recounted from the chain, with the same row set as sentinel_apr: every Sentinel
+// and every published grant recipient, in every period completed by `until`, that held capital,
+// earned or was slashed, or received a grant. The SAFE price is Dune's, so it is not here.
+function aprRows(responses: Response[], changes: CapitalChange[], candidates: string[], until: number) {
+  return aprPeriods(until).flatMap(([from, to]) =>
+    candidates.flatMap((s) => {
+      const f = periodFlows(responses, s, from, to);
+      const locked = timeWeighted(changes, s, "locked", from, to) / 1e6;
+      const wallet = timeWeighted(changes, s, "wallet", from, to) / 1e6;
+      const net = usdc(f.fees - f.slashed);
+      const grant = grantFor(s, to);
+      if (!(locked + wallet > 0) && f.fees === f.slashed && !((grant ?? 0) > 0)) return [];
+      return [{ from, to, sentinel: s, fees: usdc(f.fees), slashed: usdc(f.slashed), net, locked, wallet, grant }];
+    }),
+  );
+}
+const aprCandidates = (rec: Recount) => [...new Set([...sentinelsOf(rec), ...published.entries.map((e) => e.address)])];
+
 // Realized APR per completed period: fees, slashes and time-weighted capital recounted from the chain;
-// the SAFE grant from the published proofs (sentinelAmount); the SAFE price as Dune read it.
+// the SAFE grant from the published proofs (sentinelAmount); the SAFE price as Dune read it. The rows
+// must be exactly the expected (period, Sentinel) pairs, with periods derived independently of them:
+// - with rows: completed by the time of their through_t (the latest decoded Safenet event; the wallet
+//   transfers are capped at the same block);
+// - empty: a completed execution must still list every period that ended a day before it finished
+//   (a day covers Dune's ingestion delay), recounted at the finalized head.
 async function compareApr(r: Result) {
-  const rec = await recountFor(r);
-  const block = boundOf(r)!;
+  const empty = r.rows.length === 0;
+  const rec = empty ? atHead : await recountFor(r);
+  const block = empty ? head : boundOf(r)!;
+  const until = empty ? Date.parse(r.execution_ended_at ?? "") / 1000 - 86400 : Math.max(...r.rows.map((x) => Number(x.through_t ?? 0)));
+  if (!Number.isFinite(until)) return void mismatches.push({ where: "sentinel_apr", column: "cutoff", rpc: "a completed execution", dune: r.execution_ended_at ?? null });
   const changes = [...lockedChanges(rec.responses), ...walletChanges.filter((c) => c.block <= block)];
-  for (const row of r.rows) {
-    const s = addressOf(row);
-    const from = duneTime(row.period_start)!;
-    const to = duneTime(row.period_end)!;
-    const where = `sentinel_apr ${row.period} ${nameOf(s)}`;
-    const f = periodFlows(rec.responses, s, from, to);
-    const locked = timeWeighted(changes, s, "locked", from, to) / 1e6;
-    const wallet = timeWeighted(changes, s, "wallet", from, to) / 1e6;
-    const net = usdc(f.fees - f.slashed);
-    compare(where, "fees_usdc", usdc(f.fees), row.fees_usdc);
-    compare(where, "slashed_usdc", usdc(f.slashed), row.slashed_usdc);
-    compare(where, "capital_locked_usdc", locked, row.capital_locked_usdc);
-    compare(where, "capital_wallet_usdc", wallet, row.capital_wallet_usdc);
-    const grant = grantFor(s, to);
-    compare(where, "safe_grant", grant, row.safe_grant);
+  const expected = aprRows(rec.responses, changes, aprCandidates(rec), until);
+  const key = (from: number, s: string) => `${from}:${s}`;
+  const label = (from: number, s: string) => `sentinel_apr ${new Date(from * 1000).toISOString().slice(0, 10)} ${nameOf(s)}`;
+  const byKey = new Map(r.rows.map((x) => [key(duneTime(x.period_start)!, addressOf(x)), x]));
+  for (const e of expected) {
+    const row = byKey.get(key(e.from, e.sentinel));
+    if (!row) {
+      mismatches.push({ where: label(e.from, e.sentinel), column: "row", rpc: "expected", dune: "no row" });
+      continue;
+    }
+    byKey.delete(key(e.from, e.sentinel));
+    const where = label(e.from, e.sentinel);
+    compare(where, "fees_usdc", e.fees, row.fees_usdc);
+    compare(where, "slashed_usdc", e.slashed, row.slashed_usdc);
+    compare(where, "capital_locked_usdc", e.locked, row.capital_locked_usdc);
+    compare(where, "capital_wallet_usdc", e.wallet, row.capital_wallet_usdc);
+    compare(where, "safe_grant", e.grant, row.safe_grant);
     const price = row.safe_price_usd === null || row.safe_price_usd === undefined ? null : Number(row.safe_price_usd);
-    const grantUsd = grant === null || price === null ? null : grant * price;
-    const total = grantUsd === null ? null : net + grantUsd;
-    // Rates to 1e-6 percentage points relative: the capital is a double average.
+    const total = e.grant === null || price === null ? null : e.net + e.grant * price;
+    // Rates to 1e-6 relative: the capital is a double average.
     const rate = (column: string, mine: number | null) => {
       const d = row[column] === null || row[column] === undefined ? null : Number(row[column]);
       if (mine === null || d === null ? mine !== d : Math.abs(mine - d) > 1e-6 * Math.max(1, Math.abs(mine))) mismatches.push({ where, column, rpc: mine, dune: d });
     };
-    rate("fee_apr_locked", apr(net, locked));
-    rate("fee_apr_total", apr(net, locked + wallet));
-    rate("total_apr_locked", apr(total, locked));
-    rate("total_apr_total", apr(total, locked + wallet));
+    rate("fee_apr_locked", apr(e.net, e.locked));
+    rate("fee_apr_total", apr(e.net, e.locked + e.wallet));
+    rate("total_apr_locked", apr(total, e.locked));
+    rate("total_apr_total", apr(total, e.locked + e.wallet));
   }
-  // The rows are exactly the expected (period, Sentinel) pairs. Periods come from the time of the
-  // block Dune had ingested (as_of_block), not from the rows, so a missing period is caught too.
-  const asOf = Math.max(...r.rows.map((x) => Number(x.as_of_block ?? 0)));
-  const asOfTime = await rpc.blockTime({ blockNumber: String(asOf) });
-  const candidates = [...new Set([...sentinelsOf(rec), ...published.entries.map((e) => e.address)])];
-  const expected = new Set<string>();
-  for (const [from, to] of aprPeriods(asOfTime))
-    for (const s of candidates) {
-      const f = periodFlows(rec.responses, s, from, to);
-      const capital = timeWeighted(changes, s, "locked", from, to) + timeWeighted(changes, s, "wallet", from, to);
-      if (capital > 0 || f.fees !== f.slashed || (grantFor(s, to) ?? 0) > 0) expected.add(`${from}:${s}`);
-    }
-  const actual = new Set(r.rows.map((x) => `${duneTime(x.period_start)}:${addressOf(x)}`));
-  const label = (k: string) => `sentinel_apr ${new Date(Number(k.split(":")[0]) * 1000).toISOString().slice(0, 10)} ${nameOf(k.split(":")[1])}`;
-  for (const k of expected) if (!actual.has(k)) mismatches.push({ where: label(k), column: "row", rpc: "expected", dune: "no row" });
-  for (const k of actual) if (!expected.has(k)) mismatches.push({ where: label(k), column: "row", rpc: "not expected", dune: "row" });
+  for (const row of byKey.values())
+    mismatches.push({ where: label(duneTime(row.period_start)!, addressOf(row)), column: "row", rpc: "not expected", dune: "row" });
 }
 
 // Panels against each other, in the same execution population.
@@ -513,8 +526,10 @@ function compareNoCommit(where: string, t: ReturnType<typeof sentinelTotals>, no
 }
 
 const compared: string[] = [];
-const run = async (q: (typeof QUERIES)[number], f: (r: Result) => Promise<void>) => {
-  if (dune[q]?.rows.length) await f(dune[q]!), compared.push(q);
+const run = async (q: (typeof QUERIES)[number], f: (r: Result) => Promise<void>, { empty = false } = {}) => {
+  const r = dune[q];
+  // An empty result is compared only where the comparison can judge it (completed execution).
+  if (r?.rows.length || (empty && r?.state === "QUERY_STATE_COMPLETED")) await f(r!), compared.push(q);
 };
 await run("sentinel_overview", compareOverview);
 await run("sentinel_verdicts", compareVerdicts);
@@ -524,7 +539,7 @@ await run("sentinel_coverage", compareCoverage);
 await run("sentinel_disputes", compareDisputes);
 await run("sentinel_earnings", compareEarnings);
 await run("sentinel_bonds", compareBonds);
-await run("sentinel_apr", compareApr);
+await run("sentinel_apr", compareApr, { empty: true });
 await run("arbitration_windows", compareArbitrationWindows);
 await run("arbitration_daily", compareArbitrationDaily);
 await run("arbitration_resolution", compareArbitrationResolution);
@@ -684,28 +699,22 @@ const report = {
   ),
   // Completed Aegis reward periods at the finalized head, recounted from the chain (sentinel_apr). The
   // SAFE price is Dune's, so the SAFE part is in SAFE here, and the APRs are the fee part only.
-  realized_apr: aprPeriods(headTime).flatMap(([from, to]) =>
-    sentinels.flatMap((s) => {
-      const changes = [...lockedChanges(atHead.responses), ...walletChanges.filter((c) => c.block <= head)];
-      const f = periodFlows(atHead.responses, s, from, to);
-      const locked = timeWeighted(changes, s, "locked", from, to) / 1e6;
-      const wallet = timeWeighted(changes, s, "wallet", from, to) / 1e6;
-      const net = usdc(f.fees - f.slashed);
-      if (!(locked + wallet > 0) && net === 0) return [];
-      const grant = grantFor(s, to);
-      return [{
-        period: `${iso(from)!.slice(0, 10)} – ${iso(to - 86400)!.slice(0, 10)}`,
-        sentinel: nameOf(s),
-        fees_usdc: usdc(f.fees),
-        slashed_usdc: usdc(f.slashed),
-        capital_locked_usdc: locked,
-        capital_wallet_usdc: wallet,
-        safe_grant: grant,
-        fee_apr_locked: apr(net, locked),
-        fee_apr_total: apr(net, locked + wallet),
-      }];
-    }),
-  ),
+  realized_apr: aprRows(
+    atHead.responses,
+    [...lockedChanges(atHead.responses), ...walletChanges.filter((c) => c.block <= head)],
+    aprCandidates(atHead),
+    headTime,
+  ).map((x) => ({
+    period: `${iso(x.from)!.slice(0, 10)} – ${iso(x.to - 86400)!.slice(0, 10)}`,
+    sentinel: nameOf(x.sentinel),
+    fees_usdc: x.fees,
+    slashed_usdc: x.slashed,
+    capital_locked_usdc: x.locked,
+    capital_wallet_usdc: x.wallet,
+    safe_grant: x.grant,
+    fee_apr_locked: apr(x.net, x.locked),
+    fee_apr_total: apr(x.net, x.locked + x.wallet),
+  })),
   safe_rewards: {
     distributor: REWARDS_DISTRIBUTOR.address,
     onchain_root: onchainRoot,

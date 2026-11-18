@@ -6,9 +6,10 @@
 --   APR = return / time-weighted capital × 365 days / period length × 100
 --
 -- Periods: the fixed two-week Aegis reward periods [period_start, period_end) from 2026-10-13 00:00 UTC,
--- as in staking_period_stake. A period is listed once the latest Gnosis block Dune has ingested
--- (as_of_time of safenet_sentinel_responses) is past its end, so a period whose data is still arriving
--- is never shown as completed.
+-- as in staking_period_stake. A period is listed once the latest decoded Safenet event
+-- (through_time of safenet_sentinel_responses) is past its end. Every input has reached that block:
+-- the oracle events, and the wallet transfers, which are capped at it. A period whose data is still
+-- arriving is never shown as completed.
 -- Return, in the period:
 --   net_fees_usdc   fee rewards accrued on requests decided in the period (outcome_at), minus the
 --                   slashes taken from the Sentinel's bonds in the period: a missing response at
@@ -32,6 +33,8 @@
 -- Size: Dune inlines every query reference and CTE where it is used, so safenet_sentinel_responses
 -- (and the wallet transfers) are read exactly once: each response becomes its dated changes (unnest),
 -- one window turns them into balances, and one join with the periods aggregates everything.
+-- Snapshot metadata (through_block, through_time) rides on one 'meta' row per response that overlaps
+-- every period, so it reaches every period whatever the activity, and grant-only rows keep it.
 
 with
 
@@ -40,44 +43,49 @@ with
 -- - (bond - slash) at the claim. fee: accrued when the request is decided. slash: as taken.
 -- wallet: USDC.e in (+) and out (-) of the Sentinel's own account.
 changes as (
-    select r.sentinel, r.through_block, r.as_of_block, cast(to_unixtime(r.as_of_time) as bigint) as as_of_t, e.kind, cast(to_unixtime(e.at) as bigint) as t, e.amount
+    select r.sentinel, r.through_block, cast(to_unixtime(r.through_time) as bigint) as through_t, e.kind,
+        cast(to_unixtime(e.at) as bigint) as t, e.amount
     from {{query:safenet_sentinel_responses}} as r
     cross join unnest(
-        array['locked', 'locked', 'locked', 'fee', 'slash'],
+        array['locked', 'locked', 'locked', 'fee', 'slash', 'meta'],
         array[
             r.committed_at,
             if(r.slash_reason = 'dispute_lost', r.outcome_at, coalesce(r.disputed_at, r.outcome_at)),
             r.claimed_at,
             r.outcome_at,
-            if(r.slash_reason = 'dispute_lost', r.outcome_at, coalesce(r.disputed_at, r.outcome_at))
+            if(r.slash_reason = 'dispute_lost', r.outcome_at, coalesce(r.disputed_at, r.outcome_at)),
+            r.through_time
         ],
         array[
             cast(r.bond_amount as double),
             -cast(r.slash_due as double),
             -cast(r.bond_amount - r.slash_due as double),
             cast(r.fee_reward_accrued as double),
-            cast(r.slash_due as double)
+            cast(r.slash_due as double),
+            0e0
         ]
     ) as e (kind, at, amount)
-    where r.committed_at is not null and e.at is not null and e.amount <> 0
+    where e.kind = 'meta' or (r.committed_at is not null and e.at is not null and e.amount <> 0)
     union all
-    select sentinel, cast(null as bigint), cast(null as bigint), cast(null as bigint), 'wallet',
+    select sentinel, cast(null as bigint), cast(null as bigint), 'wallet',
         cast(to_unixtime(block_time) as bigint), if(direction = 'in', cast(amount as double), -cast(amount as double))
     from {{query:safenet_sentinel_wallet_transfers}}
 ),
 
 -- Capital: the balance after each change, held until the next change of the same kind (or for ever).
--- Fee and slash rows keep their own amount and an instant [t, t].
+-- Fee and slash rows keep their own amount and an instant [t, t]; meta rows span all time.
 segments as (
     select
         kind,
         sentinel,
         through_block,
-        as_of_block,
-        as_of_t,
-        t as seg_from,
-        if(kind in ('locked', 'wallet'),
-            coalesce(lead(t) over (partition by kind, sentinel order by t, amount desc), cast(9223372036 as bigint)), t) as seg_to,
+        through_t,
+        if(kind = 'meta', 0, t) as seg_from,
+        case
+            when kind in ('locked', 'wallet') then coalesce(lead(t) over (partition by kind, sentinel order by t, amount desc), cast(9223372036 as bigint))
+            when kind = 'meta' then cast(9223372036 as bigint) -- overlaps every period
+            else t
+        end as seg_to,
         if(kind in ('locked', 'wallet'),
             sum(amount) over (partition by kind, sentinel order by t, amount desc rows unbounded preceding), amount) as value
     from changes
@@ -98,15 +106,14 @@ per_period as (
         p.period_end,
         s.sentinel,
         max(s.through_block) as through_block, -- the same on every response row
-        max(s.as_of_block) as as_of_block,
-        max(s.as_of_t) as as_of_t,
+        max(s.through_t) as through_t,
         sum(if(s.kind = 'fee', s.value, 0)) as fees,
         sum(if(s.kind = 'slash', s.value, 0)) as slashed,
         sum(if(s.kind = 'locked', s.value * (least(s.seg_to, p.p_to) - greatest(s.seg_from, p.p_from)), 0)) / 1209600 as locked_avg,
         sum(if(s.kind = 'wallet', s.value * (least(s.seg_to, p.p_to) - greatest(s.seg_from, p.p_from)), 0)) / 1209600 as wallet_avg
     from segments as s
     join periods as p
-        on if(s.kind in ('locked', 'wallet'), s.seg_from < p.p_to and s.seg_to > p.p_from, s.seg_from >= p.p_from and s.seg_from < p.p_to)
+        on if(s.kind in ('locked', 'wallet', 'meta'), s.seg_from < p.p_to and s.seg_to > p.p_from, s.seg_from >= p.p_from and s.seg_from < p.p_to)
     group by 1, 2, 3
 ),
 
@@ -159,9 +166,8 @@ joined as (
         coalesce(l.label, '0x' || lower(to_hex(coalesce(pp.sentinel, g.sentinel)))) as name,
         'https://gnosisscan.io/address/0x' || lower(to_hex(coalesce(pp.sentinel, g.sentinel))) as sentinel_url,
         max(pp.through_block) over () as through_block,
-        max(pp.as_of_block) over () as as_of_block,
         p.p_to,
-        max(pp.as_of_t) over () as as_of_t,
+        max(pp.through_t) over () as through_t,
         coalesce(pp.fees, 0) / 1e6 as fees_usdc,
         coalesce(pp.slashed, 0) / 1e6 as slashed_usdc,
         (coalesce(pp.fees, 0) - coalesce(pp.slashed, 0)) / 1e6 as net_fees_usdc,
@@ -191,7 +197,7 @@ rates as (
         if(capital_total_usdc > 0, safe_grant * safe_price_usd / capital_total_usdc * 365 / 14 * 100) as safe_apr_total,
         if(capital_total_usdc > 0, (net_fees_usdc + safe_grant * safe_price_usd) / capital_total_usdc * 365 / 14 * 100) as total_apr_total
     from joined
-    where p_to <= as_of_t -- completed by the indexed chain, not by the clock
+    where p_to <= through_t -- completed by every input, not by the clock
         and (capital_total_usdc > 0 or net_fees_usdc <> 0 or coalesce(safe_grant, 0) > 0)
 )
 
@@ -225,6 +231,6 @@ select
     period_start,
     period_end,
     through_block, -- for the verification
-    as_of_block
+    through_t
 from rates
 order by period_start desc, total_apr_total desc nulls last, name

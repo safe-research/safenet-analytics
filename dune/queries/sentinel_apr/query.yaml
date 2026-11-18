@@ -81,4 +81,4 @@ visualizations:
         - { name: period_start, title: period_start, type: normal, alignContent: left, isHidden: true }
         - { name: period_end, title: period_end, type: normal, alignContent: left, isHidden: true }
         - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }
-        - { name: as_of_block, title: as_of_block, type: normal, alignContent: left, isHidden: true }
+        - { name: through_t, title: through_t, type: normal, alignContent: left, isHidden: true }
