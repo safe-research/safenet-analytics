@@ -129,13 +129,15 @@ Registrations are by era: `ValidatorStakerSet` on the Beta Consensus `0x2236…c
 `npm run sync:validator-rewards` is incremental: it reuses what is recorded and downloads only rewards DBs whose CID is new, with the previous period's DB to compare against. A run without a new ENS contenthash downloads nothing and leaves every file unchanged. A new validator staker or beneficiary, or `--full`, reads everything again. It copies the published rewards into `dune/data/validator-rewards.json` and the `safenet_validator_rewards` and `safenet_reward_breakdown` queries. There are two sources:
 
 - **Beta:** [safenet-data `assets/rewards`](https://github.com/safe-fndn/safenet-data/tree/main/assets/rewards), at its last rewards commit `276526f` (`BETA_REWARDS_REF`). The mirror is frozen and will not be updated.
-- **Aegis:** the source of truth on chain. The resolver's `ContenthashChanged` history for the ENS name `rewards.safenet-gov.eth` pins each rewards DB on IPFS, which is fetched as a CAR (`src/rewards-ipfs.ts`). Every block is verified against its CID, and the root CID must equal the contenthash. The first pinned DB is the Beta-final one (root `0x6689…`, the same as git). The second is the first Aegis period. Gateways are tried in order (`IPFS_GATEWAY_URL`, default Filebase then Pinata), because Pinata's public gateway refuses content not pinned with it.
+- **Aegis:** the source of truth on chain. The resolver's `ContenthashChanged` history for the ENS name `rewards.safenet-gov.eth` pins each rewards DB on IPFS, which is fetched as a CAR (`src/rewards-ipfs.ts`). Every block is verified against its CID, and the root CID must equal the contenthash. The first pinned DB is the Beta-final one (root `0x6689…`, the same as git). The second and third are the first two Aegis periods. Gateways are tried in order (`IPFS_GATEWAY_URL`, default Filebase then Pinata), because Pinata's public gateway refuses content not pinned with it.
 
 - **Periods.**
   - Each published `latest.json` is a Merkle root of the Ethereum distributor.
   - Roots since the launch reset (the last index with `tokenTotal` 0, "Clear rewards of test data for launch") are recorded; earlier ones were test data.
   - A root with a new `rewardsUntil` ends a period. A root with the same `rewardsUntil` is a re-issue, such as a KYC release, and is merged into its period.
-  - So far: 17 roots. There are 13 Beta periods from 2026-04-07 to 2026-10-06, of about 346,151 SAFE each, and the first Aegis period, 2026-10-13 to 2026-10-27. Its 223,076.92 SAFE are 192,307.69 of staking rewards plus 30,769.23 of Sentinel grants. Its root `0xab63…711e` was set on chain on 2026-11-04.
+  - So far: 18 roots. There are 13 Beta periods from 2026-04-07 to 2026-10-06, of about 346,151 SAFE each, and two Aegis periods:
+    - 2026-10-13 to 2026-10-27: 223,076.92 SAFE, of which 192,307.69 are staking rewards and 30,769.23 are Sentinel grants. Root `0xab63…711e`, set on chain on 2026-11-04.
+    - 2026-10-27 to 2026-11-10: also 223,076.92 SAFE, with 192,307.69 of staking rewards and 30,769.23 of Sentinel grants. Root `0xe65e…c23d`, pinned by ENS in Ethereum block 26442342 on 2026-11-18.
   - Aegis periods are two weeks from 2026-10-13. 2026-10-06 to 2026-10-13 is the gap between the programmes.
   - An ended Aegis period that is not published appears as *not yet published*, with no amounts.
 - **Allocated** in a period = change in cumulative published amounts (cumulative + KYC-withheld) from the previous period's last root. It splits by recipient:
@@ -148,6 +150,7 @@ Registrations are by era: `ValidatorStakerSet` on the Beta Consensus `0x2236…c
 
 - **Commission.** Not published. The sync derives the split from the published payouts and chain data, and records it only if it reproduces every published payout ([staking.md](staking.md#commission-split)). This covers Beta and Aegis: all 13 Beta periods are derived, with Beta's 1-SAFE minimum payout. A period whose payouts cannot be reproduced reads *split not verified* (Beta: *Beta: split not derivable*).
   - 2026-10-13 to 2026-10-27 is derived with every payout reproduced exactly, and equals the reward scripts' own split for all 846 recipients (test fixture). Commission is 5,574.52 SAFE. The per-validator rewards and APR are in [staking.md](staking.md#first-Aegis-period-2026-10-13-to-2026-10-27).
+  - 2026-10-27 to 2026-11-10 is derived with all 879 payouts reproduced exactly (849 recipients). Commission is 7,372.56 SAFE.
   - A later period without a verified split reads *split not verified*.
 - **Claimed / claimable.**
   - Claims are the distributor's `Claimed(account, amount)` events (`safenet_reward_events`), attributed by **address only**.
@@ -240,7 +243,7 @@ Generated. `kind_row` is `root` or `entry`:
    - stake-status rows add up to the total, and the total = the Staking headline;
    - outstanding withdrawals per validator = the Staking replay (`scripts/lib/staking.ts`) at the Staking `through_block`.
 4. **Rewards**:
-   - the latest root's proof files (880 for 2026-10-27) add up exactly to `tokenTotal` (cumulative + KYC-withheld);
+   - the latest root's proof files (882 for 2026-11-10) add up exactly to `tokenTotal` (cumulative + KYC-withheld);
    - `tokenTotal` never decreases;
    - each period's final root appears in the distributor's on-chain root updates;
    - no staker has claimed more than its published amount;

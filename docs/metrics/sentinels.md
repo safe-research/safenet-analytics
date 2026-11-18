@@ -224,7 +224,7 @@ Sentinel SAFE rewards are paid by Safe Foundation's rewards distributor on **Eth
 
 - **Only published amounts.** Nothing is calculated. The reward methodology for Sentinels is a proposal pending SafeDAO approval (`safe-fndn/safenet-staking-scripts`), so unpublished allocations are never estimated.
 - **All reward types in this table.** The earnings table shows the address's whole published amount, the column says *all reward types*. Aegis proofs also carry `sentinelAmount`, the cumulative Sentinel grant within it; the sync copies it (`sentinel_amount`), and the [realized APR](#realized-apr) uses only that part. Beta proofs have none.
-- **Current state.** The first Aegis root (rewards until 2026-10-27) grants 15,384.62 SAFE to each of two Sentinel addresses, all of it `sentinelAmount` and all of it withheld until KYC. `cumulativeClaimed` is 0 for every Sentinel. A Sentinel without an entry shows *No allocation published* rather than 0.
+- **Current state.** Two Aegis roots are published. Each grants 15,384.62 SAFE of `sentinelAmount` to the same two Sentinel addresses (Candide and BlockSec). The latest root, with rewards until 2026-11-10, gives each of them 30,769.23 SAFE cumulatively. Of that, 15,384.62 SAFE is claimable, and the other 15,384.62 SAFE is still withheld until KYC. Claims are read from the distributor on Ethereum (`cumulativeClaimed`). A Sentinel without an entry shows *No allocation published* rather than 0.
 
 ## Bonds
 
