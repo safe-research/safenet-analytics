@@ -6,10 +6,10 @@
 --   APR = return / time-weighted capital × 365 days / period length × 100
 --
 -- Periods: the fixed two-week Aegis reward periods [period_start, period_end) from 2026-10-13 00:00 UTC,
--- as in staking_period_stake. A period is listed once the latest decoded Safenet event
--- (through_time of safenet_sentinel_responses) is past its end. Every input has reached that block:
--- the oracle events, and the wallet transfers, which are capped at it. A period whose data is still
--- arriving is never shown as completed.
+-- as in staking_period_stake. A period is listed once the latest decoded Safenet event is past its
+-- end: the 'meta' row of safenet_sentinel_wallet_transfers, which that model always returns (whatever
+-- the transfers or responses) with the block its transfers are capped at and its time. Every input has
+-- reached that block, so a period whose data is still arriving is never shown as completed.
 -- Return, in the period:
 --   net_fees_usdc   fee rewards accrued on requests decided in the period (outcome_at), minus the
 --                   slashes taken from the Sentinel's bonds in the period: a missing response at
@@ -33,8 +33,8 @@
 -- Size: Dune inlines every query reference and CTE where it is used, so safenet_sentinel_responses
 -- (and the wallet transfers) are read exactly once: each response becomes its dated changes (unnest),
 -- one window turns them into balances, and one join with the periods aggregates everything.
--- Snapshot metadata (through_block, through_time) rides on one 'meta' row per response that overlaps
--- every period, so it reaches every period whatever the activity, and grant-only rows keep it.
+-- The cutoff's 'meta' row spans all time, so it reaches every period whatever the activity, and
+-- grant-only and wallet-only rows keep it even without any response.
 
 with
 
@@ -43,32 +43,35 @@ with
 -- - (bond - slash) at the claim. fee: accrued when the request is decided. slash: as taken.
 -- wallet: USDC.e in (+) and out (-) of the Sentinel's own account.
 changes as (
-    select r.sentinel, r.through_block, cast(to_unixtime(r.through_time) as bigint) as through_t, e.kind,
+    select r.sentinel, cast(null as bigint) as through_block, cast(null as bigint) as through_t, e.kind,
         cast(to_unixtime(e.at) as bigint) as t, e.amount
     from {{query:safenet_sentinel_responses}} as r
     cross join unnest(
-        array['locked', 'locked', 'locked', 'fee', 'slash', 'meta'],
+        array['locked', 'locked', 'locked', 'fee', 'slash'],
         array[
             r.committed_at,
             if(r.slash_reason = 'dispute_lost', r.outcome_at, coalesce(r.disputed_at, r.outcome_at)),
             r.claimed_at,
             r.outcome_at,
-            if(r.slash_reason = 'dispute_lost', r.outcome_at, coalesce(r.disputed_at, r.outcome_at)),
-            r.through_time
+            if(r.slash_reason = 'dispute_lost', r.outcome_at, coalesce(r.disputed_at, r.outcome_at))
         ],
         array[
             cast(r.bond_amount as double),
             -cast(r.slash_due as double),
             -cast(r.bond_amount - r.slash_due as double),
             cast(r.fee_reward_accrued as double),
-            cast(r.slash_due as double),
-            0e0
+            cast(r.slash_due as double)
         ]
     ) as e (kind, at, amount)
-    where e.kind = 'meta' or (r.committed_at is not null and e.at is not null and e.amount <> 0)
+    where r.committed_at is not null and e.at is not null and e.amount <> 0
     union all
-    select sentinel, cast(null as bigint), cast(null as bigint), 'wallet',
-        cast(to_unixtime(block_time) as bigint), if(direction = 'in', cast(amount as double), -cast(amount as double))
+    -- wallet rows, and the one meta row with the cutoff block and time
+    select sentinel,
+        if(direction = 'meta', block_number),
+        if(direction = 'meta', cast(to_unixtime(block_time) as bigint)),
+        if(direction = 'meta', 'meta', 'wallet'),
+        cast(to_unixtime(block_time) as bigint),
+        case direction when 'in' then cast(amount as double) when 'out' then -cast(amount as double) else 0e0 end
     from {{query:safenet_sentinel_wallet_transfers}}
 ),
 
@@ -105,7 +108,7 @@ per_period as (
         p.period_start,
         p.period_end,
         s.sentinel,
-        max(s.through_block) as through_block, -- the same on every response row
+        max(s.through_block) as through_block, -- from the meta row only
         max(s.through_t) as through_t,
         sum(if(s.kind = 'fee', s.value, 0)) as fees,
         sum(if(s.kind = 'slash', s.value, 0)) as slashed,

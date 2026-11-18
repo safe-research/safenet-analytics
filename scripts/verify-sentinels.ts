@@ -454,15 +454,23 @@ const aprCandidates = (rec: Recount) => [...new Set([...sentinelsOf(rec), ...pub
 // Realized APR per completed period: fees, slashes and time-weighted capital recounted from the chain;
 // the SAFE grant from the published proofs (sentinelAmount); the SAFE price as Dune read it. The rows
 // must be exactly the expected (period, Sentinel) pairs, with periods derived independently of them:
-// - with rows: completed by the time of their through_t (the latest decoded Safenet event; the wallet
-//   transfers are capped at the same block);
+// - with rows: completed by the RPC time of their through_block (the latest decoded Safenet event; the
+//   wallet transfers are capped at the same block), and every row's through_t must equal it;
 // - empty: a completed execution must still list every period that ended a day before it finished
 //   (a day covers Dune's ingestion delay), recounted at the finalized head.
 async function compareApr(r: Result) {
   const empty = r.rows.length === 0;
   const rec = empty ? atHead : await recountFor(r);
   const block = empty ? head : boundOf(r)!;
-  const until = empty ? Date.parse(r.execution_ended_at ?? "") / 1000 - 86400 : Math.max(...r.rows.map((x) => Number(x.through_t ?? 0)));
+  // The cutoff is the RPC time of the result's through_block, never Dune's own through_t, which is
+  // checked against it: an earlier through_t would otherwise hide a dropped newest period.
+  let until: number;
+  if (empty) until = Date.parse(r.execution_ended_at ?? "") / 1000 - 86400;
+  else {
+    until = await rpc.blockTime({ blockNumber: String(block) });
+    for (const t of new Set(r.rows.map((x) => (x.through_t === null || x.through_t === undefined ? null : Number(x.through_t)))))
+      compare("sentinel_apr", "through_t = time of through_block", until, t);
+  }
   if (!Number.isFinite(until)) return void mismatches.push({ where: "sentinel_apr", column: "cutoff", rpc: "a completed execution", dune: r.execution_ended_at ?? null });
   const changes = [...lockedChanges(rec.responses), ...walletChanges.filter((c) => c.block <= block)];
   const expected = aprRows(rec.responses, changes, aprCandidates(rec), until);

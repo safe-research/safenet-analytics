@@ -244,4 +244,9 @@ test("the Sentinel APR values the SAFE token at Dune's price and reads the share
   for (const key of ["safenet_sentinel_responses", "safenet_sentinel_wallet_transfers", "safenet_sentinel_rewards"]) assert.ok(q.includes(`{{query:${key}}}`), key);
   assert.ok(q.includes("sentinel_amount"), "the grant is the published sentinelAmount, not every reward type");
   assert.ok(q.includes("1793059200") && q.includes("1209600"), "the Aegis reward periods of staking_period_stake");
+  // The cutoff comes from the meta row the wallet model always returns, not from response rows.
+  const wallet = await read("safenet_sentinel_wallet_transfers");
+  assert.ok(/'meta'/.test(wallet) && wallet.includes("max(block_time) over () as through_time"), "wallet model emits the bound as a meta row");
+  assert.ok(q.includes("if(direction = 'meta'") && q.includes("p_to <= through_t"), "sentinel_apr cuts off at the meta row");
+  assert.ok(!/r\.through_time|r\.as_of/.test(q), "the cutoff does not depend on response rows");
 });

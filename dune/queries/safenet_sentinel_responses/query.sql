@@ -41,7 +41,6 @@ per_request as (
     select
         request_id,
         max(block_number) as max_block,
-        max(block_time) as max_time,
         max(if(event = 'request', block_number)) as proposal_block,
         max(if(event = 'request', block_time)) as proposed_at,
         max(if(event = 'request', commit_deadline)) as commit_deadline,
@@ -82,9 +81,9 @@ per_request as (
 ),
 
 -- through_block: the highest Gnosis block among all events read (the verification recounts up to
--- exactly this block), through_time its time; the null request_id group holds the events of no request.
+-- exactly this block); the null request_id group holds the events of no request.
 bounded as (
-    select *, max(max_block) over () as through_block, max(max_time) over () as through_time
+    select *, max(max_block) over () as through_block
     from per_request
 ),
 
@@ -195,8 +194,7 @@ joined as (
         last_reverted_at,
         as_of_block,
         as_of_time,
-        through_block,
-        through_time
+        through_block
     from pairs
     where eligible or ci > 0
 ),
