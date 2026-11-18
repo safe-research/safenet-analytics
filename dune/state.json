@@ -362,9 +362,9 @@
       "remote": "7ae6f84f70d3f85f"
     },
     "validator_participation_windows": {
-      "desired": "154315fe1eb9aa92",
+      "desired": "05a4d525f620732c",
       "id": 9022246,
-      "remote": "154315fe1eb9aa92"
+      "remote": "05a4d525f620732c"
     },
     "validator_rewards_by_staker": {
       "desired": "bfe516ca0cd0b2d4",
@@ -759,10 +759,10 @@
       "remote": "cfeb3a63772515ae"
     },
     "validator_participation_windows/table": {
-      "desired": "89c7fef3fd8fb0f8",
+      "desired": "df9eec4b219198b5",
       "id": 13067284,
       "query_id": 9022246,
-      "remote": "89c7fef3fd8fb0f8"
+      "remote": "df9eec4b219198b5"
     },
     "validator_rewards_by_staker/table": {
       "desired": "921fce664a1f48cf",
