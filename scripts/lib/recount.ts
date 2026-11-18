@@ -131,7 +131,7 @@ export type RequestRecord = {
   revealDeadline: number;
   // approved null: committed only. bond: Committed.bondAmount; reason: Revealed.reason.
   votes: { sentinel: string; approved: boolean | null; time?: number; committedAt?: number; bond?: bigint; reason?: string }[];
-  claims: { sentinel: string; bondReturn: bigint; feeReward: bigint }[];
+  claims: { sentinel: string; bondReturn: bigint; feeReward: bigint; time?: number }[];
   bondLocked: bigint;
   disputed: boolean;
   // DisputeTriggered: the freeze (State.FROZEN), and the block after which the arbitration can time out.
@@ -261,7 +261,7 @@ export async function buildRequests(rpc: Pick<Rpc, "blockTime">, logs: SafenetLo
       if (!v) issues.push(`request ${req.requestId}: reveal without commit by ${sentinel}`);
       else Object.assign(v, { approved: word(l.data, 0) === 1n, time, reason: abiString(l.data, 2) });
     } else if (name === "Claimed") {
-      req.claims.push({ sentinel, bondReturn: word(l.data, 0), feeReward: word(l.data, 1) });
+      req.claims.push({ sentinel, bondReturn: word(l.data, 0), feeReward: word(l.data, 1), time });
     } else if (name === "DisputeTriggered") {
       if (req.disputed) issues.push(`request ${req.requestId}: more than one DisputeTriggered`);
       req.disputed = true;

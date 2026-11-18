@@ -134,12 +134,14 @@ for (const c of membershipChecks) if (!c.ok) issues.push(`membership check faile
 // Participation vs Dune, at each query's block
 
 const compared: string[] = [];
-if (duneBlock) {
-  const atDune = build(logs, duneBlock);
+// Each result is checked at its own block, whether or not the others are present; one recount per block.
+const recounts = new Map<number, ReturnType<typeof build>>();
+const at = (block: number) => recounts.get(block) ?? recounts.set(block, build(logs, block)).get(block)!;
+{
   const day = (t: number) => new Date(t * 1000).toISOString().slice(0, 10);
   const daily = dune.validator_participation_daily;
   if (daily && dailyBlock) {
-    const atDaily = dailyBlock === duneBlock ? atDune : build(logs, dailyBlock);
+    const atDaily = at(dailyBlock);
     const mine = new Map<string, { eligible: number; signed: number }>();
     for (const c of atDaily.ceremonies) {
       if (c.completedBlock === null) continue;
@@ -161,7 +163,7 @@ if (duneBlock) {
   }
   const prod = dune.validator_participation_windows?.rows.filter((r) => String(r.time_window).startsWith("Aegis"));
   if (prod?.length && windowsBlock) {
-    const atWindows = windowsBlock === duneBlock ? atDune : build(logs, windowsBlock);
+    const atWindows = at(windowsBlock);
     const p = participation(atWindows, times, Date.parse("2026-10-07T13:51:55Z") / 1000);
     for (const r of prod) {
       const s = p.byValidator.get(String(r.address));
@@ -172,7 +174,8 @@ if (duneBlock) {
     compared.push("validator_participation_windows (Aegis)");
   }
   const o = dune.validator_overview?.rows;
-  if (o) {
+  if (o && duneBlock) {
+    const atDune = at(duneBlock);
     const now = atDune.activeAt(duneBlock)!;
     for (const r of o) {
       const a = String(r.validator_address);

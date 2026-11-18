@@ -15,8 +15,8 @@ visualizations:
     type: table
     description: >
       Fee rewards: the Sentinel's share of decided requests it won, paid when claimed. SAFE: as
-      published by the Safe Foundation for the address (all reward types; no Sentinel split is
-      published) and claimed from the Ethereum distributor. Bonds are not earnings.
+      published by the Safe Foundation for the address (all reward types together; the Sentinel
+      grant alone is in the realized APR) and claimed from the Ethereum distributor. Bonds are not earnings.
     options:
       itemsPerPage: 25
       columns:

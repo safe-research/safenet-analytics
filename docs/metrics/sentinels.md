@@ -1,6 +1,6 @@
 # Sentinels
 
-The *Sentinels* section of [dune.com/safe/safenet](https://dune.com/safe/safenet) covers participation, verdicts, coverage, arbitration, earnings and bonds of the Safenet **Aegis** ("Aegis") Sentinels. Beta is never read. It reads the shared decoding model [`safenet_events`](../../dune/queries/safenet_events), unchanged, and applies the request rules of the [Network & revenue](network-and-revenue.md) section's [`safenet_requests`](../../dune/queries/safenet_requests):
+The *Sentinels* section of [dune.com/safe/safenet](https://dune.com/safe/safenet) covers participation, verdicts, coverage, arbitration, earnings, bonds and realized APR of the Safenet **Aegis** ("Aegis") Sentinels. Beta is never read. It reads the shared decoding model [`safenet_events`](../../dune/queries/safenet_events), unchanged, and applies the request rules of the [Network & revenue](network-and-revenue.md) section's [`safenet_requests`](../../dune/queries/safenet_requests):
 - the request identifier (`request_id`);
 - the lifecycle (verdict, dispute, timeout);
 - one row per log;
@@ -36,6 +36,7 @@ On the [Sentinels dashboard](https://dune.com/safe/safenet-sentinels):
 | Sentinel earnings | `sentinel_earnings` | All time and last 30 days (fees); latest published root (SAFE) |
 | Fee rewards per day by Sentinel | `sentinel_earnings_daily` | Last 30 UTC days, by decision day |
 | Sentinel bonds | `sentinel_bonds` | Available and locked: **now**. Movements: all time |
+| Realized Sentinel APR (two charts and a table) | `sentinel_apr` | Completed two-week Aegis reward periods, from 2026-10-13 |
 
 On the [Arbitration dashboard](https://dune.com/safe/safenet-arbitration), plus one counter on the overview:
 
@@ -222,8 +223,8 @@ Sentinel SAFE rewards are paid by Safe Foundation's rewards distributor on **Eth
 | SAFE claimable | published − claimed, when the latest published root is the distributor's current root. Otherwise *not available* |
 
 - **Only published amounts.** Nothing is calculated. The reward methodology for Sentinels is a proposal pending SafeDAO approval (`safe-fndn/safenet-staking-scripts`), so unpublished allocations are never estimated.
-- **No Sentinel split.** The published files have one amount per address for every reward type. A Sentinel address that also stakes cannot be split into subsidy and staking reward, and the column says *all reward types*.
-- **Current state.** No allocation has been published for any Aegis Sentinel address. Aegis started after the latest published period: 18 roots, the latest covering rewards until 2026-10-06. The distributor's `merkleRoot()` equals that root, and `cumulativeClaimed` is 0 for every Sentinel. The panel says *No allocation published* rather than 0.
+- **All reward types in this table.** The earnings table shows the address's whole published amount, the column says *all reward types*. Aegis proofs also carry `sentinelAmount`, the cumulative Sentinel grant within it; the sync copies it (`sentinel_amount`), and the [realized APR](#realized-apr) uses only that part. Beta proofs have none.
+- **Current state.** The first Aegis root (rewards until 2026-10-27) grants 15,384.62 SAFE to each of two Sentinel addresses, all of it `sentinelAmount` and all of it withheld until KYC. `cumulativeClaimed` is 0 for every Sentinel. A Sentinel without an entry shows *No allocation published* rather than 0.
 
 ## Bonds
 
@@ -246,9 +247,34 @@ There is no bond account in the Sentinel Oracle (`SentinelOracle.sol` `commit`, 
 
 There is no slash after a total timeout (nobody revealed), an out-of-scope dispute or an arbitration timeout, and none for winners or lone revealers. A disputed vote or a lost ruling alone is never taken as a slash: the panel shows slashes confirmed by the Sentinel's claim. Before the claim, it shows the slash the contract has already taken. The verification checks every claim against the rule, and every `DisputeResolved.slashed` against the sum of its losers' slashes.
 
+## Realized APR
+
+What a Sentinel earned in each **completed** two-week reward period, relative to the USDC.e it kept bonded (`sentinel_apr`). It is historical: there is no projected or current rate, and none is implied.
+
+```
+APR (%) = (net fees + SAFE grant × SAFE/USD) / time-weighted capital × 365 / 14 × 100
+```
+
+| Term | Definition |
+| --- | --- |
+| **Period** | The fixed two-week Aegis reward periods [start, end), Tuesday 00:00 UTC, from 2026-10-13, as in the [staking APR](staking.md#realized-apr). Listed once the latest Gnosis block in Dune is past the end. |
+| **Net fees** | Fee rewards accrued on requests decided in the period (`outcome_at`, as in the per-day chart), minus slashes taken in the period. A missing response is slashed at finalize: the freeze (`disputed_at`) or the outcome. A lost dispute is slashed at the ruling. |
+| **SAFE grant** | The change of the address's published `sentinelAmount` from the last root before the period to the period's last root (`rewards_until` = period end). It includes amounts withheld until KYC, because they are granted, and excludes any staking reward of the same address. Null while the period is not published, never 0. |
+| **SAFE/USD** | Dune's `prices.day` price of SAFE on Ethereum (`0x5afe…eeee`) for the period's last day. This is the only USD price in the section. USDC.e is taken as 1 USD. |
+| **Locked capital** | Average USDC.e the oracle holds for the Sentinel: each commit's bond from the commit to the Sentinel's claim, less its slash from the time it was taken. Unclaimed bonds stay locked. |
+| **Available capital** | Average USDC.e in the Sentinel's own account on Gnosis Chain (`safenet_sentinel_wallet_transfers`), which it bonds next. Fees and returned bonds land here when claimed. |
+| **Time weighting** | Exact seconds each balance was held, carried into the period from before its start, not daily snapshots. |
+
+Six rates per (period, Sentinel): fee, SAFE and total return, each over **locked** capital and over **locked + available** capital. The charts show the total rate over each denominator, one bar per Sentinel and period. Locked only shows the return on the bonds actually at stake. Locked + available also counts the working capital a Sentinel keeps ready to bond, so it is the lower and more conservative rate.
+
+- **Non-compounded.** One period's return is scaled linearly to 365 days.
+- **Null, not 0.** Without capital in the period there is no rate. The SAFE and total rates are null while the grant is unpublished or the price is missing; the table says which in *SAFE grant status*.
+- **Small samples.** Fees are cents per request and grants are lump sums per period, so one period's rate can swing widely and is not a forecast.
+- **Rows.** A Sentinel appears in a period if it held capital, earned or was slashed, or received a grant. A grant without capital shows with null rates.
+
 ## Units, freshness and empty states
 
-- **Units.** USDC.e for fees and bonds (6 decimals) and SAFE for subsidies (18 decimals), always in the column title. No USD values, APY or profitability.
+- **Units.** USDC.e for fees and bonds (6 decimals) and SAFE for subsidies (18 decimals), always in the column title. No USD values or projected yields, except the [realized APR](#realized-apr), which values the SAFE grant at Dune's SAFE/USD price and USDC.e at 1 USD.
 - **Freshness.** *Sentinels data as of* is the latest Gnosis Chain block time in Dune when the query ran. The section is as fresh as the daily refresh (05:17 UTC) plus Dune's ingestion delay, and the current UTC day is partial.
 - **Empty states.**
   - Days without eligible requests are blank in the per-day pivot table.
@@ -273,6 +299,7 @@ There is no slash after a total timeout (nobody revealed), an out-of-scope dispu
 [`scripts/verify-sentinels.ts`](../../scripts/verify-sentinels.ts) (`npm run verify:sentinels`) recounts the section from Gnosis Chain RPC logs with the same rules in TypeScript ([`scripts/lib/sentinels.ts`](../../scripts/lib/sentinels.ts), unit-tested in `test/sentinels.test.ts`).
 - **Comparison with Dune.** With `DUNE_API_KEY`, it compares every Dune result at that result's `through_block`, judging open windows at Dune's `as_of_block`:
   - the overview, windows, per-day pivot, verdicts, coverage, disputes, earnings and bonds;
+  - the realized APR: per period and Sentinel, fees, slashes, locked and available time-weighted capital, recounted from logs by a different method from the SQL (Σ change × remaining seconds). The SAFE grant comes from the synced proofs, and the fee and total rates use the SAFE price as Dune read it. The rows must be exactly the expected (period, Sentinel) pairs, with the completed periods taken from the time of Dune's `as_of_block`, so a missing period fails;
   - the arbitration rates, per-day rates, resolution times and open arbitrations, judged at each query's own `computed_at`, and every dispute's proposal, freeze and outcome timestamps and durations;
   - the arbitration panels with each other and with the dispute table: all-time arbitrations and states = dispute table rows on Charter chains, all time = sum of the days, ruled = resolution sample, awaiting = open arbitrations;
   - the panels with each other over the same population (overview = verdict breakdown, overview = windows);
@@ -310,6 +337,7 @@ The table counts covered-chain requests only, so the 266 requests include one Po
 
 - **Abstain and offline cannot be told apart.** Neither leaves a trace on chain, so both are *No commit (abstain or offline)*.
 - **Reverted calls depend on traces.** Dune's `gnosis.traces` provides them. Reasons are decoded only for `Error(string)` reverts; custom errors such as `CommitWindowClosed` show without a reason, and are classified by timing.
-- **SAFE subsidies.** No Aegis Sentinel allocation is published yet. A Sentinel that also stakes cannot be split, because the published data has one amount per address. The methodology is not published, so nothing is estimated.
+- **SAFE subsidies.** The earnings table shows every reward type of the address together. The realized APR uses the published `sentinelAmount`, which exists only in Aegis proofs. The methodology is not published, so unpublished grants are never estimated.
+- **Realized APR** values SAFE at a daily price from Dune's price feeds, and treats USDC.e as 1 USD. Capital in other accounts of the same operator is not counted.
 - **Available bond token** is the Sentinel's USDC.e balance on Gnosis Chain. It is reconstructed from transfers since 2026-10-07 and checked against `balanceOf`. A Sentinel that later bonds from a different account would not be covered.
 - **Names** are labels from safenet-data. Two scheduled addresses have none and show the address.

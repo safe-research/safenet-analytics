@@ -28,3 +28,12 @@ test("entries keep published amounts exactly and name their root", () => {
   assert.ok(sql.includes("cast('4499987774807670271201970' as uint256)"));
   assert.ok(sql.includes("timestamp '2026-10-06 00:00:00'"));
 });
+
+test("entries carry the published Sentinel grant, null where the proof has none", () => {
+  const base = { source: "x/y", ref: "0".repeat(40), addresses: ["0x0000000000000000000000000000000000000001"] };
+  const roots = [{ commit: "c", published_at: "2026-11-04T00:00:00Z", rewards_until: "2026-10-27T00:00:00.000Z", merkle_root: "0xab" }];
+  const entry = { address: "0x0000000000000000000000000000000000000001", merkle_root: "0xab", cumulative_amount: "0", kyc_amount: "15" };
+  assert.ok(sentinelRewardsSql({ ...base, roots, entries: [{ ...entry, sentinel_amount: "15" }] }).includes("cast('15' as uint256), cast('15' as uint256))"));
+  assert.ok(sentinelRewardsSql({ ...base, roots, entries: [{ ...entry, sentinel_amount: null }] }).includes("cast('15' as uint256), cast(null as uint256))"));
+  assert.match(sentinelRewardsSql({ ...base, roots, entries: [] }), /kyc_amount, sentinel_amount\)/);
+});

@@ -1,5 +1,5 @@
 # Safenet — Sentinels: https://dune.com/safe/safenet-sentinels
-# Participation, verdicts, coverage, earnings and bonds (disputes and arbitration: arbitration.yaml). Linked from the
+# Participation, verdicts, coverage, earnings, bonds and realized APR (disputes and arbitration: arbitration.yaml). Linked from the
 # overview (overview.yaml); the navigation bar at the top and bottom links back to it and to the
 # other sections.
 # Layout uses a 6-column grid. Widgets must not overlap (checked by `npm run validate`).
@@ -46,8 +46,16 @@ widgets:
   - visualization: sentinel_bonds/table
     position: { row: 54, col: 0, size_x: 6, size_y: 6 }
 
+  # Realized APR (completed reward periods; fees + SAFE grant over bonded USDC.e)
+  - visualization: sentinel_apr/bars
+    position: { row: 60, col: 0, size_x: 3, size_y: 8 }
+  - visualization: sentinel_apr/bars_locked
+    position: { row: 60, col: 3, size_x: 3, size_y: 8 }
+  - visualization: sentinel_apr/table
+    position: { row: 68, col: 0, size_x: 6, size_y: 7 }
+
   - text_file: text/sentinels_definitions.md
-    position: { row: 60, col: 0, size_x: 6, size_y: 9 }
+    position: { row: 75, col: 0, size_x: 6, size_y: 10 }
 
   - text: "Sections: **[← Safenet overview]({{dashboard:overview}})** · [Network & revenue]({{dashboard:network-revenue}}) · [Staking]({{dashboard:staking}}) · [Validators]({{dashboard:validators}}) · **Sentinels** · [Arbitration]({{dashboard:arbitration}})"
-    position: { row: 69, col: 0, size_x: 6, size_y: 2 }
+    position: { row: 85, col: 0, size_x: 6, size_y: 2 }
