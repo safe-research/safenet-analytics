@@ -19,9 +19,9 @@
       "url": "https://dune.com/safe/safenet"
     },
     "sentinels": {
-      "desired": "476342e4536964fb",
+      "desired": "051ab8b7be5f7a05",
       "id": 222640,
-      "remote": "14dc420ff91cdd22",
+      "remote": "eec6f4731baa78fe",
       "url": "https://dune.com/safe/safenet-sentinels"
     },
     "staking": {
@@ -167,9 +167,9 @@
       "remote": "8f20ed9f51363b6f"
     },
     "safenet_reward_breakdown": {
-      "desired": "bc3cdc4e91fc07b9",
+      "desired": "71b53fbbf697a5ab",
       "id": 9081434,
-      "remote": "bc3cdc4e91fc07b9"
+      "remote": "71b53fbbf697a5ab"
     },
     "safenet_reward_events": {
       "desired": "971d5578f341d163",
@@ -187,9 +187,9 @@
       "remote": "aeba70f539ecdc92"
     },
     "safenet_sentinel_rewards": {
-      "desired": "8324c22826c215ce",
+      "desired": "7d7f0b652c94e93e",
       "id": 9013457,
-      "remote": "8324c22826c215ce"
+      "remote": "7d7f0b652c94e93e"
     },
     "safenet_sentinel_terms": {
       "desired": "13e34dd9f7a7f1b2",
@@ -202,14 +202,19 @@
       "remote": "c7831011f3d13b09"
     },
     "safenet_sentinel_wallet_transfers": {
-      "desired": "8e4e370037e9cc1a",
+      "desired": "456116f5e6838a4d",
       "id": 9013459,
-      "remote": "8e4e370037e9cc1a"
+      "remote": "456116f5e6838a4d"
     },
     "safenet_validator_rewards": {
-      "desired": "52a4df23e1606ff8",
+      "desired": "9801e3d51a74d981",
       "id": 9022239,
-      "remote": "52a4df23e1606ff8"
+      "remote": "9801e3d51a74d981"
+    },
+    "sentinel_apr": {
+      "desired": "e1d7054d8a099559",
+      "id": 9152315,
+      "remote": "e1d7054d8a099559"
     },
     "sentinel_bonds": {
       "desired": "4133d8fb43dc0c50",
@@ -227,9 +232,9 @@
       "remote": "0f10fba99a99cba9"
     },
     "sentinel_earnings": {
-      "desired": "94c13a235a088129",
+      "desired": "1af0155a3ab19e2c",
       "id": 9013464,
-      "remote": "94c13a235a088129"
+      "remote": "1af0155a3ab19e2c"
     },
     "sentinel_earnings_daily": {
       "desired": "e352986449eeab13",
@@ -542,6 +547,24 @@
       "query_id": 9012057,
       "remote": "830845564058ee69"
     },
+    "sentinel_apr/bars": {
+      "desired": "a9e620a7da8120ad",
+      "id": 13205280,
+      "query_id": 9152315,
+      "remote": "a9e620a7da8120ad"
+    },
+    "sentinel_apr/bars_locked": {
+      "desired": "6d3ce0dae4f28837",
+      "id": 13205281,
+      "query_id": 9152315,
+      "remote": "6d3ce0dae4f28837"
+    },
+    "sentinel_apr/table": {
+      "desired": "6c2b81cc579af1f8",
+      "id": 13205282,
+      "query_id": 9152315,
+      "remote": "6c2b81cc579af1f8"
+    },
     "sentinel_bonds/table": {
       "desired": "956f9948e8b688a3",
       "id": 13057795,
@@ -573,10 +596,10 @@
       "remote": "5eb91c87b56e452d"
     },
     "sentinel_earnings/table": {
-      "desired": "22aa9c4e15d2d0b5",
+      "desired": "59ec8260e1e9ef4a",
       "id": 13057799,
       "query_id": 9013464,
-      "remote": "22aa9c4e15d2d0b5"
+      "remote": "59ec8260e1e9ef4a"
     },
     "sentinel_earnings_daily/bars": {
       "desired": "1fee795eafeeeec3",
