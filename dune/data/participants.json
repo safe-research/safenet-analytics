@@ -1,12 +1,18 @@
 {
   "source": "safe-fndn/safenet-data",
-  "ref": "f74222fa8b395cc06d39636f56f0bba7c19e4576",
+  "ref": "cf03df85fb26654bf903ad2bff71e3babe2405ec",
   "participants": [
     {
       "role": "sentinel",
       "address": "0x101d59dbb8c5e70f45d52634f23800fca4fbe031",
       "source_address": "0x101d59DBB8C5e70f45D52634f23800fCa4Fbe031",
       "label": "OpenCover"
+    },
+    {
+      "role": "sentinel",
+      "address": "0x3bf9263cc7bb2312f69f5481c3337553469140a5",
+      "source_address": "0x3BF9263Cc7Bb2312F69F5481c3337553469140a5",
+      "label": "Hacken"
     },
     {
       "role": "sentinel",
