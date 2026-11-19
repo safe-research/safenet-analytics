@@ -1,6 +1,7 @@
 -- Safenet Aegis: realized Sentinel APR per completed reward period and Sentinel. Fee rewards net of
 -- slashes (USDC.e), and the published SAFE Sentinel grant valued in USD, over the USDC.e capital the
--- Sentinel kept bonded, annualized without compounding. Historical, never a projection.
+-- Sentinel kept bonded, annualized without compounding. Historical, never a projection. Gross: before
+-- the Sentinel's operating costs (staff, servers), so a return on bonded capital, not profit.
 -- Definitions: docs/metrics/sentinels.md#realized-apr.
 --
 --   APR = return / time-weighted capital × 365 days / period length × 100
@@ -230,7 +231,7 @@ select
         when safe_grant > 0 then 'published (withheld until KYC counts as granted)'
         else 'published: no grant'
     end as grant_status,
-    '14 d period; non-compounded; fees net of slashes; SAFE at the price of ' || format_datetime(period_end - interval '1' day, 'yyyy-MM-dd') as basis,
+    'gross, before operating costs; 14 d period; non-compounded; fees net of slashes; SAFE at the price of ' || format_datetime(period_end - interval '1' day, 'yyyy-MM-dd') as basis,
     period_start,
     period_end,
     through_block, -- for the verification

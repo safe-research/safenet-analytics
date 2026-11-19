@@ -36,7 +36,7 @@ On the [Sentinels dashboard](https://dune.com/safe/safenet-sentinels):
 | Sentinel earnings | `sentinel_earnings` | All time and last 30 days (fees); latest published root (SAFE) |
 | Fee rewards per day by Sentinel | `sentinel_earnings_daily` | Last 30 UTC days, by decision day |
 | Sentinel bonds | `sentinel_bonds` | Available and locked: **now**. Movements: all time |
-| Realized Sentinel APR (two charts and a table) | `sentinel_apr` | Completed two-week Aegis reward periods, from 2026-10-13 |
+| Realized gross Sentinel APR (two charts and a table) | `sentinel_apr` | Completed two-week Aegis reward periods, from 2026-10-13 |
 
 On the [Arbitration dashboard](https://dune.com/safe/safenet-arbitration), plus one counter on the overview:
 
@@ -267,6 +267,7 @@ APR (%) = (net fees + SAFE grant × SAFE/USD) / time-weighted capital × 365 / 1
 
 Six rates per (period, Sentinel): fee, SAFE and total return, each over **locked** capital and over **locked + available** capital. The charts show the total rate over each denominator, one bar per Sentinel and period. Locked only shows the return on the bonds actually at stake. Locked + available also counts the working capital a Sentinel keeps ready to bond, so it is the lower and more conservative rate.
 
+- **Gross.** The rate is before the Sentinel's operating costs, such as staff and servers, which are not on chain. It is a return on bonded capital, not profit. The staking APR is gross in the same way.
 - **Non-compounded.** One period's return is scaled linearly to 365 days.
 - **Null, not 0.** Without capital in the period there is no rate. The SAFE and total rates are null while the grant is unpublished or the price is missing; the table says which in *SAFE grant status*.
 - **Small samples.** Fees are cents per request and grants are lump sums per period, so one period's rate can swing widely and is not a forecast.
