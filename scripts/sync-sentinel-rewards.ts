@@ -67,7 +67,8 @@ const labels = (await loadParticipants()).participants.filter((p) => p.role === 
 const addresses = [...new Set([...labels, ...scheduled.map((l) => topicAddress(l.topics[1]))])].sort();
 
 const previous = await loadSentinelRewards().catch(() => undefined);
-const reuse = !!previous && !values.full && previous.ref === ref && JSON.stringify(previous.addresses) === JSON.stringify(addresses) && !!previous.cids;
+const reuse = !!previous && !values.full && previous.ref === ref && JSON.stringify(previous.addresses) === JSON.stringify(addresses) && !!previous.cids &&
+  previous.entries.every((e) => e.sentinel_amount !== undefined); // records before sentinel_amount: read again
 const roots: RewardRoot[] = reuse ? structuredClone(previous!.roots) : [];
 const entries: RewardEntry[] = reuse ? [...previous!.entries] : [];
 const read = new Set(reuse ? previous!.cids : []);
@@ -91,11 +92,11 @@ for (const c of commits) {
   roots.push({ commit: c.sha, published_at: c.commit.committer.date, rewards_until: index.rewardsUntil, merkle_root: root });
   for (const address of addresses) {
     const proof = (await raw(c.sha, proofPath(address), true)) as
-      | { cumulativeAmount: string; kycAmount?: string; merkleRoot: string }
+      | { cumulativeAmount: string; kycAmount?: string; sentinelAmount?: string; merkleRoot: string }
       | undefined;
     if (!proof) continue;
     if (proof.merkleRoot.toLowerCase() !== root) throw new Error(`${c.sha} ${address}: proof root ${proof.merkleRoot} is not ${root}`);
-    entries.push({ address, merkle_root: root, cumulative_amount: proof.cumulativeAmount, kyc_amount: proof.kycAmount ?? "0" });
+    entries.push({ address, merkle_root: root, cumulative_amount: proof.cumulativeAmount, kyc_amount: proof.kycAmount ?? "0", sentinel_amount: proof.sentinelAmount ?? null });
   }
 }
 
@@ -113,7 +114,7 @@ for (const h of ens.history) {
   roots.push({ commit: h.cid, published_at: new Date(h.time * 1000).toISOString(), rewards_until: db.index.rewardsUntil, merkle_root: root });
   for (const address of addresses) {
     const p = db.proofs.get(address);
-    if (p) entries.push({ address, merkle_root: root, cumulative_amount: p.cumulativeAmount, kyc_amount: p.kycAmount ?? "0" });
+    if (p) entries.push({ address, merkle_root: root, cumulative_amount: p.cumulativeAmount, kyc_amount: p.kycAmount ?? "0", sentinel_amount: p.sentinelAmount ?? null });
   }
 }
 

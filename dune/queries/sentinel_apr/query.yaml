@@ -1,0 +1,85 @@
+name: "Safenet: realized gross Sentinel APR by reward period"
+description: >
+  Safenet Aegis: realized, non-compounded APR of each Sentinel per completed two-week reward period.
+  Return = USDC.e fee rewards net of slashes, plus the published SAFE Sentinel grant valued at the
+  SAFE/USD price of the period's last day. Capital = USDC.e bonds locked in the Sentinel Oracle, and
+  locked plus available in the Sentinel's own account, time-weighted over the period. Historical
+  only; not a projection. Gross: before the Sentinel's operating costs (staff, servers), so a return
+  on bonded capital, not profit. Managed in github.com/safe-research/safenet-analytics
+  (docs/metrics/sentinels.md#realized-apr).
+private: false
+tags: [safenet]
+refresh: daily
+performance: medium
+
+visualizations:
+  bars:
+    name: Realized gross Sentinel APR by reward period, fees + SAFE over locked and available USDC.e (%)
+    type: chart
+    description: >
+      Completed two-week periods. Return: fee rewards net of slashes, plus the SAFE grant at the
+      period-end price. Capital: average USDC.e bonded in the oracle plus held in the Sentinel's own
+      account. A period without a published grant shows no bar, not 0. Not a projection. Before the Sentinel's operating costs (staff, servers): a return on bonded capital, not profit.
+    options:
+      globalSeriesType: column
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Reward period } }
+      yAxis:
+        - title: { text: "APR (%)" }
+      columnMapping:
+        period: x
+        total_apr_total: y
+        sentinel: series
+  bars_locked:
+    name: Realized gross Sentinel APR by reward period, fees + SAFE over locked bonds only (%)
+    type: chart
+    description: >
+      As the chart beside it, over the average USDC.e locked in the oracle only, without the USDC.e
+      waiting in the Sentinel's own account. Higher, because the capital is smaller. Before the Sentinel's operating costs (staff, servers): a return on bonded capital, not profit.
+    options:
+      globalSeriesType: column
+      sortX: true
+      legend: { enabled: true }
+      xAxis: { title: { text: Reward period } }
+      yAxis:
+        - title: { text: "APR (%)" }
+      columnMapping:
+        period: x
+        total_apr_locked: y
+        sentinel: series
+  table:
+    name: Realized gross Sentinel APR by reward period (table)
+    type: table
+    description: >
+      Fees accrue when the request is decided; slashes count when taken. SAFE grant: the published
+      Sentinel grant of the period (sentinelAmount), KYC-withheld included, staking rewards excluded.
+      USDC.e is taken as 1 USD. Capital is averaged by the seconds it was held. Before the Sentinel's operating costs (staff, servers): a return on bonded capital, not profit.
+    options:
+      itemsPerPage: 25
+      columns:
+        - { name: period, title: Period, type: normal, alignContent: left, isHidden: false }
+        - { name: sentinel_link, title: Sentinel, type: normal, alignContent: left, isHidden: false }
+        - { name: total_apr_total, title: "APR, locked + available (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: total_apr_locked, title: "APR, locked only (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: fee_apr_total, title: "of which fees, locked + available (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: fee_apr_locked, title: "of which fees, locked only (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: safe_apr_total, title: "of which SAFE, locked + available (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: safe_apr_locked, title: "of which SAFE, locked only (%)", type: normal, alignContent: right, isHidden: false, numberFormat: "0.00" }
+        - { name: fees_usdc, title: Fees accrued (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: slashed_usdc, title: Slashed (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: net_fees_usdc, title: Net fees (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: safe_grant, title: SAFE grant, type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: safe_price_usd, title: SAFE price (USD), type: normal, alignContent: right, isHidden: false, numberFormat: "0.0000" }
+        - { name: safe_grant_usd, title: SAFE grant (USD), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0.00" }
+        - { name: capital_locked_usdc, title: Avg locked (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: capital_wallet_usdc, title: Avg available (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: capital_total_usdc, title: Avg locked + available (USDC.e), type: normal, alignContent: right, isHidden: false, numberFormat: "0,0" }
+        - { name: grant_status, title: SAFE grant status, type: normal, alignContent: left, isHidden: false }
+        - { name: basis, title: Calculation basis, type: normal, alignContent: left, isHidden: false }
+        - { name: sentinel, title: sentinel, type: normal, alignContent: left, isHidden: true }
+        - { name: address, title: address, type: normal, alignContent: left, isHidden: true }
+        - { name: period_start, title: period_start, type: normal, alignContent: left, isHidden: true }
+        - { name: period_end, title: period_end, type: normal, alignContent: left, isHidden: true }
+        - { name: through_block, title: through_block, type: normal, alignContent: left, isHidden: true }
+        - { name: through_t, title: through_t, type: normal, alignContent: left, isHidden: true }

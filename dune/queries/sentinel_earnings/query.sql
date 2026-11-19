@@ -14,8 +14,8 @@
 -- Ethereum (safenet_sentinel_rewards, from safe-fndn/safenet-data and the ENS-pinned IPFS rewards; claims in safenet_reward_events):
 --   published  the cumulative SAFE published for the address under the latest published root,
 --              including any amount withheld until KYC (kycAmount: allocated, not yet claimable). The
---              files publish one amount per address for every reward type; for a Sentinel that also
---              stakes, the Sentinel part cannot be separated.
+--              files publish one amount per address for every reward type, shown here together;
+--              the Sentinel grant alone (sentinelAmount, Aegis) is used by sentinel_apr.
 --   claimed    SAFE claimed by the address from the distributor (Claimed events)
 --   claimable  published - claimed, when the latest published root is the distributor's current root
 -- Without a published entry the subsidy columns say so instead of showing 0.

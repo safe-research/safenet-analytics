@@ -5,7 +5,7 @@ import { keccak_256 } from "@noble/hashes/sha3.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { DEFAULT_ROOT } from "../src/config.ts";
 import { EXPLORERS, LINK_SQL, STAKING_LINK_SQL } from "../src/links.ts";
-import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, AEGIS, AEGIS_START_TIME, REWARDS_DISTRIBUTOR, STAKING, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
+import { EVENTS, FEE_TOKEN, ORACLE_FUNCTIONS, AEGIS, AEGIS_START_TIME, REWARDS_DISTRIBUTOR, SAFE_TOKEN, STAKING, VALIDATOR_STAKER_SET } from "../src/safenet.ts";
 
 const read = (key: string) => readFile(`${DEFAULT_ROOT}/queries/${key}/query.sql`, "utf8");
 // The shared event model, on Dune's decoded Safenet tables (docs/decoding.md).
@@ -137,6 +137,7 @@ test("Sentinel panel queries read the shared models, not their own decoding", as
     "sentinel_earnings",
     "sentinel_earnings_daily",
     "sentinel_bonds",
+    "sentinel_apr",
   ]) {
     const q = await read(key);
     assert.ok(/\{\{query:safenet_sentinel_(responses|terms)\}\}/.test(q), `${key} does not read the Sentinel models`);
@@ -235,4 +236,17 @@ test("staking queries link to Etherscan with the expressions from src/links.ts",
   for (const [column, expression] of Object.entries(STAKING_LINK_SQL)) assert.ok(q.includes(`${expression} as ${column}`), column);
   for (const key of ["staking_positions", "staking_validators", "staking_withdrawals_outstanding"])
     assert.ok((await read(key)).includes(`${EXPLORERS[1]}/address/`), key);
+});
+
+test("the Sentinel APR values the SAFE token at Dune's price and reads the shared Sentinel models", async () => {
+  const q = await read("sentinel_apr");
+  assert.ok(q.includes(`contract_address = ${SAFE_TOKEN.address}`) && q.includes("prices.day"));
+  for (const key of ["safenet_sentinel_responses", "safenet_sentinel_wallet_transfers", "safenet_sentinel_rewards"]) assert.ok(q.includes(`{{query:${key}}}`), key);
+  assert.ok(q.includes("sentinel_amount"), "the grant is the published sentinelAmount, not every reward type");
+  assert.ok(q.includes("1793059200") && q.includes("1209600"), "the Aegis reward periods of staking_period_stake");
+  // The cutoff comes from the meta row the wallet model always returns, not from response rows.
+  const wallet = await read("safenet_sentinel_wallet_transfers");
+  assert.ok(/'meta'/.test(wallet) && wallet.includes("max(block_time) over () as through_time"), "wallet model emits the bound as a meta row");
+  assert.ok(q.includes("if(direction = 'meta'") && q.includes("p_to <= through_t"), "sentinel_apr cuts off at the meta row");
+  assert.ok(!/r\.through_time|r\.as_of/.test(q), "the cutoff does not depend on response rows");
 });

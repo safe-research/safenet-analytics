@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import type { Log, RequestRecord } from "../scripts/lib/recount.ts";
-import { buildResponses, buildTerms, currentStatus, isEligible, sentinelTotals, type Term } from "../scripts/lib/sentinels.ts";
+import { apr, buildResponses, buildTerms, currentStatus, isEligible, lockedChanges, periodFlows, sentinelTotals, timeWeighted, type CapitalChange, type Term } from "../scripts/lib/sentinels.ts";
 import { EVENTS } from "../src/safenet.ts";
 
 const A = "0x00000000000000000000000000000000000000aa";
@@ -183,5 +183,73 @@ describe("fees, bonds and slashes", () => {
       claims: [{ sentinel: B, bondReturn: BOND, feeReward: 0n }],
     });
     assert.equal(sentinelTotals(buildResponses([r], terms, 200), B).slash_rule_mismatches, 1);
+  });
+});
+
+describe("realized APR (sentinel_apr)", () => {
+  // One request, decided at t=2, A and B revealed, C committed only (slashed at the outcome).
+  const r = request({
+    votes: [
+      { ...vote(A, true), committedAt: 1 },
+      { ...vote(B, true), committedAt: 1 },
+      { ...vote(C, null), committedAt: 1 },
+    ],
+    claims: [
+      { sentinel: A, bondReturn: BOND, feeReward: 200_000n, time: 6 },
+      { sentinel: C, bondReturn: BOND - 400_000n, feeReward: 0n, time: 4 },
+    ],
+    outcome: outcome("approved", "OracleResult"),
+  });
+  const responses = buildResponses([r], [term(A, 0), term(B, 0), term(C, 0)], 200);
+
+  test("responses carry commit, claim and slash times", () => {
+    const c = responses.find((x) => x.sentinel === C)!;
+    assert.deepEqual([c.committedAt, c.claimedAt, c.slashAt, c.slashDue], [1, 4, 2, 400_000n]);
+    const b = responses.find((x) => x.sentinel === B)!;
+    assert.deepEqual([b.claimedAt, b.slashAt], [null, null]);
+  });
+
+  test("a missing response on a frozen request is slashed at the freeze, a lost dispute at the ruling", () => {
+    const frozen = request({
+      votes: [{ ...vote(A, true), committedAt: 1 }, { ...vote(B, false), committedAt: 1 }, { ...vote(C, null), committedAt: 1 }],
+      disputed: true,
+      disputedAt: 3,
+      outcome: { ...outcome("approved", "DisputeResolved", 800_000n), time: 9 },
+    });
+    const xs = buildResponses([frozen], [term(A, 0), term(B, 0), term(C, 0)], 200);
+    assert.equal(xs.find((x) => x.sentinel === C)!.slashAt, 3);
+    assert.equal(xs.find((x) => x.sentinel === B)!.slashAt, 9);
+  });
+
+  test("locked capital follows bond in, slash out and the rest at the claim", () => {
+    const c = lockedChanges(responses).filter((x) => x.sentinel === C);
+    assert.deepEqual(c.map((x) => [x.t, x.delta]), [[1, BOND], [2, -400_000n], [4, -(BOND - 400_000n)]]);
+    // [0, 10): BOND for 1 s (t 1-2), BOND - slash for 2 s (t 2-4)
+    assert.equal(timeWeighted(c, C, "locked", 0, 10), (Number(BOND) * 1 + Number(BOND - 400_000n) * 2) / 10);
+    // Unclaimed B stays locked to the end of the period.
+    assert.equal(timeWeighted(lockedChanges(responses), B, "locked", 0, 10), (Number(BOND) * 9) / 10);
+  });
+
+  test("time weighting carries the balance in from before the period and ignores later changes", () => {
+    const ch: CapitalChange[] = [
+      { sentinel: A, kind: "wallet", t: 0, delta: 100n },
+      { sentinel: A, kind: "wallet", t: 15, delta: 50n },
+      { sentinel: A, kind: "wallet", t: 25, delta: -150n },
+      { sentinel: A, kind: "wallet", t: 30, delta: 1000n },
+      { sentinel: A, kind: "locked", t: 0, delta: 7n },
+    ];
+    assert.equal(timeWeighted(ch, A, "wallet", 10, 30), (100 * 5 + 150 * 10 + 0 * 5) / 20);
+  });
+
+  test("fees count in the period the request was decided, slashes in the period they were taken", () => {
+    assert.deepEqual(periodFlows(responses, A, 0, 10), { fees: 200_000n, slashed: 0n });
+    assert.deepEqual(periodFlows(responses, C, 0, 10), { fees: 0n, slashed: 400_000n });
+    assert.deepEqual(periodFlows(responses, A, 2.5, 10), { fees: 0n, slashed: 0n });
+  });
+
+  test("APR is annualized over 14-day periods, without compounding, and null without capital", () => {
+    assert.ok(Math.abs(apr(14, 365)! - 100) < 1e-9);
+    assert.equal(apr(1, 0), null);
+    assert.equal(apr(null, 100), null);
   });
 });

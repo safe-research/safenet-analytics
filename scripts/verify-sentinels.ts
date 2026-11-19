@@ -18,6 +18,7 @@
 //   - Recounts arbitration rates (by proposal-time cohort), resolution times (freeze to ruling) and
 //     open arbitrations (scripts/lib/arbitration.ts), and each dispute's timestamps and durations,
 //     at each result's through_block and its computed_at; reconciles them with the dispute table.
+//   - Recounts the realized APR per period (fees, slashes, time-weighted locked and available capital).
 //   - Lists representative cases with explorer links for a manual check on safenet-explorer.eth.limo.
 //
 //   node scripts/verify-sentinels.ts [--rpc URL] [--eth-rpc URL] [--state dune/.preview/<track>.json]
@@ -35,7 +36,19 @@ import { loadSentinelRewards } from "../src/sentinel-rewards.ts";
 import { loadState } from "../src/state.ts";
 import { buildRequests, day, fetchSafenetLogs, rpcClient, status, upTo, usdc } from "./lib/recount.ts";
 import { arbitrationState, hoursToRuling, openHours, rateDaily, rateWindows, resolution } from "./lib/arbitration.ts";
-import { buildResponses, buildTerms, currentStatus, requestWindowClosed, sentinelTotals, type Response } from "./lib/sentinels.ts";
+import {
+  apr,
+  buildResponses,
+  buildTerms,
+  currentStatus,
+  lockedChanges,
+  periodFlows,
+  requestWindowClosed,
+  sentinelTotals,
+  timeWeighted,
+  type CapitalChange,
+  type Response,
+} from "./lib/sentinels.ts";
 
 const { values: args } = parseArgs({
   options: {
@@ -75,6 +88,7 @@ const QUERIES = [
   "sentinel_disputes",
   "sentinel_earnings",
   "sentinel_bonds",
+  "sentinel_apr",
   "fee_allocation",
   "arbitration_windows",
   "arbitration_daily",
@@ -167,18 +181,25 @@ for (const x of atHead.responses)
 // Balances and SAFE rewards at the finalized head / latest Ethereum block
 
 const sentinels = sentinelsOf(atHead);
+const headTime = await rpc.blockTime({ blockNumber: String(head) }); // Unix time of the finalized head
 const balances: Record<string, number> = {};
 for (const s of sentinels) balances[s] = usdc(BigInt(await call(FEE_TOKEN.address, `0x70a08231${addressArg(s)}`, head)));
 
 // sentinel_bonds reads Sentinel USDC.e transfers from the oracle's deployment on. That gives the
 // balance only if no Sentinel held USDC.e before: check transfers since then against balanceOf.
+// The transfers, with their block and time, are also the available capital of sentinel_apr.
+const walletChanges: (CapitalChange & { block: number })[] = [];
+const transferTo = Math.max(head, ...bounds);
 for (const s of sentinels) {
   const topic = `0x${addressArg(s)}`;
   const [inbound, outbound] = await Promise.all([
-    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, null, topic], AEGIS.sentinelOracle.deployBlock, head),
-    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, topic], AEGIS.sentinelOracle.deployBlock, head),
+    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, null, topic], AEGIS.sentinelOracle.deployBlock, transferTo),
+    rpc.getLogs(FEE_TOKEN.address, [EVENTS.Transfer.topic0, topic], AEGIS.sentinelOracle.deployBlock, transferTo),
   ]);
-  const net = inbound.reduce((x, l) => x + BigInt(l.data), 0n) - outbound.reduce((x, l) => x + BigInt(l.data), 0n);
+  for (const [logs, sign] of [[inbound, 1n], [outbound, -1n]] as const)
+    for (const l of logs)
+      walletChanges.push({ sentinel: s, kind: "wallet", t: await rpc.blockTime(l), delta: sign * BigInt(l.data), block: Number(l.blockNumber) });
+  const net = walletChanges.filter((c) => c.sentinel === s && c.block <= head).reduce((x, c) => x + c.delta, 0n);
   if (!near(usdc(net), balances[s])) issues.push(`${nameOf(s)}: USDC.e transfers since deployment ${usdc(net)} but balanceOf ${balances[s]}`);
 }
 
@@ -394,6 +415,97 @@ async function compareBonds(r: Result) {
   }
 }
 
+// Completed Aegis reward periods [from, to) as of a Unix time: two weeks each, the first ending
+// 2026-10-27 00:00 UTC (as staking_period_stake and sentinel_apr).
+const aprPeriods = (until: number) => {
+  const out: [number, number][] = [];
+  for (let to = 1793059200; to <= until; to += 1209600) out.push([to - 1209600, to]);
+  return out;
+};
+// The published Sentinel grant of the period ending at `to`: the change of sentinelAmount from the last
+// root before the period to the period's last root; null while the period is not published.
+const grantFor = (s: string, to: number) => {
+  const until = (x: { rewards_until: string }) => Date.parse(x.rewards_until) / 1000;
+  const root = published.roots.filter((x) => until(x) === to).at(-1)?.merkle_root;
+  if (!root) return null;
+  const prev = published.roots.filter((x) => until(x) < to).at(-1)?.merkle_root;
+  const amount = (r?: string) => BigInt(published.entries.find((e) => e.merkle_root === r && e.address === s)?.sentinel_amount ?? "0");
+  return Number(amount(root) - amount(prev)) / 10 ** SAFE_TOKEN.decimals;
+};
+
+// Realized APR rows recounted from the chain, with the same row set as sentinel_apr: every Sentinel
+// and every published grant recipient, in every period completed by `until`, that held capital,
+// earned or was slashed, or received a grant. The SAFE price is Dune's, so it is not here.
+function aprRows(responses: Response[], changes: CapitalChange[], candidates: string[], until: number) {
+  return aprPeriods(until).flatMap(([from, to]) =>
+    candidates.flatMap((s) => {
+      const f = periodFlows(responses, s, from, to);
+      const locked = timeWeighted(changes, s, "locked", from, to) / 1e6;
+      const wallet = timeWeighted(changes, s, "wallet", from, to) / 1e6;
+      const net = usdc(f.fees - f.slashed);
+      const grant = grantFor(s, to);
+      if (!(locked + wallet > 0) && f.fees === f.slashed && !((grant ?? 0) > 0)) return [];
+      return [{ from, to, sentinel: s, fees: usdc(f.fees), slashed: usdc(f.slashed), net, locked, wallet, grant }];
+    }),
+  );
+}
+const aprCandidates = (rec: Recount) => [...new Set([...sentinelsOf(rec), ...published.entries.map((e) => e.address)])];
+
+// Realized APR per completed period: fees, slashes and time-weighted capital recounted from the chain;
+// the SAFE grant from the published proofs (sentinelAmount); the SAFE price as Dune read it. The rows
+// must be exactly the expected (period, Sentinel) pairs, with periods derived independently of them:
+// - with rows: completed by the RPC time of their through_block (the latest decoded Safenet event; the
+//   wallet transfers are capped at the same block), and every row's through_t must equal it;
+// - empty: a completed execution must still list every period that ended a day before it finished
+//   (a day covers Dune's ingestion delay), recounted at the finalized head.
+async function compareApr(r: Result) {
+  const empty = r.rows.length === 0;
+  const rec = empty ? atHead : await recountFor(r);
+  const block = empty ? head : boundOf(r)!;
+  // The cutoff is the RPC time of the result's through_block, never Dune's own through_t, which is
+  // checked against it: an earlier through_t would otherwise hide a dropped newest period.
+  let until: number;
+  if (empty) until = Date.parse(r.execution_ended_at ?? "") / 1000 - 86400;
+  else {
+    until = await rpc.blockTime({ blockNumber: String(block) });
+    for (const t of new Set(r.rows.map((x) => (x.through_t === null || x.through_t === undefined ? null : Number(x.through_t)))))
+      compare("sentinel_apr", "through_t = time of through_block", until, t);
+  }
+  if (!Number.isFinite(until)) return void mismatches.push({ where: "sentinel_apr", column: "cutoff", rpc: "a completed execution", dune: r.execution_ended_at ?? null });
+  const changes = [...lockedChanges(rec.responses), ...walletChanges.filter((c) => c.block <= block)];
+  const expected = aprRows(rec.responses, changes, aprCandidates(rec), until);
+  const key = (from: number, s: string) => `${from}:${s}`;
+  const label = (from: number, s: string) => `sentinel_apr ${new Date(from * 1000).toISOString().slice(0, 10)} ${nameOf(s)}`;
+  const byKey = new Map(r.rows.map((x) => [key(duneTime(x.period_start)!, addressOf(x)), x]));
+  for (const e of expected) {
+    const row = byKey.get(key(e.from, e.sentinel));
+    if (!row) {
+      mismatches.push({ where: label(e.from, e.sentinel), column: "row", rpc: "expected", dune: "no row" });
+      continue;
+    }
+    byKey.delete(key(e.from, e.sentinel));
+    const where = label(e.from, e.sentinel);
+    compare(where, "fees_usdc", e.fees, row.fees_usdc);
+    compare(where, "slashed_usdc", e.slashed, row.slashed_usdc);
+    compare(where, "capital_locked_usdc", e.locked, row.capital_locked_usdc);
+    compare(where, "capital_wallet_usdc", e.wallet, row.capital_wallet_usdc);
+    compare(where, "safe_grant", e.grant, row.safe_grant);
+    const price = row.safe_price_usd === null || row.safe_price_usd === undefined ? null : Number(row.safe_price_usd);
+    const total = e.grant === null || price === null ? null : e.net + e.grant * price;
+    // Rates to 1e-6 relative: the capital is a double average.
+    const rate = (column: string, mine: number | null) => {
+      const d = row[column] === null || row[column] === undefined ? null : Number(row[column]);
+      if (mine === null || d === null ? mine !== d : Math.abs(mine - d) > 1e-6 * Math.max(1, Math.abs(mine))) mismatches.push({ where, column, rpc: mine, dune: d });
+    };
+    rate("fee_apr_locked", apr(e.net, e.locked));
+    rate("fee_apr_total", apr(e.net, e.locked + e.wallet));
+    rate("total_apr_locked", apr(total, e.locked));
+    rate("total_apr_total", apr(total, e.locked + e.wallet));
+  }
+  for (const row of byKey.values())
+    mismatches.push({ where: label(duneTime(row.period_start)!, addressOf(row)), column: "row", rpc: "not expected", dune: "row" });
+}
+
 // Panels against each other, in the same execution population.
 function reconcile() {
   const o = dune.sentinel_overview;
@@ -422,8 +534,10 @@ function compareNoCommit(where: string, t: ReturnType<typeof sentinelTotals>, no
 }
 
 const compared: string[] = [];
-const run = async (q: (typeof QUERIES)[number], f: (r: Result) => Promise<void>) => {
-  if (dune[q]?.rows.length) await f(dune[q]!), compared.push(q);
+const run = async (q: (typeof QUERIES)[number], f: (r: Result) => Promise<void>, { empty = false } = {}) => {
+  const r = dune[q];
+  // An empty result is compared only where the comparison can judge it (completed execution).
+  if (r?.rows.length || (empty && r?.state === "QUERY_STATE_COMPLETED")) await f(r!), compared.push(q);
 };
 await run("sentinel_overview", compareOverview);
 await run("sentinel_verdicts", compareVerdicts);
@@ -433,6 +547,7 @@ await run("sentinel_coverage", compareCoverage);
 await run("sentinel_disputes", compareDisputes);
 await run("sentinel_earnings", compareEarnings);
 await run("sentinel_bonds", compareBonds);
+await run("sentinel_apr", compareApr, { empty: true });
 await run("arbitration_windows", compareArbitrationWindows);
 await run("arbitration_daily", compareArbitrationDaily);
 await run("arbitration_resolution", compareArbitrationResolution);
@@ -590,6 +705,24 @@ const report = {
       ),
     ).map(([k, v]) => [k, v?.length]),
   ),
+  // Completed Aegis reward periods at the finalized head, recounted from the chain (sentinel_apr). The
+  // SAFE price is Dune's, so the SAFE part is in SAFE here, and the APRs are the fee part only.
+  realized_apr: aprRows(
+    atHead.responses,
+    [...lockedChanges(atHead.responses), ...walletChanges.filter((c) => c.block <= head)],
+    aprCandidates(atHead),
+    headTime,
+  ).map((x) => ({
+    period: `${iso(x.from)!.slice(0, 10)} – ${iso(x.to - 86400)!.slice(0, 10)}`,
+    sentinel: nameOf(x.sentinel),
+    fees_usdc: x.fees,
+    slashed_usdc: x.slashed,
+    capital_locked_usdc: x.locked,
+    capital_wallet_usdc: x.wallet,
+    safe_grant: x.grant,
+    fee_apr_locked: apr(x.net, x.locked),
+    fee_apr_total: apr(x.net, x.locked + x.wallet),
+  })),
   safe_rewards: {
     distributor: REWARDS_DISTRIBUTOR.address,
     onchain_root: onchainRoot,

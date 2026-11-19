@@ -13,16 +13,29 @@
 -- Sentinel figure ends at. safenet_events reads Dune's decoded tables, which can trail the raw logs
 -- read here by a minute or so; without the cap, a claim in that gap made available bond and
 -- locked bond end at different blocks (verification mismatch, 2026-11-02).
+--
+-- One extra row, direction 'meta' (sentinel null, amount 0), carries that bound whatever the
+-- transfers: block_number = through_block and block_time = its time, the latest decoded Safenet
+-- event. It comes from the same read of safenet_events. Consumers that sum amounts or join on the
+-- Sentinel ignore it; sentinel_apr uses it as the cutoff for completed periods.
 
 with
 
+-- kind 'sentinel': every scheduled Sentinel; kind 'meta': one row with the bound (the first event).
 sentinels as (
-    select distinct sentinel, 0x000000000000000000000000 || sentinel as topic, through_block
+    select distinct
+        k.kind,
+        if(k.kind = 'sentinel', e.sentinel) as sentinel,
+        if(k.kind = 'sentinel', 0x000000000000000000000000 || e.sentinel) as topic,
+        e.through_block,
+        e.through_time
     from (
-        select event, sentinel, max(block_number) over () as through_block
+        select event, sentinel, max(block_number) over () as through_block, max(block_time) over () as through_time,
+            row_number() over () as rn
         from {{query:safenet_events}}
-    )
-    where event = 'sentinel_scheduled'
+    ) as e
+    cross join unnest(array['sentinel', 'meta'], array[e.event = 'sentinel_scheduled', e.rn = 1]) as k (kind, keep)
+    where k.keep
 ),
 
 transfers as (
@@ -30,7 +43,7 @@ transfers as (
     from gnosis.logs
     where contract_address = 0x2a22f9c3b484c3629090feed35f17ff8f88f76f0
         and topic0 = 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef -- Transfer
-        and (topic1 in (select topic from sentinels) or topic2 in (select topic from sentinels))
+        and (topic1 in (select topic from sentinels where kind = 'sentinel') or topic2 in (select topic from sentinels where kind = 'sentinel'))
         and block_number >= 48635850
         and block_date >= date '2026-10-07'
 )
@@ -48,3 +61,8 @@ select s.sentinel, 'out' as direction, bytearray_substring(t.topic2, 13, 20) as 
 from transfers as t
 join sentinels as s on s.topic = t.topic1
 where t.block_number <= s.through_block
+union all
+select cast(null as varbinary), 'meta', cast(null as varbinary), cast(0 as uint256), through_time,
+    through_block, cast(null as varbinary), cast(null as bigint), cast(null as varchar)
+from sentinels
+where kind = 'meta'
